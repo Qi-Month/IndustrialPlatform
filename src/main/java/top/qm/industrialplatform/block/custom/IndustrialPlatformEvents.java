@@ -9,7 +9,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -26,23 +25,21 @@ import top.qm.industrialplatform.block.BlockRegister;
 
 import java.util.Optional;
 
-
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class IndustrialPlatformEvents {
     @SubscribeEvent
     public static void fillStructure(PlayerInteractEvent.RightClickBlock event) {
         Level level = event.getLevel();
-
-        if (level.isClientSide) {
-            return;
-        }
-
         Player player = event.getEntity();
         InteractionHand hand = event.getHand();
         ItemStack stack = player.getItemInHand(hand);
         BlockPos pos = event.getPos();
         BlockState blockState = level.getBlockState(pos);
         ServerLevel serverLevel = (ServerLevel) level;
+
+        if (level.isClientSide) {
+            return;
+        }
 
         int posX = pos.getX();
         int posY = pos.getY();
@@ -53,34 +50,45 @@ public class IndustrialPlatformEvents {
 
         if (blockState.is(BlockRegister.INDUSTRIAL_PLATFORM.get())) {
             if (stack.is(Items.COBBLESTONE)) {
-                fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15, Blocks.AIR);
-                fillArea(serverLevel, finX, posY - 6, finZ, finX + 15, posY - 1, finZ + 15, Blocks.STONE);
+                fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
+                fillAreaConditional(serverLevel, finX, posY - 6, finZ, finX + 15, posY - 1, finZ + 15);
                 placeStructure(serverLevel, finX, posY, finZ, "industrial_platform:industrial_platform/light");
                 consumeItem(player, stack, hand);
-                event.setCancellationResult(InteractionResult.CONSUME);
-                event.setCanceled(true);
             } else if (stack.is(IPTags.Items.DEEPSLATE)) {
-                fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31, Blocks.AIR);
-                fillArea(serverLevel, finX - 16, posY - 6, finZ - 16, finX + 31, posY - 1, finZ + 31, Blocks.STONE);
+                fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
+                fillAreaConditional(serverLevel, finX - 16, posY - 6, finZ - 16, finX + 31, posY - 1, finZ + 31);
                 placeStructure(serverLevel, finX - 16, posY, finZ - 16, "industrial_platform:industrial_platform/heavy");
                 consumeItem(player, stack, hand);
-                event.setCancellationResult(InteractionResult.CONSUME);
-                event.setCanceled(true);
             } else if (stack.is(Items.ANDESITE)) {
-                fillArea(serverLevel, finX, posY, finZ, finX + 15, posY + 18, finZ + 15, Blocks.AIR);
+                fillArea(serverLevel, finX, posY, finZ, finX + 15, posY + 18, finZ + 15);
                 placeStructure(serverLevel, finX, posY, finZ, "industrial_platform:industrial_platform/levitational");
                 consumeItem(player, stack, hand);
-                event.setCancellationResult(InteractionResult.CONSUME);
-                event.setCanceled(true);
+            }
+
+            event.setCancellationResult(InteractionResult.CONSUME);
+            event.setCanceled(true);
+        }
+    }
+
+    private static void fillArea(ServerLevel level, int x0, int y0, int z0, int x1, int y1, int z1) {
+        for (int x = x0; x <= x1; x++) {
+            for (int y = y0; y <= y1; y++) {
+                for (int z = z0; z <= z1; z++) {
+                    level.setBlockAndUpdate(new BlockPos(x, y, z), Blocks.AIR.defaultBlockState());
+                }
             }
         }
     }
 
-    private static void fillArea(ServerLevel level, int x0, int y0, int z0, int x1, int y1, int z1, Block block) {
+    private static void fillAreaConditional(ServerLevel level, int x0, int y0, int z0, int x1, int y1, int z1) {
         for (int x = x0; x <= x1; x++) {
             for (int y = y0; y <= y1; y++) {
                 for (int z = z0; z <= z1; z++) {
-                    level.setBlockAndUpdate(new BlockPos(x, y, z), block.defaultBlockState());
+                    BlockPos pos = new BlockPos(x, y, z);
+                    BlockState state = level.getBlockState(pos);
+                    if (state.isAir() || !state.getFluidState().isEmpty()) {
+                        level.setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
+                    }
                 }
             }
         }
