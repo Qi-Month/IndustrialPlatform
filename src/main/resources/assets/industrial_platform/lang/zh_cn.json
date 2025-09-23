@@ -1,0 +1,5 @@
+{
+	"block.industrial_platform.industrial_platform": "工业平台",
+	"tooltip.industrial_platform.industrial_platform": "§a使用圆石可以放出轻型工业平台\n§a使用深板岩圆石可以放出重型工业平台\n§a使用安山岩可以放出悬浮工业平台",
+	"tooltip.industrial_platform.industrial_platform.off": "§e按住Shift查看详情"
+}

@@ -1,0 +1,25 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"key": {
+		"A": {
+			"tag": "forge:dyes/black"
+		},
+		"B": {
+			"tag": "forge:dyes/yellow"
+		},
+		"C": {
+			"tag": "forge:deepslate"
+		},
+		"D": {
+			"tag": "forge:stone"
+		}
+	},
+	"pattern": [
+		"ACB",
+		"DDD",
+		"DDD"
+	],
+	"result": {
+		"item": "industrial_platform:industrial_platform"
+	}
+}

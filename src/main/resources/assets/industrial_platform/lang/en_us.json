@@ -1,0 +1,5 @@
+{
+	"block.industrial_platform.industrial_platform": "Industrial Platform",
+	"tooltip.industrial_platform.industrial_platform": "§aUse Cobblestone to deploy a Light Industrial Platform\n§aUse Cobbled Deepslate to deploy a Heavy Industrial Platform\n§aUse Andesite to deploy a Floating Industrial Platform",
+	"tooltip.industrial_platform.industrial_platform.off": "§eHold Shift for details"
+}
