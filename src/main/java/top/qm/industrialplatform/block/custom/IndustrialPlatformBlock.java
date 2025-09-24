@@ -40,7 +40,7 @@ import java.util.Optional;
 public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedBlock {
     private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
-    private IndustrialPlatformBlock() {
+    public IndustrialPlatformBlock() {
         super(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
         this.registerDefaultState(this.stateDefinition.any().setValue(WATERLOGGED, false));
     }
