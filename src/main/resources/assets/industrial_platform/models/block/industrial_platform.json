@@ -2,7 +2,7 @@
 	"texture_size": [32, 32],
 	"textures": {
 		"1": "industrial_platform:block/industrial_platform",
-		"particle": "industrial_platform:block/industrial_platform"
+		"particle": "minecraft:block/deepslate_tiles"
 	},
 	"elements": [
 		{
