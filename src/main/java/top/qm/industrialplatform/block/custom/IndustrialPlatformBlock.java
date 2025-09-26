@@ -136,7 +136,10 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
     }
 
     private static void buildPlatform(ServerLevel level, Player player, InteractionHand hand, ItemStack stack, int finX, int posY, int finZ, PlatformConfig config) {
-        if (config.expand) {
+        if (config.expand && config.floating) {
+            fillArea(level, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
+            placeStructure(level, finX - 16, posY, finZ - 16, config.structureId);
+        } else if (config.expand) {
             fillArea(level, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
             fillAreaConditional(level, finX - 16, posY - 6, finZ - 16, finX + 31, posY - 1, finZ + 31);
             placeStructure(level, finX - 16, posY, finZ - 16, config.structureId);
@@ -148,6 +151,7 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
             fillAreaConditional(level, finX, posY - 6, finZ, finX + 15, posY - 1, finZ + 15);
             placeStructure(level, finX, posY, finZ, config.structureId);
         }
+
         consumeItem(player, stack, hand);
     }
 
