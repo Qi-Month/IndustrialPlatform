@@ -8,9 +8,11 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
@@ -37,7 +39,7 @@ import top.qm.industrialplatform.IPTags;
 import top.qm.industrialplatform.IndustrialPlatform;
 import top.qm.industrialplatform.block.BlockRegister;
 
-import java.util.Optional;
+import java.util.*;
 
 @SuppressWarnings("ALL")
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -72,6 +74,19 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         return Block.box(0, 0, 0, 16, 12, 16);
     }
 
+    // 平台配置表
+    private record PlatformConfig(Object item, String structureId, boolean expand, boolean floating, boolean checker) {
+    }
+
+    private static final List<PlatformConfig> PLATFORM_CONFIGS = Arrays.asList(
+            new PlatformConfig(Items.COBBLESTONE, "light", false, false, false),
+            new PlatformConfig(IPTags.Items.DEEPSLATE, "heavy", true, false, false),
+            new PlatformConfig(Items.DIORITE, "checkerboard", true, false, true),
+            new PlatformConfig(Items.ANDESITE, "levitational", false, true, false),
+            new PlatformConfig(Items.POLISHED_ANDESITE, "heavy_levitational", false, true, false),
+            new PlatformConfig(Items.POLISHED_DIORITE, "checkerboard_levitational", false, true, true)
+    );
+
     @SubscribeEvent
     public static void fillStructure(PlayerInteractEvent.RightClickBlock event) {
         Level level = event.getLevel();
@@ -84,60 +99,56 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         if (level.isClientSide) {
             return;
         }
+        if (!blockState.is(BlockRegister.INDUSTRIAL_PLATFORM.get())) {
+            return;
+        }
 
-        // ServerLevel必须写在检测下面
         ServerLevel serverLevel = (ServerLevel) level;
 
         int posX = pos.getX();
         int posY = pos.getY();
         int posZ = pos.getZ();
-
         int finX = (int) Math.floor(posX / 16.0) * 16;
         int finZ = (int) Math.floor(posZ / 16.0) * 16;
 
-        if (blockState.is(BlockRegister.INDUSTRIAL_PLATFORM.get())) {
-            // 轻型平台
-            if (stack.is(Items.COBBLESTONE)) {
-                fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
-                fillAreaConditional(serverLevel, finX, posY - 6, finZ, finX + 15, posY - 1, finZ + 15);
-                placeStructure(serverLevel, finX, posY, finZ, "light");
-                consumeItem(player, stack, hand);
-            } else if (stack.is(IPTags.Items.DEEPSLATE)) {
-                // 重型平台
-                fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
-                fillAreaConditional(serverLevel, finX - 16, posY - 6, finZ - 16, finX + 31, posY - 1, finZ + 31);
-                placeStructure(serverLevel, finX - 16, posY, finZ - 16, "heavy");
-                consumeItem(player, stack, hand);
-            } else if (stack.is(Items.DIORITE)) {
-                // 棋盘格平台
-                fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
-                fillAreaConditional(serverLevel, finX - 16, posY - 6, finZ - 16, finX + 31, posY - 1, finZ + 31);
-                placeStructure(serverLevel, finX - 16, posY, finZ - 16, "checkerboard");
-                consumeItem(player, stack, hand);
-            } else if (stack.is(Items.ANDESITE)) {
-                // 悬浮平台
-                fillArea(serverLevel, finX, posY, finZ, finX + 15, posY + 18, finZ + 15);
-                placeStructure(serverLevel, finX, posY, finZ, "levitational");
-                consumeItem(player, stack, hand);
-            } else if (stack.is(Items.POLISHED_ANDESITE)) {
-                // 重型悬浮平台
-                fillArea(serverLevel, finX, posY, finZ, finX + 15, posY + 18, finZ + 15);
-                placeStructure(serverLevel, finX, posY, finZ, "heavy_levitational");
-                consumeItem(player, stack, hand);
-            } else if (stack.is(Items.POLISHED_DIORITE)) {
-                // 棋盘悬浮平台
-                fillArea(serverLevel, finX, posY, finZ, finX + 15, posY + 18, finZ + 15);
-                placeStructure(serverLevel, finX, posY, finZ, "checkerboard_levitational");
-                consumeItem(player, stack, hand);
+        for (PlatformConfig config : PLATFORM_CONFIGS) {
+            Object target = config.item;
+            if (target instanceof Item item) {
+                if (stack.is(item)) {
+                    buildPlatform(serverLevel, player, hand, stack, finX, posY, finZ, config);
+                    break;
+                }
+            } else if (target instanceof TagKey<?>) {
+                @SuppressWarnings("unchecked")
+                TagKey<Item> itemTag = (TagKey<Item>) target;
+                if (stack.is(itemTag)) {
+                    buildPlatform(serverLevel, player, hand, stack, finX, posY, finZ, config);
+                    break;
+                }
             }
-
-            MutableComponent tranKey = Component.translatable("message.industrial_platform.done")
-                    .setStyle(Style.EMPTY.withColor(ChatFormatting.RED));
-
-            player.displayClientMessage(tranKey, true);
-            event.setCancellationResult(InteractionResult.CONSUME);
-            event.setCanceled(true);
         }
+
+        MutableComponent tranKey = Component.translatable("message.industrial_platform.done")
+                .setStyle(Style.EMPTY.withColor(ChatFormatting.RED));
+        player.displayClientMessage(tranKey, true);
+        event.setCancellationResult(InteractionResult.CONSUME);
+        event.setCanceled(true);
+    }
+
+    private static void buildPlatform(ServerLevel level, Player player, InteractionHand hand, ItemStack stack, int finX, int posY, int finZ, PlatformConfig config) {
+        if (config.expand) {
+            fillArea(level, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
+            fillAreaConditional(level, finX - 16, posY - 6, finZ - 16, finX + 31, posY - 1, finZ + 31);
+            placeStructure(level, finX - 16, posY, finZ - 16, config.structureId);
+        } else if (config.floating) {
+            fillArea(level, finX, posY, finZ, finX + 15, posY + 18, finZ + 15);
+            placeStructure(level, finX, posY, finZ, config.structureId);
+        } else {
+            fillArea(level, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
+            fillAreaConditional(level, finX, posY - 6, finZ, finX + 15, posY - 1, finZ + 15);
+            placeStructure(level, finX, posY, finZ, config.structureId);
+        }
+        consumeItem(player, stack, hand);
     }
 
     private static void fillArea(ServerLevel level, int x0, int y0, int z0, int x1, int y1, int z1) {
@@ -168,25 +179,21 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         StructureTemplateManager manager = level.getStructureManager();
         ResourceLocation structureName = ResourceLocation.parse("industrial_platform:industrial_platform/" + structureId);
         Optional<StructureTemplate> template = manager.get(structureName);
-        template.ifPresent((temp) -> {
-            temp.placeInWorld(
-                    level,
-                    new BlockPos(x, y, z),
-                    new BlockPos(x, y, z),
-                    new StructurePlaceSettings()
-                            .setRotation(Rotation.NONE)
-                            .setMirror(Mirror.NONE)
-                            .setIgnoreEntities(false),
-                    level.random,
-                    3
-            );
-        });
+        template.ifPresent((temp) -> temp.placeInWorld(
+                level,
+                new BlockPos(x, y, z),
+                new BlockPos(x, y, z),
+                new StructurePlaceSettings()
+                        .setRotation(Rotation.NONE)
+                        .setMirror(Mirror.NONE)
+                        .setIgnoreEntities(false),
+                level.random,
+                3
+        ));
     }
 
     private static void consumeItem(Player player, ItemStack stack, InteractionHand hand) {
         player.swing(hand);
-        if (!player.isCreative()) {
-            stack.shrink(1);
-        }
+        if (!player.isCreative()) stack.shrink(1);
     }
 }
