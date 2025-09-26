@@ -35,7 +35,6 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
-import top.qm.industrialplatform.IPTags;
 import top.qm.industrialplatform.IndustrialPlatform;
 import top.qm.industrialplatform.block.BlockRegister;
 
@@ -183,17 +182,19 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         StructureTemplateManager manager = level.getStructureManager();
         ResourceLocation structureName = ResourceLocation.parse("industrial_platform:industrial_platform/" + structureId);
         Optional<StructureTemplate> template = manager.get(structureName);
-        template.ifPresent((temp) -> temp.placeInWorld(
-                level,
-                new BlockPos(x, y, z),
-                new BlockPos(x, y, z),
-                new StructurePlaceSettings()
-                        .setRotation(Rotation.NONE)
-                        .setMirror(Mirror.NONE)
-                        .setIgnoreEntities(false),
-                level.random,
-                3
-        ));
+        template.ifPresent((temp) -> {
+            temp.placeInWorld(
+                    level,
+                    new BlockPos(x, y, z),
+                    new BlockPos(x, y, z),
+                    new StructurePlaceSettings()
+                            .setRotation(Rotation.NONE)
+                            .setMirror(Mirror.NONE)
+                            .setIgnoreEntities(false),
+                    level.random,
+                    3
+            );
+        });
     }
 
     private static void consumeItem(Player player, ItemStack stack, InteractionHand hand) {
