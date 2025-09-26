@@ -16,7 +16,6 @@ public class IndustrialPlatform {
         BlockRegister.register(event);
         BlockItemRegister.register(event);
 
-
         AddCreativeModeTabs.register(event);
     }
 }
