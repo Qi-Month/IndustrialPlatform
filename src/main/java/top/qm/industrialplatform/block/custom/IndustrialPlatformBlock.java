@@ -1,7 +1,11 @@
 package top.qm.industrialplatform.block.custom;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -92,22 +96,45 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         int finZ = (int) Math.floor(posZ / 16.0) * 16;
 
         if (blockState.is(BlockRegister.INDUSTRIAL_PLATFORM.get())) {
+            // 轻型平台
             if (stack.is(Items.COBBLESTONE)) {
                 fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
                 fillAreaConditional(serverLevel, finX, posY - 6, finZ, finX + 15, posY - 1, finZ + 15);
-                placeStructure(serverLevel, finX, posY, finZ, "industrial_platform:industrial_platform/light");
+                placeStructure(serverLevel, finX, posY, finZ, "light");
                 consumeItem(player, stack, hand);
             } else if (stack.is(IPTags.Items.DEEPSLATE)) {
+                // 重型平台
                 fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
                 fillAreaConditional(serverLevel, finX - 16, posY - 6, finZ - 16, finX + 31, posY - 1, finZ + 31);
-                placeStructure(serverLevel, finX - 16, posY, finZ - 16, "industrial_platform:industrial_platform/heavy");
+                placeStructure(serverLevel, finX - 16, posY, finZ - 16, "heavy");
+                consumeItem(player, stack, hand);
+            } else if (stack.is(Items.DIORITE)) {
+                // 棋盘格平台
+                fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
+                fillAreaConditional(serverLevel, finX - 16, posY - 6, finZ - 16, finX + 31, posY - 1, finZ + 31);
+                placeStructure(serverLevel, finX - 16, posY, finZ - 16, "checkerboard");
                 consumeItem(player, stack, hand);
             } else if (stack.is(Items.ANDESITE)) {
+                // 悬浮平台
                 fillArea(serverLevel, finX, posY, finZ, finX + 15, posY + 18, finZ + 15);
-                placeStructure(serverLevel, finX, posY, finZ, "industrial_platform:industrial_platform/levitational");
+                placeStructure(serverLevel, finX, posY, finZ, "levitational");
+                consumeItem(player, stack, hand);
+            } else if (stack.is(Items.POLISHED_ANDESITE)) {
+                // 重型悬浮平台
+                fillArea(serverLevel, finX, posY, finZ, finX + 15, posY + 18, finZ + 15);
+                placeStructure(serverLevel, finX, posY, finZ, "heavy_levitational");
+                consumeItem(player, stack, hand);
+            } else if (stack.is(Items.POLISHED_DIORITE)) {
+                // 棋盘悬浮平台
+                fillArea(serverLevel, finX, posY, finZ, finX + 15, posY + 18, finZ + 15);
+                placeStructure(serverLevel, finX, posY, finZ, "checkerboard_levitational");
                 consumeItem(player, stack, hand);
             }
 
+            MutableComponent tranKey = Component.translatable("message.industrial_platform.done")
+                    .setStyle(Style.EMPTY.withColor(ChatFormatting.RED));
+
+            player.displayClientMessage(tranKey, true);
             event.setCancellationResult(InteractionResult.CONSUME);
             event.setCanceled(true);
         }
@@ -139,7 +166,8 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
 
     private static void placeStructure(ServerLevel level, int x, int y, int z, String structureId) {
         StructureTemplateManager manager = level.getStructureManager();
-        Optional<StructureTemplate> template = manager.get(ResourceLocation.parse(structureId));
+        ResourceLocation structureName = ResourceLocation.parse("industrial_platform:industrial_platform/" + structureId);
+        Optional<StructureTemplate> template = manager.get(structureName);
         template.ifPresent((temp) -> {
             temp.placeInWorld(
                     level,

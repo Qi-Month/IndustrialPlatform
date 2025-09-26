@@ -1,5 +1,6 @@
 {
 	"block.industrial_platform.industrial_platform": "Industrial Platform",
-	"tooltip.industrial_platform.industrial_platform": "§aUse Cobblestone to deploy a Light Industrial Platform\n§aUse Deepslate Cobbled to deploy a Heavy Industrial Platform\n§aUse Andesite to deploy a Floating Industrial Platform",
-	"tooltip.industrial_platform.industrial_platform.off": "§eHold Shift for details"
+	"tooltip.industrial_platform.industrial_platform": "§aUse Cobblestone to deploy a Light Industrial Platform\n§aUse Cobbled Deepslate or Deepslate to deploy a Heavy Industrial Platform\n§aUse Diorite to deploy a Checkerboard Platform\n§aUse Andesite to deploy a Levitational Industrial Platform\n§aUse Polished Andesite to deploy a Heavy Levitational Platform\n§aUse Polished Diorite to deploy a Heavy Levitational Platform",
+	"tooltip.industrial_platform.industrial_platform.off": "§eHold Shift for details",
+	"message.industrial_platform.done": "Platform placement successful!"
 }
