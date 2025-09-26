@@ -79,11 +79,11 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
     }
 
     private static final List<PlatformConfig> PLATFORM_CONFIGS = Arrays.asList(
-            new PlatformConfig(Items.COBBLESTONE, "light", false, false, false),
-            new PlatformConfig(IPTags.Items.DEEPSLATE, "heavy", true, false, false),
-            new PlatformConfig(Items.DIORITE, "checkerboard", true, false, true),
-            new PlatformConfig(Items.ANDESITE, "levitational", false, true, false),
-            new PlatformConfig(Items.POLISHED_ANDESITE, "heavy_levitational", false, true, false),
+            new PlatformConfig(Items.STONE, "light_basic", false, false, false),
+            new PlatformConfig(Items.ANDESITE, "heavy_basic", true, false, false),
+            new PlatformConfig(Items.DIORITE, "checkerboard_basic", false, false, true),
+            new PlatformConfig(Items.SMOOTH_STONE, "light_levitational", false, true, false),
+            new PlatformConfig(Items.POLISHED_ANDESITE, "heavy_levitational", true, true, false),
             new PlatformConfig(Items.POLISHED_DIORITE, "checkerboard_levitational", false, true, true)
     );
 

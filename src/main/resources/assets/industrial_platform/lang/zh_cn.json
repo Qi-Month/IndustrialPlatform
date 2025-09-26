@@ -1,7 +1,7 @@
 {
 	"block.industrial_platform.industrial_platform": "工业平台",
 
-	"tooltip.industrial_platform.industrial_platform": "§a使用圆石可以放出轻型工业平台\n§a使用深板岩圆石或深板岩可以放出重型工业平台\n§a使用闪长岩可以放出棋盘格平台\n§a使用安山岩可以放出悬浮工业平台\n§a使用磨制安山岩可以放出重型悬浮平台\n§a使用磨制闪长岩可以放出重型棋盘平台",
+	"tooltip.industrial_platform.industrial_platform": "§a使用石头可以放出基础轻型工业平台\n§a使用安山岩可以放出基础重型平台\n§a使用闪长岩可以放出基础棋盘平台\n§a使用平滑石头可以放出悬浮轻型工业平台\n§a使用磨制安山岩可以放出悬浮重型平台\n§a使用磨制闪长岩可以放出悬浮棋盘平台",
 	"tooltip.industrial_platform.industrial_platform.off": "§e按住Shift查看详情",
 	"message.industrial_platform.done": "平台放置成功!"
 }
