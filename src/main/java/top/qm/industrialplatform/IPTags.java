@@ -11,10 +11,10 @@ public class IPTags {
             return ItemTags.create(ResourceLocation.fromNamespaceAndPath(namespace, name));
         }
 
-        public static TagKey<Item> DEEPSLATE;
+        public static TagKey<Item> RODS;
 
         static {
-            DEEPSLATE = createTag("forge", "deepslate");
+            RODS = createTag("forge", "rods");
         }
     }
 }
