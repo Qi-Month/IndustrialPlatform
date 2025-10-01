@@ -1,17 +1,18 @@
 {
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
 	"texture_size": [32, 32],
 	"textures": {
-		"1": "industrial_platform:block/industrial_platform",
-		"particle": "minecraft:block/deepslate_tiles"
+		"1": "industrial_platform:block/heavy_industrial_platform"
 	},
 	"elements": [
 		{
 			"from": [0, 0, 0],
 			"to": [16, 12, 16],
 			"faces": {
-				"north": {"uv": [8, 0, 16, 6], "texture": "#1"},
-				"east": {"uv": [8, 6, 16, 12], "texture": "#1"},
-				"south": {"uv": [8, 0, 16, 6], "texture": "#1"},
+				"north": {"uv": [8, 6, 16, 12], "texture": "#1"},
+				"east": {"uv": [8, 0, 16, 6], "texture": "#1"},
+				"south": {"uv": [8, 6, 16, 12], "texture": "#1"},
 				"west": {"uv": [8, 0, 16, 6], "texture": "#1"},
 				"up": {"uv": [8, 8, 0, 0], "texture": "#1"},
 				"down": {"uv": [8, 8, 0, 16], "texture": "#1"}

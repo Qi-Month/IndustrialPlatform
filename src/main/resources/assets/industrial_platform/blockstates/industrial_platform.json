@@ -1,7 +1,13 @@
 {
 	"variants": {
-		"": {
-			"model": "industrial_platform:block/industrial_platform"
+		"light": {
+			"model": "industrial_platform:block/light_industrial_platform"
+		},
+		"heavy": {
+			"model": "industrial_platform:block/heavy_industrial_platform"
+		},
+		"checkerboard": {
+			"model": "industrial_platform:block/checkerboard_industrial_platform"
 		}
 	}
 }
