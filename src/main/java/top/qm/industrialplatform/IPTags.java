@@ -16,5 +16,11 @@ public class IPTags {
         static {
             RODS = createTag("forge", "rods");
         }
+
+        public static TagKey<Item> WRENCHES;
+
+        static {
+            WRENCHES = createTag("forge", "tools/wrench");
+        }
     }
 }

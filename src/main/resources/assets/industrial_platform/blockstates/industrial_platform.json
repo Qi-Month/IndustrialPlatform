@@ -1,13 +1,22 @@
 {
 	"variants": {
-		"light": {
-			"model": "industrial_platform:block/light_industrial_platform"
+		"type=light,floating=false": {
+			"model": "industrial_platform:block/light_basic"
 		},
-		"heavy": {
-			"model": "industrial_platform:block/heavy_industrial_platform"
+		"type=heavy,floating=false": {
+			"model": "industrial_platform:block/heavy_basic"
 		},
-		"checkerboard": {
-			"model": "industrial_platform:block/checkerboard_industrial_platform"
+		"type=checkerboard,floating=false": {
+			"model": "industrial_platform:block/checkerboard_basic"
+		},
+		"type=light,floating=true": {
+			"model": "industrial_platform:block/light_levitational"
+		},
+		"type=heavy,floating=true": {
+			"model": "industrial_platform:block/heavy_levitational"
+		},
+		"type=checkerboard,floating=true": {
+			"model": "industrial_platform:block/checkerboard_levitational"
 		}
 	}
 }
