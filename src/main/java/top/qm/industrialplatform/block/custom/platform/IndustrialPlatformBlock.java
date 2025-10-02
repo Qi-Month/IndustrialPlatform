@@ -1,4 +1,4 @@
-package top.qm.industrialplatform.block.custom;
+package top.qm.industrialplatform.block.custom.platform;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -39,7 +39,7 @@ import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
 import top.qm.industrialplatform.IndustrialPlatform;
 import top.qm.industrialplatform.block.BlockRegister;
-import top.qm.industrialplatform.block.state.properties.PlatformProperties;
+import top.qm.industrialplatform.block.state.properties.platform.PlatformProperties;
 
 import java.util.*;
 
@@ -193,9 +193,9 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         }
     }
 
-    private static void placeStructure(ServerLevel level, int x, int y, int z, String structureId) {
+    private static void placeStructure(ServerLevel level, int x, int y, int z, String id) {
         StructureTemplateManager manager = level.getStructureManager();
-        ResourceLocation structureName = ResourceLocation.parse("industrial_platform:industrial_platform/" + structureId);
+        ResourceLocation structureName = ResourceLocation.parse("industrial_platform:industrial_platform/" + id);
         Optional<StructureTemplate> template = manager.get(structureName);
         template.ifPresent((temp) -> {
             temp.placeInWorld(
@@ -214,6 +214,8 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
 
     private static void consumeItem(Player player, ItemStack stack, InteractionHand hand) {
         player.swing(hand);
-        if (!player.isCreative()) stack.shrink(1);
+        if (!player.isCreative()) {
+            stack.shrink(1);
+        }
     }
 }

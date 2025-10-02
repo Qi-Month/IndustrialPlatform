@@ -6,7 +6,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import top.qm.industrialplatform.IndustrialPlatform;
-import top.qm.industrialplatform.block.custom.IndustrialPlatformBlock;
+import top.qm.industrialplatform.block.custom.platform.IndustrialPlatformBlock;
 
 public class BlockRegister {
     private static final DeferredRegister<Block> BLOCKS =

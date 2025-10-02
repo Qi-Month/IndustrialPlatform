@@ -1,4 +1,4 @@
-package top.qm.industrialplatform.block.custom;
+package top.qm.industrialplatform.block.custom.platform;
 
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;

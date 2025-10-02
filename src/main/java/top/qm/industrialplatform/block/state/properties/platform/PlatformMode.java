@@ -1,4 +1,4 @@
-package top.qm.industrialplatform.block.state.properties;
+package top.qm.industrialplatform.block.state.properties.platform;
 
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
