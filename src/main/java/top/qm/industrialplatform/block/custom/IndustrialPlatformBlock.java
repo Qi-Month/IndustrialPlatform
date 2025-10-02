@@ -24,11 +24,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -37,13 +39,19 @@ import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
 import top.qm.industrialplatform.IndustrialPlatform;
 import top.qm.industrialplatform.block.BlockRegister;
+import top.qm.industrialplatform.block.state.properties.PlatformProperties;
 
 import java.util.*;
 
 @SuppressWarnings("ALL")
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedBlock {
+
     private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
+
+    private static final EnumProperty PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
+
+    private static final BooleanProperty FLOATING = PlatformProperties.FLOATING;
 
     public IndustrialPlatformBlock() {
         super(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
@@ -52,6 +60,8 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
 
     @Override
     public void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(PLATFORM_MODE);
+        builder.add(FLOATING);
         builder.add(WATERLOGGED);
     }
 
@@ -71,6 +81,11 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
     @Override
     public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
         return Block.box(0, 0, 0, 16, 12, 16);
+    }
+
+    @Override
+    public InteractionResult use(BlockState blockstate, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result) {
+        return super.use(blockstate, level, pos, player, hand, result);
     }
 
     // 平台配置表
