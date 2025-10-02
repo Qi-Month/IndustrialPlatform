@@ -4,7 +4,7 @@
 	"texture_size": [32, 32],
 	"textures": {
 		"1": "industrial_platform:block/levitational/false",
-		"2": "industrial_platform:block/type/checkerboard",
+		"2": "industrial_platform:block/type/industrial_light",
 		"particle": "block/deepslate_tile"
 	},
 	"elements": [
