@@ -193,9 +193,9 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         }
     }
 
-    private static void placeStructure(ServerLevel level, int x, int y, int z, String id) {
+    private static void placeStructure(ServerLevel level, int x, int y, int z, String structureId) {
         StructureTemplateManager manager = level.getStructureManager();
-        ResourceLocation structureName = ResourceLocation.parse("industrial_platform:industrial_platform/" + id);
+        ResourceLocation structureName = ResourceLocation.parse("industrial_platform:industrial_platform/" + structureId);
         Optional<StructureTemplate> template = manager.get(structureName);
         template.ifPresent((temp) -> {
             temp.placeInWorld(
@@ -214,8 +214,6 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
 
     private static void consumeItem(Player player, ItemStack stack, InteractionHand hand) {
         player.swing(hand);
-        if (!player.isCreative()) {
-            stack.shrink(1);
-        }
+        if (!player.isCreative()) stack.shrink(1);
     }
 }

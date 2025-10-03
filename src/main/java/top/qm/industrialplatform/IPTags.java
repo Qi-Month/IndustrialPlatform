@@ -11,16 +11,16 @@ public class IPTags {
             return ItemTags.create(ResourceLocation.fromNamespaceAndPath(namespace, name));
         }
 
-        public static TagKey<Item> RODS;
+        public static TagKey<Item> ADJUSTERS;
 
         static {
-            RODS = createTag("forge", "rods");
+            ADJUSTERS = createTag("industrial_platform", "adjusters");
         }
 
-        public static TagKey<Item> WRENCHES;
+        public static TagKey<Item> STONE;
 
         static {
-            WRENCHES = createTag("forge", "tools/wrench");
+            STONE = createTag("forge", "stone");
         }
     }
 }
