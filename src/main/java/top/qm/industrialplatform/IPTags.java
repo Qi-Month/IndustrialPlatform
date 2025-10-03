@@ -11,11 +11,9 @@ public class IPTags {
             return ItemTags.create(ResourceLocation.fromNamespaceAndPath(namespace, name));
         }
 
-        public static TagKey<Item> ADJUSTERS;
         public static TagKey<Item> STONE;
 
         static {
-            ADJUSTERS = createTag("industrial_platform", "adjusters");
             STONE = createTag("forge", "stone");
         }
     }

@@ -1,6 +1,7 @@
 {
 	"block.industrial_platform.industrial_platform": "工业平台",
-	"tooltip.industrial_platform.industrial_platform": "§a空手右键以切换是否向上下填充\n§a使用木棍或任意扳手调节平台类型",
+	"tooltip.industrial_platform.industrial_platform": "§a空手右键调节平台类型\n§a空手潜行右键以切换是否向上下填充\n§a以任意石头右键展开平台",
 	"tooltip.industrial_platform.industrial_platform.off": "§e按住Shift查看详情",
-	"message.industrial_platform.done": "平台放置成功!"
+	"message.industrial_platform.done": "平台放置成功!",
+	"message.industrial_platform.too_low": "太低了!流体池无法展开!"
 }

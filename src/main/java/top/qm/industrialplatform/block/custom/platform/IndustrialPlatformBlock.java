@@ -99,14 +99,14 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
 
         ServerLevel serverLevel = (ServerLevel) level;
 
-        if (heldItem.isEmpty() && hand == InteractionHand.MAIN_HAND) {
+        if (heldItem.isEmpty() && hand == InteractionHand.MAIN_HAND && player.isCrouching()) {
             // 空手右键：切换 FLOATING
-            player.swing(hand);
             serverLevel.setBlock(blockPos, state.cycle(FLOATING), 3);
-        } else if (heldItem.is(IPTags.Items.ADJUSTERS) && hand == InteractionHand.MAIN_HAND) {
+            player.swing(InteractionHand.MAIN_HAND, true);
+        } else if (heldItem.isEmpty() && hand == InteractionHand.MAIN_HAND) {
             // 调整器右键：切换 PLATFORM_MODE
-            player.swing(hand);
             serverLevel.setBlock(blockPos, state.cycle(PLATFORM_MODE), 3);
+            player.swing(InteractionHand.MAIN_HAND, true);
         } else if (heldItem.is(IPTags.Items.STONE) && hand == InteractionHand.MAIN_HAND) {
             // 石头右键：生成结构
             int posX = blockPos.getX();
@@ -124,6 +124,15 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
                     placeStructure(serverLevel, finX, posY, finZ, "checkerboard");
                 } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
                     placeExtendedStructure(serverLevel, finX, posY, finZ, "checkerboard");
+                } else if (state.getValue(PLATFORM_MODE) == PlatformMode.POOL) {
+                    if (posY <= 0) {
+                        MutableComponent failKey = Component.translatable("message.industrial_platform.too_low")
+                                .setStyle(Style.EMPTY.withColor(ChatFormatting.RED));
+                        player.displayClientMessage(failKey, true);
+                        return;
+                    }
+                    placeStructure(serverLevel, finX, posY - 31, finZ, "pool_top");
+                    placeStructure(serverLevel, finX, posY - 63, finZ, "pool_bottom");
                 }
             } else {
                 if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
@@ -142,16 +151,26 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
                     fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
                     fillAreaConditional(serverLevel, finX - 16, posY - 11, finZ - 16, finX + 31, posY - 1, finZ + 31);
                     placeExtendedStructure(serverLevel, finX, posY, finZ, "checkerboard");
+                } else if (state.getValue(PLATFORM_MODE) == PlatformMode.POOL) {
+                    if (posY <= 0) {
+                        MutableComponent failKey = Component.translatable("message.industrial_platform.too_low")
+                                .setStyle(Style.EMPTY.withColor(ChatFormatting.RED));
+                        player.displayClientMessage(failKey, true);
+                        return;
+                    }
+                    fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
+                    placeStructure(serverLevel, finX, posY - 31, finZ, "pool_top");
+                    placeStructure(serverLevel, finX, posY - 63, finZ, "pool_bottom");
                 }
             }
 
-            MutableComponent tranKey = Component.translatable("message.industrial_platform.done")
-                    .setStyle(Style.EMPTY.withColor(ChatFormatting.RED));
-            player.displayClientMessage(tranKey, true);
+            MutableComponent successfulKey = Component.translatable("message.industrial_platform.done")
+                    .setStyle(Style.EMPTY.withColor(ChatFormatting.GREEN));
+            player.displayClientMessage(successfulKey, true);
             consumeItem(player, heldItem, hand);
+            event.setCanceled(true);
         }
 
-        event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);
     }
 
