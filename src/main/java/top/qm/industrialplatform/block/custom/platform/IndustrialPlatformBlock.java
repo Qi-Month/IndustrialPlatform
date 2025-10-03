@@ -30,6 +30,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -39,6 +40,7 @@ import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
 import top.qm.industrialplatform.IndustrialPlatform;
 import top.qm.industrialplatform.block.BlockRegister;
+import top.qm.industrialplatform.block.state.properties.platform.PlatformMode;
 import top.qm.industrialplatform.block.state.properties.platform.PlatformProperties;
 
 import java.util.*;
@@ -48,14 +50,14 @@ import java.util.*;
 public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedBlock {
 
     private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
-
     private static final EnumProperty PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
-
     private static final BooleanProperty FLOATING = PlatformProperties.FLOATING;
 
     public IndustrialPlatformBlock() {
         super(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
         this.registerDefaultState(this.stateDefinition.any().setValue(WATERLOGGED, false));
+        this.registerDefaultState(this.stateDefinition.any().setValue(PLATFORM_MODE, PlatformMode.INDUSTRIAL_LIGHT));
+        this.registerDefaultState(this.stateDefinition.any().setValue(FLOATING, false));
     }
 
     @Override
@@ -81,11 +83,6 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
     @Override
     public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
         return Block.box(0, 0, 0, 16, 12, 16);
-    }
-
-    @Override
-    public InteractionResult use(BlockState blockstate, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result) {
-        return super.use(blockstate, level, pos, player, hand, result);
     }
 
     // 平台配置表
@@ -217,5 +214,9 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         if (!player.isCreative()) {
             stack.shrink(1);
         }
+    }
+
+    public boolean isPathfindable(BlockState pState, BlockGetter pGetter, BlockPos pPos, PathComputationType pType) {
+        return false;
     }
 }
