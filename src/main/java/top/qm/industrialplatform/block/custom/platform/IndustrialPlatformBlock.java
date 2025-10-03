@@ -71,14 +71,10 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
 
     @Override
     public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-        Object target = IPTags.Items.ADJUSTERS;
-        if (target instanceof TagKey<?>) {
-            TagKey<Item> itemTag = (TagKey<Item>) target;
-            if (!pLevel.isClientSide() && pPlayer.isCrouching()) {
-                pLevel.setBlock(pPos, pState.cycle(FLOATING), 3);
-            } else if (!pLevel.isClientSide()) {
-                pLevel.setBlock(pPos, pState.cycle(PLATFORM_MODE), 3);
-            }
+        if (!pLevel.isClientSide() && pPlayer.isCrouching()) {
+            pLevel.setBlock(pPos, pState.cycle(FLOATING), 3);
+        } else if (!pLevel.isClientSide()) {
+            pLevel.setBlock(pPos, pState.cycle(PLATFORM_MODE), 3);
         }
 
         return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
