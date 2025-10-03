@@ -12,14 +12,10 @@ public class IPTags {
         }
 
         public static TagKey<Item> ADJUSTERS;
-
-        static {
-            ADJUSTERS = createTag("industrial_platform", "adjusters");
-        }
-
         public static TagKey<Item> STONE;
 
         static {
+            ADJUSTERS = createTag("industrial_platform", "adjusters");
             STONE = createTag("forge", "stone");
         }
     }
