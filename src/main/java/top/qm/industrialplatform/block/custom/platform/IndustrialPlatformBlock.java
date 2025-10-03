@@ -14,7 +14,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -30,6 +29,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -37,8 +37,10 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
+import top.qm.industrialplatform.IPTags;
 import top.qm.industrialplatform.IndustrialPlatform;
 import top.qm.industrialplatform.block.BlockRegister;
+import top.qm.industrialplatform.block.state.properties.platform.PlatformMode;
 import top.qm.industrialplatform.block.state.properties.platform.PlatformProperties;
 
 import java.util.*;
@@ -48,14 +50,16 @@ import java.util.*;
 public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedBlock {
 
     private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
-
     private static final EnumProperty PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
-
     private static final BooleanProperty FLOATING = PlatformProperties.FLOATING;
 
     public IndustrialPlatformBlock() {
         super(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
-        this.registerDefaultState(this.stateDefinition.any().setValue(WATERLOGGED, false));
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(WATERLOGGED, false)
+                .setValue(FLOATING, false)
+                .setValue(PLATFORM_MODE, PlatformMode.INDUSTRIAL_LIGHT)
+        );
     }
 
     @Override
@@ -64,6 +68,18 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         builder.add(FLOATING);
         builder.add(WATERLOGGED);
     }
+
+    @Override
+    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
+        if (!pLevel.isClientSide() && pPlayer.isCrouching()) {
+            pLevel.setBlock(pPos, pState.cycle(FLOATING), 3);
+        } else if (!pLevel.isClientSide()) {
+            pLevel.setBlock(pPos, pState.cycle(PLATFORM_MODE), 3);
+        }
+
+        return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
+    }
+
 
     @Override
     public FluidState getFluidState(BlockState state) {
@@ -82,24 +98,6 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
     public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
         return Block.box(0, 0, 0, 16, 12, 16);
     }
-
-    @Override
-    public InteractionResult use(BlockState blockstate, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result) {
-        return super.use(blockstate, level, pos, player, hand, result);
-    }
-
-    // 平台配置表
-    private record PlatformConfig(Object item, String structureId, boolean expand, boolean floating, boolean checker) {
-    }
-
-    private static final List<PlatformConfig> PLATFORM_CONFIGS = Arrays.asList(
-            new PlatformConfig(Items.STONE, "light_basic", false, false, false),
-            new PlatformConfig(Items.ANDESITE, "heavy_basic", true, false, false),
-            new PlatformConfig(Items.DIORITE, "checkerboard_basic", false, false, true),
-            new PlatformConfig(Items.SMOOTH_STONE, "light_levitational", false, true, false),
-            new PlatformConfig(Items.POLISHED_ANDESITE, "heavy_levitational", true, true, false),
-            new PlatformConfig(Items.POLISHED_DIORITE, "checkerboard_levitational", false, true, true)
-    );
 
     @SubscribeEvent
     public static void fillStructure(PlayerInteractEvent.RightClickBlock event) {
@@ -125,48 +123,12 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         int finX = (int) Math.floor(posX / 16.0) * 16;
         int finZ = (int) Math.floor(posZ / 16.0) * 16;
 
-        for (PlatformConfig config : PLATFORM_CONFIGS) {
-            Object target = config.item;
-            if (target instanceof Item item) {
-                if (stack.is(item)) {
-                    buildPlatform(serverLevel, player, hand, stack, finX, posY, finZ, config);
-                    break;
-                }
-            } else if (target instanceof TagKey<?>) {
-                @SuppressWarnings("unchecked")
-                TagKey<Item> itemTag = (TagKey<Item>) target;
-                if (stack.is(itemTag)) {
-                    buildPlatform(serverLevel, player, hand, stack, finX, posY, finZ, config);
-                    break;
-                }
-            }
-        }
 
         MutableComponent tranKey = Component.translatable("message.industrial_platform.done")
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.RED));
         player.displayClientMessage(tranKey, true);
         event.setCancellationResult(InteractionResult.CONSUME);
         event.setCanceled(true);
-    }
-
-    private static void buildPlatform(ServerLevel level, Player player, InteractionHand hand, ItemStack stack, int finX, int posY, int finZ, PlatformConfig config) {
-        if (config.expand && config.floating) {
-            fillArea(level, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
-            placeStructure(level, finX - 16, posY, finZ - 16, config.structureId);
-        } else if (config.expand) {
-            fillArea(level, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
-            fillAreaConditional(level, finX - 16, posY - 6, finZ - 16, finX + 31, posY - 1, finZ + 31);
-            placeStructure(level, finX - 16, posY, finZ - 16, config.structureId);
-        } else if (config.floating) {
-            fillArea(level, finX, posY, finZ, finX + 15, posY + 18, finZ + 15);
-            placeStructure(level, finX, posY, finZ, config.structureId);
-        } else {
-            fillArea(level, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
-            fillAreaConditional(level, finX, posY - 6, finZ, finX + 15, posY - 1, finZ + 15);
-            placeStructure(level, finX, posY, finZ, config.structureId);
-        }
-
-        consumeItem(player, stack, hand);
     }
 
     private static void fillArea(ServerLevel level, int x0, int y0, int z0, int x1, int y1, int z1) {
@@ -218,4 +180,9 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
             stack.shrink(1);
         }
     }
+
+    public boolean isPathfindable(BlockState pState, BlockGetter pGetter, BlockPos pPos, PathComputationType pType) {
+        return false;
+    }
+
 }
