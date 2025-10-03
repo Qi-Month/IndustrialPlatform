@@ -118,27 +118,11 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
                 if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
                     placeStructure((ServerLevel) level, finX, posY, finZ, "industrial");
                 } else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
-                    placeStructure((ServerLevel) level, finX - 15, posY, finZ - 15, "industrial");
-                    placeStructure((ServerLevel) level, finX - 15, posY, finZ, "industrial");
-                    placeStructure((ServerLevel) level, finX - 15, posY, finZ + 15, "industrial");
-                    placeStructure((ServerLevel) level, finX, posY, finZ - 15, "industrial");
-                    placeStructure((ServerLevel) level, finX, posY, finZ, "industrial");
-                    placeStructure((ServerLevel) level, finX, posY, finZ + 15, "industrial");
-                    placeStructure((ServerLevel) level, finX + 15, posY, finZ - 15, "industrial");
-                    placeStructure((ServerLevel) level, finX + 15, posY, finZ, "industrial");
-                    placeStructure((ServerLevel) level, finX + 15, posY, finZ + 15, "industrial");
+                    placeExtendedStructure((ServerLevel) level, finX, posY, finZ, "industrial");
                 } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
                     placeStructure((ServerLevel) level, finX, posY, finZ, "checkerboard");
                 } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-                    placeStructure((ServerLevel) level, finX - 15, posY, finZ - 15, "checkerboard");
-                    placeStructure((ServerLevel) level, finX - 15, posY, finZ, "checkerboard");
-                    placeStructure((ServerLevel) level, finX - 15, posY, finZ + 15, "checkerboard");
-                    placeStructure((ServerLevel) level, finX, posY, finZ - 15, "checkerboard");
-                    placeStructure((ServerLevel) level, finX, posY, finZ, "checkerboard");
-                    placeStructure((ServerLevel) level, finX, posY, finZ + 15, "checkerboard");
-                    placeStructure((ServerLevel) level, finX + 15, posY, finZ - 15, "checkerboard");
-                    placeStructure((ServerLevel) level, finX + 15, posY, finZ, "checkerboard");
-                    placeStructure((ServerLevel) level, finX + 15, posY, finZ + 15, "checkerboard");
+                    placeExtendedStructure((ServerLevel) level, finX, posY, finZ, "checkerboard");
                 }
 
             } else {
