@@ -129,19 +129,19 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
 
                 if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
                     fillArea((ServerLevel) level, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
-                    fillAreaConditional((ServerLevel) level, finX, posY - 1, finZ, finX + 15, posY - 11, finZ + 15);
+                    fillAreaConditional((ServerLevel) level, finX, posY - 11, finZ, finX + 15, posY - 1, finZ + 15);
                     placeStructure((ServerLevel) level, finX, posY, finZ, "industrial");
                 } else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
-                    fillArea((ServerLevel) level, finX - 15, posY + 1, finZ - 15, finX + 31, posY + 11, finZ + 31);
-                    fillAreaConditional((ServerLevel) level, finX - 15, posY - 1, finZ - 15, finX + 31, posY - 11, finZ + 31);
+                    fillArea((ServerLevel) level, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
+                    fillAreaConditional((ServerLevel) level, finX - 16, posY - 11, finZ - 16, finX + 31, posY - 1, finZ + 31);
                     placeExtendedStructure((ServerLevel) level, finX, posY, finZ, "industrial");
                 } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
                     fillArea((ServerLevel) level, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
-                    fillAreaConditional((ServerLevel) level, finX, posY - 1, finZ, finX + 15, posY - 11, finZ + 15);
+                    fillAreaConditional((ServerLevel) level, finX, posY - 11, finZ, finX + 15, posY - 1, finZ + 15);
                     placeStructure((ServerLevel) level, finX, posY, finZ, "checkerboard");
                 } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-                    fillArea((ServerLevel) level, finX - 15, posY + 1, finZ - 15, finX + 31, posY + 11, finZ + 31);
-                    fillAreaConditional((ServerLevel) level, finX - 15, posY - 1, finZ - 15, finX + 31, posY - 11, finZ + 31);
+                    fillArea((ServerLevel) level, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
+                    fillAreaConditional((ServerLevel) level, finX - 16, posY - 11, finZ - 16, finX + 31, posY - 1, finZ + 31);
                     placeExtendedStructure((ServerLevel) level, finX, posY, finZ, "checkerboard");
                 }
 
