@@ -1,6 +1,6 @@
 {
-	"block.industrial_platform.industrial_platform": "Industrial Platform",
-	"tooltip.industrial_platform.industrial_platform": "§aUse Stone to deploy a Basic Light Industrial Platform\n§aUse Andesite to deploy a Basic Heavy Industrial Platform\n§aUse Diorite to deploy a Basic Checkerboard Platform\n§aUse Amooth Stone to deploy a Levitational Light Industrial Platform\n§aUse Polished Andesite to deploy a Levitational Heavy Platform\n§aUse Polished Diorite to deploy a Levitational Checkboard Platform",
-	"tooltip.industrial_platform.industrial_platform.off": "§eHold Shift for details",
-	"message.industrial_platform.done": "Platform placed successfully!"
+  "block.industrial_platform.industrial_platform": "Industrial Platform",
+  "tooltip.industrial_platform.industrial_platform": "§aRightclick with empty hands to adjust floating or basic platform\n§aRightclick tith rods or wrenches to adjust types of the platform",
+  "tooltip.industrial_platform.industrial_platform.off": "§eHold Shift for details",
+  "message.industrial_platform.done": "Platform placed successfully!"
 }

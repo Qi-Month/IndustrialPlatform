@@ -1,6 +1,6 @@
 {
 	"block.industrial_platform.industrial_platform": "工业平台",
-	"tooltip.industrial_platform.industrial_platform": "§a使用石头可以放出基础轻型平台\n§a使用安山岩可以放出基础重型平台\n§a使用闪长岩可以放出基础棋盘平台\n§a使用平滑石头可以放出悬浮轻型平台\n§a使用磨制安山岩可以放出悬浮重型平台\n§a使用磨制闪长岩可以放出悬浮棋盘平台",
+	"tooltip.industrial_platform.industrial_platform": "§a空手右键以切换是否向上下填充\n§a使用木棍或任意扳手调节平台类型",
 	"tooltip.industrial_platform.industrial_platform.off": "§e按住Shift查看详情",
 	"message.industrial_platform.done": "平台放置成功!"
 }

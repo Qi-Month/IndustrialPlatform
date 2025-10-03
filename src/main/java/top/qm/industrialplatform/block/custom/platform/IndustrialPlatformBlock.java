@@ -150,8 +150,8 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
             MutableComponent tranKey = Component.translatable("message.industrial_platform.done")
                     .setStyle(Style.EMPTY.withColor(ChatFormatting.RED));
             player.displayClientMessage(tranKey, true);
+            consumeItem(player, player.getMainHandItem(), hand);
         }
-
         return super.use(state, level, blockPos, player, hand, hitResult);
     }
 
