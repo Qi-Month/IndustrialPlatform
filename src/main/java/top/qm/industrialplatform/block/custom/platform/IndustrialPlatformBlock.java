@@ -214,6 +214,8 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
 
     private static void consumeItem(Player player, ItemStack stack, InteractionHand hand) {
         player.swing(hand);
-        if (!player.isCreative()) stack.shrink(1);
+        if (!player.isCreative()) {
+            stack.shrink(1);
+        }
     }
 }
