@@ -1,5 +1,7 @@
 {
-  "values": [
-    "minecraft:stick"
-  ]
+	"values": [
+		"#forge:rods",
+		"#forge:wrenches",
+		"#forge:tools/wrench"
+	]
 }
