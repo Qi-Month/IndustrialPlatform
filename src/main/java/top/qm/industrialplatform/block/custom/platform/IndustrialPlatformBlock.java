@@ -8,11 +8,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -30,7 +28,6 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -39,7 +36,6 @@ import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
 import top.qm.industrialplatform.IPTags;
 import top.qm.industrialplatform.IndustrialPlatform;
-import top.qm.industrialplatform.block.BlockRegister;
 import top.qm.industrialplatform.block.state.properties.platform.PlatformMode;
 import top.qm.industrialplatform.block.state.properties.platform.PlatformProperties;
 
@@ -88,25 +84,31 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         return Block.box(0, 0, 0, 16, 12, 16);
     }
 
+    @SubscribeEvent
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        Level level = event.getLevel();
+        BlockPos blockPos = event.getPos();
+        Player player = event.getEntity();
+        InteractionHand hand = event.getHand();
+        ItemStack heldItem = player.getItemInHand(hand);
+        BlockState state = level.getBlockState(blockPos);
 
-    @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos blockPos,
-                                 Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (level.isClientSide() || !(state.getBlock() instanceof IndustrialPlatformBlock)) {
+            return;
+        }
 
-        if (player.getMainHandItem().isEmpty() &&
-                !level.isClientSide() &&
-                hand == InteractionHand.MAIN_HAND
-        ) {
-            level.setBlock(blockPos, state.cycle(FLOATING), 3);
-        } else if (player.getMainHandItem().is(IPTags.Items.ADJUSTERS) &&
-                !level.isClientSide() &&
-                hand == InteractionHand.MAIN_HAND
-        ) {
-            level.setBlock(blockPos, state.cycle(PLATFORM_MODE), 3);
-        } else if (player.getMainHandItem().is(IPTags.Items.STONE) &&
-                !level.isClientSide() &&
-                hand == InteractionHand.MAIN_HAND
-        ) {
+        ServerLevel serverLevel = (ServerLevel) level;
+
+        if (heldItem.isEmpty() && hand == InteractionHand.MAIN_HAND) {
+            // 空手右键：切换 FLOATING
+            player.swing(hand);
+            serverLevel.setBlock(blockPos, state.cycle(FLOATING), 3);
+        } else if (heldItem.is(IPTags.Items.ADJUSTERS) && hand == InteractionHand.MAIN_HAND) {
+            // 调整器右键：切换 PLATFORM_MODE
+            player.swing(hand);
+            serverLevel.setBlock(blockPos, state.cycle(PLATFORM_MODE), 3);
+        } else if (heldItem.is(IPTags.Items.STONE) && hand == InteractionHand.MAIN_HAND) {
+            // 石头右键：生成结构
             int posX = blockPos.getX();
             int posY = blockPos.getY();
             int posZ = blockPos.getZ();
@@ -114,45 +116,43 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
             int finZ = (int) Math.floor(posZ / 16.0) * 16;
 
             if (state.getValue(FLOATING)) {
-
                 if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
-                    placeStructure((ServerLevel) level, finX, posY, finZ, "industrial");
+                    placeStructure(serverLevel, finX, posY, finZ, "industrial");
                 } else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
-                    placeExtendedStructure((ServerLevel) level, finX, posY, finZ, "industrial");
+                    placeExtendedStructure(serverLevel, finX, posY, finZ, "industrial");
                 } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
-                    placeStructure((ServerLevel) level, finX, posY, finZ, "checkerboard");
+                    placeStructure(serverLevel, finX, posY, finZ, "checkerboard");
                 } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-                    placeExtendedStructure((ServerLevel) level, finX, posY, finZ, "checkerboard");
+                    placeExtendedStructure(serverLevel, finX, posY, finZ, "checkerboard");
                 }
-
             } else {
-
                 if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
-                    fillArea((ServerLevel) level, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
-                    fillAreaConditional((ServerLevel) level, finX, posY - 11, finZ, finX + 15, posY - 1, finZ + 15);
-                    placeStructure((ServerLevel) level, finX, posY, finZ, "industrial");
+                    fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
+                    fillAreaConditional(serverLevel, finX, posY - 11, finZ, finX + 15, posY - 1, finZ + 15);
+                    placeStructure(serverLevel, finX, posY, finZ, "industrial");
                 } else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
-                    fillArea((ServerLevel) level, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
-                    fillAreaConditional((ServerLevel) level, finX - 16, posY - 11, finZ - 16, finX + 31, posY - 1, finZ + 31);
-                    placeExtendedStructure((ServerLevel) level, finX, posY, finZ, "industrial");
+                    fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
+                    fillAreaConditional(serverLevel, finX - 16, posY - 11, finZ - 16, finX + 31, posY - 1, finZ + 31);
+                    placeExtendedStructure(serverLevel, finX, posY, finZ, "industrial");
                 } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
-                    fillArea((ServerLevel) level, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
-                    fillAreaConditional((ServerLevel) level, finX, posY - 11, finZ, finX + 15, posY - 1, finZ + 15);
-                    placeStructure((ServerLevel) level, finX, posY, finZ, "checkerboard");
+                    fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
+                    fillAreaConditional(serverLevel, finX, posY - 11, finZ, finX + 15, posY - 1, finZ + 15);
+                    placeStructure(serverLevel, finX, posY, finZ, "checkerboard");
                 } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-                    fillArea((ServerLevel) level, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
-                    fillAreaConditional((ServerLevel) level, finX - 16, posY - 11, finZ - 16, finX + 31, posY - 1, finZ + 31);
-                    placeExtendedStructure((ServerLevel) level, finX, posY, finZ, "checkerboard");
+                    fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
+                    fillAreaConditional(serverLevel, finX - 16, posY - 11, finZ - 16, finX + 31, posY - 1, finZ + 31);
+                    placeExtendedStructure(serverLevel, finX, posY, finZ, "checkerboard");
                 }
-
             }
 
             MutableComponent tranKey = Component.translatable("message.industrial_platform.done")
                     .setStyle(Style.EMPTY.withColor(ChatFormatting.RED));
             player.displayClientMessage(tranKey, true);
-            consumeItem(player, player.getMainHandItem(), hand);
+            consumeItem(player, heldItem, hand);
         }
-        return super.use(state, level, blockPos, player, hand, hitResult);
+
+        event.setCanceled(true);
+        event.setCancellationResult(InteractionResult.SUCCESS);
     }
 
     private static void fillArea(ServerLevel level, int x0, int y0, int z0, int x1, int y1, int z1) {
