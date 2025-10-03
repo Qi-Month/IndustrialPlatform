@@ -70,24 +70,13 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
     }
 
     @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-        if (!pLevel.isClientSide() && pPlayer.isCrouching()) {
-            pLevel.setBlock(pPos, pState.cycle(FLOATING), 3);
-        } else if (!pLevel.isClientSide()) {
-            pLevel.setBlock(pPos, pState.cycle(PLATFORM_MODE), 3);
-        }
-
-        return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
-    }
-
-
-    @Override
     public FluidState getFluidState(BlockState state) {
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
     @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
+                                  LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
         if (state.getValue(WATERLOGGED)) {
             level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
         }
@@ -99,36 +88,87 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         return Block.box(0, 0, 0, 16, 12, 16);
     }
 
-    @SubscribeEvent
-    public static void fillStructure(PlayerInteractEvent.RightClickBlock event) {
-        Level level = event.getLevel();
-        Player player = event.getEntity();
-        InteractionHand hand = event.getHand();
-        ItemStack stack = player.getItemInHand(hand);
-        BlockPos pos = event.getPos();
-        BlockState blockState = level.getBlockState(pos);
 
-        if (level.isClientSide) {
-            return;
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos blockPos,
+                                 Player player, InteractionHand hand, BlockHitResult hitResult) {
+
+        if (player.getMainHandItem().isEmpty() &&
+                !level.isClientSide() &&
+                hand == InteractionHand.MAIN_HAND
+        ) {
+            level.setBlock(blockPos, state.cycle(FLOATING), 3);
+        } else if (player.getMainHandItem().is(IPTags.Items.ADJUSTERS) &&
+                !level.isClientSide() &&
+                hand == InteractionHand.MAIN_HAND
+        ) {
+            level.setBlock(blockPos, state.cycle(PLATFORM_MODE), 3);
+        } else if (player.getMainHandItem().is(IPTags.Items.STONE) &&
+                !level.isClientSide() &&
+                hand == InteractionHand.MAIN_HAND
+        ) {
+            int posX = blockPos.getX();
+            int posY = blockPos.getY();
+            int posZ = blockPos.getZ();
+            int finX = (int) Math.floor(posX / 16.0) * 16;
+            int finZ = (int) Math.floor(posZ / 16.0) * 16;
+
+            if (state.getValue(FLOATING)) {
+
+                if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
+                    placeStructure((ServerLevel) level, finX, posY, finZ, "industrial");
+                } else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
+                    placeStructure((ServerLevel) level, finX - 15, posY, finZ - 15, "industrial");
+                    placeStructure((ServerLevel) level, finX - 15, posY, finZ, "industrial");
+                    placeStructure((ServerLevel) level, finX - 15, posY, finZ + 15, "industrial");
+                    placeStructure((ServerLevel) level, finX, posY, finZ - 15, "industrial");
+                    placeStructure((ServerLevel) level, finX, posY, finZ, "industrial");
+                    placeStructure((ServerLevel) level, finX, posY, finZ + 15, "industrial");
+                    placeStructure((ServerLevel) level, finX + 15, posY, finZ - 15, "industrial");
+                    placeStructure((ServerLevel) level, finX + 15, posY, finZ, "industrial");
+                    placeStructure((ServerLevel) level, finX + 15, posY, finZ + 15, "industrial");
+                } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
+                    placeStructure((ServerLevel) level, finX, posY, finZ, "checkerboard");
+                } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
+                    placeStructure((ServerLevel) level, finX - 15, posY, finZ - 15, "checkerboard");
+                    placeStructure((ServerLevel) level, finX - 15, posY, finZ, "checkerboard");
+                    placeStructure((ServerLevel) level, finX - 15, posY, finZ + 15, "checkerboard");
+                    placeStructure((ServerLevel) level, finX, posY, finZ - 15, "checkerboard");
+                    placeStructure((ServerLevel) level, finX, posY, finZ, "checkerboard");
+                    placeStructure((ServerLevel) level, finX, posY, finZ + 15, "checkerboard");
+                    placeStructure((ServerLevel) level, finX + 15, posY, finZ - 15, "checkerboard");
+                    placeStructure((ServerLevel) level, finX + 15, posY, finZ, "checkerboard");
+                    placeStructure((ServerLevel) level, finX + 15, posY, finZ + 15, "checkerboard");
+                }
+
+            } else {
+
+                if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
+                    fillArea((ServerLevel) level, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
+                    fillAreaConditional((ServerLevel) level, finX, posY - 1, finZ, finX + 15, posY - 11, finZ + 15);
+                    placeStructure((ServerLevel) level, finX, posY, finZ, "industrial");
+                } else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
+                    fillArea((ServerLevel) level, finX - 15, posY + 1, finZ - 15, finX + 31, posY + 11, finZ + 31);
+                    fillAreaConditional((ServerLevel) level, finX - 15, posY - 1, finZ - 15, finX + 31, posY - 11, finZ + 31);
+                    placeExtendedStructure((ServerLevel) level, finX, posY, finZ, "industrial");
+                } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
+                    fillArea((ServerLevel) level, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
+                    fillAreaConditional((ServerLevel) level, finX, posY - 1, finZ, finX + 15, posY - 11, finZ + 15);
+                    placeStructure((ServerLevel) level, finX, posY, finZ, "checkerboard");
+                } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
+                    fillArea((ServerLevel) level, finX - 15, posY + 1, finZ - 15, finX + 31, posY + 11, finZ + 31);
+                    fillAreaConditional((ServerLevel) level, finX - 15, posY - 1, finZ - 15, finX + 31, posY - 11, finZ + 31);
+                    placeExtendedStructure((ServerLevel) level, finX, posY, finZ, "checkerboard");
+                }
+
+            }
+
+            MutableComponent tranKey = Component.translatable("message.industrial_platform.done")
+                    .setStyle(Style.EMPTY.withColor(ChatFormatting.RED));
+            player.displayClientMessage(tranKey, true);
         }
-        if (!blockState.is(BlockRegister.INDUSTRIAL_PLATFORM.get())) {
-            return;
-        }
 
-        ServerLevel serverLevel = (ServerLevel) level;
-
-        int posX = pos.getX();
-        int posY = pos.getY();
-        int posZ = pos.getZ();
-        int finX = (int) Math.floor(posX / 16.0) * 16;
-        int finZ = (int) Math.floor(posZ / 16.0) * 16;
-
-
-        MutableComponent tranKey = Component.translatable("message.industrial_platform.done")
-                .setStyle(Style.EMPTY.withColor(ChatFormatting.RED));
-        player.displayClientMessage(tranKey, true);
-        event.setCancellationResult(InteractionResult.CONSUME);
-        event.setCanceled(true);
+        return super.use(state, level, blockPos, player, hand, hitResult);
     }
 
     private static void fillArea(ServerLevel level, int x0, int y0, int z0, int x1, int y1, int z1) {
@@ -174,6 +214,31 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         });
     }
 
+    private static void placeExtendedStructure(ServerLevel level, int x, int y, int z, String structureId) {
+        StructureTemplateManager manager = level.getStructureManager();
+        ResourceLocation structureName = ResourceLocation.parse("industrial_platform:industrial_platform/" + structureId);
+        Optional<StructureTemplate> template = manager.get(structureName);
+        for (int i = x - 16; i <= x + 16; i = i + 16) {
+            for (int j = z - 16; j <= z + 16; j = j + 16) {
+                int finalI = i;
+                int finalJ = j;
+                template.ifPresent((temp) -> {
+                    temp.placeInWorld(
+                            level,
+                            new BlockPos(finalI, y, finalJ),
+                            new BlockPos(finalI, y, finalJ),
+                            new StructurePlaceSettings()
+                                    .setRotation(Rotation.NONE)
+                                    .setMirror(Mirror.NONE)
+                                    .setIgnoreEntities(false),
+                            level.random,
+                            3
+                    );
+                });
+            }
+        }
+    }
+
     private static void consumeItem(Player player, ItemStack stack, InteractionHand hand) {
         player.swing(hand);
         if (!player.isCreative()) {
@@ -181,7 +246,7 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         }
     }
 
-    public boolean isPathfindable(BlockState pState, BlockGetter pGetter, BlockPos pPos, PathComputationType pType) {
+    public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos blockPos, PathComputationType type) {
         return false;
     }
 
