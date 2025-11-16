@@ -1,5 +1,5 @@
 build
-/run/*
 .gradle
 .idea
 !/run/config/jade/*
+/run
