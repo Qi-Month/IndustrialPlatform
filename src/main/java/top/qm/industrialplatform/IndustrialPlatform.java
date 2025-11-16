@@ -7,12 +7,12 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import top.qm.industrialplatform.block.BlockItemRegister;
 import top.qm.industrialplatform.block.BlockRegister;
 
-@Mod(IndustrialPlatform.MOD_ID)
+@Mod(IndustrialPlatform.MODID)
 public class IndustrialPlatform {
-    public static final String MOD_ID = "industrial_platform";
+    public static final String MODID = "industrial_platform";
 
     public static ResourceLocation loadResource(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 
     public IndustrialPlatform(FMLJavaModLoadingContext context) {

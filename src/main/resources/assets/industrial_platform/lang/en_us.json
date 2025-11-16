@@ -1,7 +1,8 @@
 {
-  "block.industrial_platform.industrial_platform": "Industrial Platform",
-  "tooltip.industrial_platform.industrial_platform": "§aRightclick with empty hands to adjust Types of Platform\n§aRightclick while sneaking to choose fill the space or not\n§aRightclick with any stone to deploy the platform",
-  "tooltip.industrial_platform.industrial_platform.off": "§eHold Shift for details",
-  "message.industrial_platform.done": "Platform deployed successfully!",
-  "message.industrial_platform.too_low": "Too low to deploy an Infinity Pool!"
+	"block.industrial_platform.industrial_platform": "Industrial Platform",
+	"tooltip.industrial_platform.industrial_platform": "§aRight Click with empty hands to adjust Types of Platform\n§aRightclick while sneaking to choose fill the space or not\n§aRightclick with any stone to deploy the platform",
+	"tooltip.industrial_platform.industrial_platform.off": "§eHold Shift for details",
+	"message.industrial_platform.done": "Platform deployed successfully!",
+	"config.jade.plugin_industrial_platform.common": "Industrial Platform Tooltip",
+	"message.industrial_platform.too_low": "Too low to deploy an Infinity Pool!"
 }

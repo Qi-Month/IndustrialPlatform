@@ -10,7 +10,7 @@ import top.qm.industrialplatform.block.custom.platform.IndustrialPlatformItem;
 
 public class BlockItemRegister {
     private static final DeferredRegister<Item> ITEMS =
-            DeferredRegister.create(ForgeRegistries.ITEMS, IndustrialPlatform.MOD_ID);
+            DeferredRegister.create(ForgeRegistries.ITEMS, IndustrialPlatform.MODID);
 
     public static final RegistryObject<Item> INDUSTRIAL_PLATFORM;
 
