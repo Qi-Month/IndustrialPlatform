@@ -100,7 +100,7 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
         ServerLevel serverLevel = (ServerLevel) level;
 
         if (isStickAndWench && hand == InteractionHand.MAIN_HAND && player.isCrouching()) {
-            // 空手右键：切换 FLOATING
+            // 调整器蹲下：切换 FLOATING
             serverLevel.setBlock(blockPos, state.cycle(FLOATING), 3);
             player.swing(InteractionHand.MAIN_HAND, true);
         } else if (isStickAndWench && hand == InteractionHand.MAIN_HAND) {
