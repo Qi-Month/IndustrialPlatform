@@ -7,8 +7,7 @@ public enum PlatformMode implements StringRepresentable {
     INDUSTRIAL_LIGHT("industrial_light"),
     INDUSTRIAL_HEAVY("industrial_heavy"),
     CHECKERBOARD_LIGHT("checkerboard_light"),
-    CHECKERBOARD_HEAVY("checkerboard_heavy"),
-    POOL("pool");
+    CHECKERBOARD_HEAVY("checkerboard_heavy");
 
     private final String name;
 

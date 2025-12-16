@@ -6,6 +6,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import top.qm.industrialplatform.IndustrialPlatform;
+import top.qm.industrialplatform.block.custom.platform.FluidPoolBlock;
 import top.qm.industrialplatform.block.custom.platform.IndustrialPlatformBlock;
 
 public class BlockRegister {
@@ -13,6 +14,7 @@ public class BlockRegister {
             DeferredRegister.create(ForgeRegistries.BLOCKS, IndustrialPlatform.MODID);
 
     public static final RegistryObject<Block> INDUSTRIAL_PLATFORM;
+    public static final RegistryObject<Block> FLUID_POOL;
 
     public static void register(IEventBus event) {
         BLOCKS.register(event);
@@ -20,5 +22,6 @@ public class BlockRegister {
 
     static {
         INDUSTRIAL_PLATFORM = BLOCKS.register("industrial_platform", IndustrialPlatformBlock::new);
+        FLUID_POOL = BLOCKS.register("fluid_pool", FluidPoolBlock::new);
     }
 }
