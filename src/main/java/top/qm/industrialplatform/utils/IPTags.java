@@ -1,4 +1,4 @@
-package top.qm.industrialplatform;
+package top.qm.industrialplatform.utils;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;

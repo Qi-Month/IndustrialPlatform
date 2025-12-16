@@ -6,6 +6,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import top.qm.industrialplatform.block.BlockItemRegister;
 import top.qm.industrialplatform.block.BlockRegister;
+import top.qm.industrialplatform.utils.AddCreativeModeTabs;
 
 @Mod(IndustrialPlatform.MODID)
 public class IndustrialPlatform {

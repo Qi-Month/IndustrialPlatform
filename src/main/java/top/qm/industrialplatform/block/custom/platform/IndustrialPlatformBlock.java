@@ -31,12 +31,10 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
-import top.qm.industrialplatform.IPTags;
+import top.qm.industrialplatform.utils.IPTags;
 import top.qm.industrialplatform.IndustrialPlatform;
 import top.qm.industrialplatform.block.state.properties.platform.PlatformMode;
 import top.qm.industrialplatform.block.state.properties.platform.PlatformProperties;
-
-import java.util.*;
 
 import static top.qm.industrialplatform.block.custom.platform.IndustrialPlatformLogic.*;
 
@@ -159,5 +157,4 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
     public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos blockPos, PathComputationType type) {
         return false;
     }
-
 }
