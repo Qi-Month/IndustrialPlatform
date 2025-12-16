@@ -26,8 +26,8 @@ public abstract class BasePlatformBlock extends Block implements SimpleWaterlogg
 
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
-	public BasePlatformBlock(Properties properties) {
-		super(properties.noOcclusion());
+	public BasePlatformBlock(Properties props) {
+		super(props.noOcclusion());
 		this.registerDefaultState(this.stateDefinition.any()
 				.setValue(WATERLOGGED, false));
 	}
