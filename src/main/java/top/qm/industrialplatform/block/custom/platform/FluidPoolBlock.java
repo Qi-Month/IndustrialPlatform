@@ -9,18 +9,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.jetbrains.annotations.NotNull;
 import top.qm.industrialplatform.IPTags;
 
 import static top.qm.industrialplatform.block.custom.platform.IndustrialPlatformLogic.consumeItem;
@@ -66,6 +61,7 @@ public class FluidPoolBlock extends Block {
                 player.displayClientMessage(failKey, true);
                 return;
             }
+
             placeStructure(serverLevel, finX, posY - 31, finZ, "pool_top");
             placeStructure(serverLevel, finX, posY - 63, finZ, "pool_bottom");
 
