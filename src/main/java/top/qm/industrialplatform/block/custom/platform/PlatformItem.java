@@ -14,8 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class IndustrialPlatformItem extends BlockItem {
-    public IndustrialPlatformItem(Block block, Properties properties) {
+public class PlatformItem extends BlockItem {
+    public PlatformItem(Block block, Properties properties) {
         super(block, properties);
     }
 

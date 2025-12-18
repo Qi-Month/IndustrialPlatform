@@ -4,7 +4,7 @@ import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaCommonRegistration;
 import snownee.jade.api.IWailaPlugin;
 import snownee.jade.api.WailaPlugin;
-import top.qm.industrialplatform.block.custom.platform.IndustrialPlatformBlock;
+import top.qm.industrialplatform.block.custom.platform.PlatformBlock;
 
 @WailaPlugin
 public class IPJadePlugin implements IWailaPlugin {
@@ -14,7 +14,7 @@ public class IPJadePlugin implements IWailaPlugin {
 
 	@Override
 	public void registerClient(IWailaClientRegistration registration) {
-		registration.registerBlockComponent(IPComponentProvider.INSTANCE, IndustrialPlatformBlock.class);
+		registration.registerBlockComponent(IPComponentProvider.INSTANCE, PlatformBlock.class);
 		System.out.println("Jade Plugin registered");
 	}
 }

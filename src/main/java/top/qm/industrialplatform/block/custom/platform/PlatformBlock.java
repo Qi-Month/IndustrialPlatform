@@ -35,16 +35,16 @@ import top.qm.industrialplatform.IndustrialPlatform;
 import top.qm.industrialplatform.block.state.properties.platform.PlatformMode;
 import top.qm.industrialplatform.block.state.properties.platform.PlatformProperties;
 
-import static top.qm.industrialplatform.block.custom.platform.IndustrialPlatformLogic.*;
+import static top.qm.industrialplatform.utils.IPLogic.*;
 
 @SuppressWarnings("ALL")
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedBlock {
+public class PlatformBlock extends Block implements SimpleWaterloggedBlock {
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 	public static final EnumProperty PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
 	public static final BooleanProperty FLOATING = PlatformProperties.FLOATING;
 
-	public IndustrialPlatformBlock() {
+	public PlatformBlock() {
 		super(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
 		this.registerDefaultState(this.stateDefinition.any()
 				.setValue(WATERLOGGED, false)
@@ -86,7 +86,7 @@ public class IndustrialPlatformBlock extends Block implements SimpleWaterloggedB
 		ItemStack item = player.getItemInHand(hand);
 		BlockState state = level.getBlockState(blockPos);
 
-		if (level.isClientSide() || !(state.getBlock() instanceof IndustrialPlatformBlock)) {
+		if (level.isClientSide() || !(state.getBlock() instanceof PlatformBlock)) {
 			return;
 		}
 

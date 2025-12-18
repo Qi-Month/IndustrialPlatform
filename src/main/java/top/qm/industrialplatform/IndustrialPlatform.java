@@ -4,7 +4,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import top.qm.industrialplatform.block.BlockItemRegister;
 import top.qm.industrialplatform.block.BlockRegister;
 import top.qm.industrialplatform.utils.AddCreativeModeTabs;
 
@@ -20,7 +19,6 @@ public class IndustrialPlatform {
         IEventBus event = context.getModEventBus();
 
         BlockRegister.register(event);
-        BlockItemRegister.register(event);
 
         AddCreativeModeTabs.register(event);
     }

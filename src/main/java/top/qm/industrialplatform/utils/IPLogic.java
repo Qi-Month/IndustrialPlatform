@@ -1,4 +1,4 @@
-package top.qm.industrialplatform.block.custom.platform;
+package top.qm.industrialplatform.utils;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -17,7 +17,7 @@ import top.qm.industrialplatform.IndustrialPlatform;
 
 import java.util.Optional;
 
-public class IndustrialPlatformLogic {
+public class IPLogic {
 	public static void placeStructure(ServerLevel level, int x, int y, int z, String structureId) {
 		StructureTemplateManager manager = level.getStructureManager();
 		ResourceLocation structureName = IndustrialPlatform.loadResource("industrial_platform/" + structureId);

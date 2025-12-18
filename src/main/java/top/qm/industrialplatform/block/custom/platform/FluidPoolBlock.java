@@ -19,7 +19,7 @@ import net.minecraftforge.fml.common.Mod;
 import top.qm.industrialplatform.IndustrialPlatform;
 import top.qm.industrialplatform.utils.IPTags;
 
-import static top.qm.industrialplatform.block.custom.platform.IndustrialPlatformLogic.*;
+import static top.qm.industrialplatform.utils.IPLogic.*;
 
 @SuppressWarnings("ALL")
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
