@@ -7,17 +7,17 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import top.qm.industrialplatform.block.BlockRegister;
 
 public class AddCreativeModeTabs {
-    public static void register(IEventBus event) {
-        event.register(AddCreativeModeTabs.class);
-    }
+	public static void register(IEventBus event) {
+		event.register(AddCreativeModeTabs.class);
+	}
 
-    @SubscribeEvent
-    public static void buildContents(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
-            event.accept(BlockRegister.INDUSTRIAL_PLATFORM.get().asItem());
-            if (CheckModLoaded.hasCreate()) {
-                event.accept(BlockRegister.FLUID_POOL.get().asItem());
-            }
-        }
-    }
+	@SubscribeEvent
+	public static void buildContents(BuildCreativeModeTabContentsEvent event) {
+		if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
+			event.accept(BlockRegister.INDUSTRIAL_PLATFORM.get().asItem());
+			if (BlockRegister.FLUID_POOL != null) {
+				event.accept(BlockRegister.FLUID_POOL.get().asItem());
+			}
+		}
+	}
 }
