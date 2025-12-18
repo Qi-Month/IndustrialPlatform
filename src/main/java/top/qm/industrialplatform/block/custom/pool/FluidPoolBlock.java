@@ -1,4 +1,4 @@
-package top.qm.industrialplatform.block.custom.platform;
+package top.qm.industrialplatform.block.custom.pool;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
