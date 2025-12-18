@@ -12,9 +12,6 @@
     "type=checkerboard_heavy,floating=false": {
       "model": "industrial_platform:block/checkerboard_heavy_basic"
     },
-    "type=pool,floating=false": {
-      "model": "industrial_platform:block/pool_basic"
-    },
     "type=industrial_light,floating=true": {
       "model": "industrial_platform:block/industrial_light_levitational"
     },
@@ -26,9 +23,6 @@
     },
     "type=checkerboard_heavy,floating=true": {
       "model": "industrial_platform:block/checkerboard_heavy_levitational"
-    },
-    "type=pool,floating=true": {
-      "model": "industrial_platform:block/pool_levitational"
     }
   }
 }
