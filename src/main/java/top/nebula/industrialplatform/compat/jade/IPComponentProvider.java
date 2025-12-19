@@ -11,25 +11,30 @@ import top.nebula.industrialplatform.block.custom.platform.PlatformBlock;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformMode;
 
 public enum IPComponentProvider implements IBlockComponentProvider {
-    INSTANCE;
+	INSTANCE;
 
-    @Override
-    public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-        BlockState state = accessor.getBlockState();
-        if (state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT || state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
-            tooltip.add(Component.translatable("tooltip.jade.industrial_platform.light"));
-        } else {
-            tooltip.add(Component.translatable("tooltip.jade.industrial_platform.heavy"));
-        }
-        if (state.getValue(PlatformBlock.FLOATING)) {
-            tooltip.add(Component.translatable("tooltip.jade.industrial_platform.filling"));
-        } else {
-            tooltip.add(Component.translatable("tooltip.jade.industrial_platform.floating"));
-        }
-    }
+	@Override
+	public void appendTooltip(ITooltip tooltip, BlockAccessor block, IPluginConfig config) {
+		BlockState state = block.getBlockState();
 
-    @Override
-    public ResourceLocation getUid() {
-        return IPType.COMMON;
-    }
+		boolean industrialLight = state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT;
+		boolean checkerboardLight = state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT;
+		boolean floating = state.getValue(PlatformBlock.FLOATING);
+
+		if (industrialLight || checkerboardLight) {
+			tooltip.add(Component.translatable("tooltip.jade.industrial_platform.light"));
+		} else {
+			tooltip.add(Component.translatable("tooltip.jade.industrial_platform.heavy"));
+		}
+		if (floating) {
+			tooltip.add(Component.translatable("tooltip.jade.industrial_platform.filling"));
+		} else {
+			tooltip.add(Component.translatable("tooltip.jade.industrial_platform.floating"));
+		}
+	}
+
+	@Override
+	public ResourceLocation getUid() {
+		return IPType.COMMON;
+	}
 }
