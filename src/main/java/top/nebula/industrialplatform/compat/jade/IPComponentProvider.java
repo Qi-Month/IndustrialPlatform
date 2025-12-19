@@ -9,17 +9,17 @@ import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
 
 public enum IPComponentProvider implements IBlockComponentProvider {
-	INSTANCE;
+    INSTANCE;
 
-	@Override
-	public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-		BlockState state = accessor.getBlockState();
+    @Override
+    public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+        BlockState state = accessor.getBlockState();
 
-		tooltip.add(Component.literal("DEBUG"));
-	}
+        tooltip.add(Component.literal("DEBUG"));
+    }
 
-	@Override
-	public ResourceLocation getUid() {
-		return IPType.COMMON;
-	}
+    @Override
+    public ResourceLocation getUid() {
+        return IPType.COMMON;
+    }
 }
