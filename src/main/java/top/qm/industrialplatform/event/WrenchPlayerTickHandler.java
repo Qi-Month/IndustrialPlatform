@@ -15,29 +15,37 @@ import top.qm.industrialplatform.utils.IPTags;
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID)
 public class WrenchPlayerTickHandler {
 
-    @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+	@SubscribeEvent
+	public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+		if (event.phase != TickEvent.Phase.END) {
+			return;
+		}
 
-        Player player = event.player;
-        Level level = player.level();
+		Player player = event.player;
+		Level level = player.level();
 
-        if (!(level instanceof ServerLevel serverLevel)) return;
-        if (!player.getMainHandItem().is(IPTags.Items.WRENCH)) return;
-        if (player.tickCount % 5 != 0) return;
+		if (!(level instanceof ServerLevel serverLevel)) {
+			return;
+		}
+		if (!player.getMainHandItem().is(IPTags.Items.WRENCH)) {
+			return;
+		}
+		if (player.tickCount % 5 != 0) {
+			return;
+		}
 
-        BlockPos center = player.blockPosition();
+		BlockPos center = player.blockPosition();
 
-        for (BlockPos pos : BlockPos.betweenClosed(
-                center.offset(-3, -3, -3),
-                center.offset(3, 3, 3))) {
+		for (BlockPos pos : BlockPos.betweenClosed(
+				center.offset(-3, -3, -3),
+				center.offset(3, 3, 3))) {
 
-            BlockState state = level.getBlockState(pos);
-            Block block = state.getBlock();
+			BlockState state = level.getBlockState(pos);
+			Block block = state.getBlock();
 
-            if (block instanceof IWrenchReactive reactive) {
-                reactive.onWrenchHover(serverLevel, pos, state);
-            }
-        }
-    }
+			if (block instanceof IWrenchReactive reactive) {
+				reactive.onWrenchHover(serverLevel, pos, state);
+			}
+		}
+	}
 }

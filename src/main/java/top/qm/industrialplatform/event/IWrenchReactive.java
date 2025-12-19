@@ -11,4 +11,3 @@ public interface IWrenchReactive {
      */
     void onWrenchHover(ServerLevel level, BlockPos pos, BlockState state);
 }
-

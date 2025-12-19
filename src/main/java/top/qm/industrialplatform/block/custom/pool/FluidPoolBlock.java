@@ -2,7 +2,6 @@ package top.qm.industrialplatform.block.custom.pool;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
@@ -18,7 +17,6 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import top.qm.industrialplatform.IndustrialPlatform;
-import top.qm.industrialplatform.block.custom.platform.PlatformBlock;
 import top.qm.industrialplatform.event.IWrenchReactive;
 import top.qm.industrialplatform.event.WrenchParticleHandler;
 import top.qm.industrialplatform.utils.IPTags;

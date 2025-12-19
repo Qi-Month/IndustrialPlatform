@@ -6,7 +6,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 
 public class WrenchParticleHandler {
-
     private WrenchParticleHandler() {
     }
 
@@ -16,7 +15,6 @@ public class WrenchParticleHandler {
             ParticleOptions particle,
             int count,
             double height
-
     ) {
         int posX = pos.getX();
         int posY = pos.getY();
@@ -70,7 +68,6 @@ public class WrenchParticleHandler {
             ParticleOptions particle,
             int count,
             double height
-
     ) {
         int posX = pos.getX();
         int posY = pos.getY();
