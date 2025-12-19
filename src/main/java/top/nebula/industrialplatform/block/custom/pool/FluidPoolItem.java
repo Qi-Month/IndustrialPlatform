@@ -1,5 +1,6 @@
 package top.nebula.industrialplatform.block.custom.pool;
 
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -8,6 +9,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -18,13 +21,19 @@ public class FluidPoolItem extends BlockItem {
         super(block, properties);
     }
 
-    // 添加Tooltip
+    // 添加 Tooltip
     @OnlyIn(Dist.CLIENT)
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        String translated = Component.translatable("tooltip.industrial_platform.fluid_pool").getString();
-        for (String line : translated.split("\n")) {
-            tooltip.add(Component.literal(line));
+        if (ModList.get().isLoaded("jei")) return;
+
+        if (Screen.hasShiftDown()) {
+            String translated = Component.translatable("tooltip.industrial_platform.fluid_pool").getString();
+            for (String line : translated.split("\n")) {
+                tooltip.add(Component.literal(line));
+            }
+        } else {
+            tooltip.add(Component.translatable("tooltip.industrial_platform.industrial_platform.off"));
         }
     }
 

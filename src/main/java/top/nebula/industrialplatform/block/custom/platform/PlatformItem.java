@@ -9,6 +9,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.ModList;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -23,6 +24,8 @@ public class PlatformItem extends BlockItem {
     @OnlyIn(Dist.CLIENT)
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+        if (ModList.get().isLoaded("jei")) return;
+
         if (Screen.hasShiftDown()) {
             String translated = Component.translatable("tooltip.industrial_platform.industrial_platform").getString();
             for (String line : translated.split("\n")) {

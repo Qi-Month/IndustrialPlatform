@@ -17,14 +17,14 @@ public enum IPComponentProvider implements IBlockComponentProvider {
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         BlockState state = accessor.getBlockState();
         if (state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT || state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
-            tooltip.add(Component.translatable("tooltip.jade.industrialplatform.light"));
+            tooltip.add(Component.translatable("tooltip.jade.industrial_platform.light"));
         } else {
-            tooltip.add(Component.translatable("tooltip.jade.industrialplatform.heavy"));
+            tooltip.add(Component.translatable("tooltip.jade.industrial_platform.heavy"));
         }
         if (state.getValue(PlatformBlock.FLOATING)) {
-            tooltip.add(Component.translatable("tooltip.jade.industrialplatform.filling"));
+            tooltip.add(Component.translatable("tooltip.jade.industrial_platform.filling"));
         } else {
-            tooltip.add(Component.translatable("tooltip.jade.industrialplatform.floating"));
+            tooltip.add(Component.translatable("tooltip.jade.industrial_platform.floating"));
         }
     }
 
