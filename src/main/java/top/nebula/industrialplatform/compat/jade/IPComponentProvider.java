@@ -7,6 +7,7 @@ import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
+import top.nebula.industrialplatform.IndustrialPlatform;
 import top.nebula.industrialplatform.block.custom.platform.PlatformBlock;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformMode;
 
@@ -22,14 +23,14 @@ public enum IPComponentProvider implements IBlockComponentProvider {
 		boolean floating = state.getValue(PlatformBlock.FLOATING);
 
 		if (industrialLight || checkerboardLight) {
-			tooltip.add(Component.translatable("tooltip.jade.industrial_platform.light"));
+			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".light"));
 		} else {
-			tooltip.add(Component.translatable("tooltip.jade.industrial_platform.heavy"));
+			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".heavy"));
 		}
 		if (floating) {
-			tooltip.add(Component.translatable("tooltip.jade.industrial_platform.filling"));
+			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".filling"));
 		} else {
-			tooltip.add(Component.translatable("tooltip.jade.industrial_platform.floating"));
+			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".floating"));
 		}
 	}
 
