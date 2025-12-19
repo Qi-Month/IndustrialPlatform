@@ -30,6 +30,8 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 
+jarJar.enable()
+
 minecraft {
     mappings channel: 'parchment', version: '2023.09.03-1.20.1'
     copyIdeResources = true
@@ -101,6 +103,9 @@ repositories {
     maven {
         url 'https://maven.blamejared.com'
     }
+    flatDir {
+        dirs "build/libs"
+    }
 }
 
 dependencies {
@@ -158,4 +163,5 @@ tasks.named('jar', Jar).configure {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    options.compilerArgs << "-parameters"
 }
