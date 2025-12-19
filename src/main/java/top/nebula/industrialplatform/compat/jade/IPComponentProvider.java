@@ -12,30 +12,35 @@ import top.nebula.industrialplatform.block.custom.platform.PlatformBlock;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformMode;
 
 public enum IPComponentProvider implements IBlockComponentProvider {
-	INSTANCE;
+    INSTANCE;
 
-	@Override
-	public void appendTooltip(ITooltip tooltip, BlockAccessor block, IPluginConfig config) {
-		BlockState state = block.getBlockState();
+    @Override
+    public void appendTooltip(ITooltip tooltip, BlockAccessor block, IPluginConfig config) {
+        BlockState state = block.getBlockState();
 
-		boolean isIndustrialLight = state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT;
-		boolean isCheckerboardLight = state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT;
-		boolean isFloating = state.getValue(PlatformBlock.FLOATING);
+        boolean isLight = state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT || state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT;
+        boolean isIndustrial = state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT || state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY;
+        boolean isFloating = state.getValue(PlatformBlock.FLOATING);
 
-		if (isIndustrialLight || isCheckerboardLight) {
-			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".light"));
-		} else {
-			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".heavy"));
-		}
-		if (isFloating) {
-			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".filling"));
-		} else {
-			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".floating"));
-		}
-	}
+        if (isIndustrial) {
+            tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".industrial"));
+        } else {
+            tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".checkerboard"));
+        }
+        if (isLight) {
+            tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".light"));
+        } else {
+            tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".heavy"));
+        }
+        if (isFloating) {
+            tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".filling"));
+        } else {
+            tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".floating"));
+        }
+    }
 
-	@Override
-	public ResourceLocation getUid() {
-		return IPType.COMMON;
-	}
+    @Override
+    public ResourceLocation getUid() {
+        return IPType.COMMON;
+    }
 }

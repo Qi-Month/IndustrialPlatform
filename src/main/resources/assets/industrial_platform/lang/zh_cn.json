@@ -8,6 +8,8 @@
   "message.industrial_platform.done": "平台放置成功!",
   "message.industrial_platform.pool_done": "流体池已展开!",
   "message.industrial_platform.too_low": "太低了!流体池无法展开!",
+  "tooltip.jade.industrial_platform.industrial": "平台类型: 工业平台",
+  "tooltip.jade.industrial_platform.checkerboard": "平台类型: 棋盘格平台",
   "tooltip.jade.industrial_platform.light": "平台尺寸: 1x1区块",
   "tooltip.jade.industrial_platform.heavy": "平台尺寸: 3x3区块",
   "tooltip.jade.industrial_platform.floating": "平台上方的方块将被移除",

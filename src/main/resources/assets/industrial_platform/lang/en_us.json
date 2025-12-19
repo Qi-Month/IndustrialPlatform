@@ -8,6 +8,8 @@
   "message.industrial_platform.done": "Platform deployed successfully!",
   "message.industrial_platform.pool_done": "Pool deployed successfully!",
   "message.industrial_platform.too_low": "Too low to deploy an Infinity Pool!",
+  "tooltip.jade.industrial_platform.industrial": "Platform type: Industrial",
+  "tooltip.jade.industrial_platform.checkerboard": "Platform type: Checkerboard",
   "tooltip.jade.industrial_platform.light": "Platform scale: 1x1 chunk",
   "tooltip.jade.industrial_platform.heavy": "Platform scale: 3x3 chunks",
   "tooltip.jade.industrial_platform.floating": "Blocks above the platform will be removed",
