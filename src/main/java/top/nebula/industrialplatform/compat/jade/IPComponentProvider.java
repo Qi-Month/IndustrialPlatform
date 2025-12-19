@@ -18,16 +18,16 @@ public enum IPComponentProvider implements IBlockComponentProvider {
 	public void appendTooltip(ITooltip tooltip, BlockAccessor block, IPluginConfig config) {
 		BlockState state = block.getBlockState();
 
-		boolean industrialLight = state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT;
-		boolean checkerboardLight = state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT;
-		boolean floating = state.getValue(PlatformBlock.FLOATING);
+		boolean isIndustrialLight = state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT;
+		boolean isCheckerboardLight = state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT;
+		boolean isFloating = state.getValue(PlatformBlock.FLOATING);
 
-		if (industrialLight || checkerboardLight) {
+		if (isIndustrialLight || isCheckerboardLight) {
 			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".light"));
 		} else {
 			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".heavy"));
 		}
-		if (floating) {
+		if (isFloating) {
 			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".filling"));
 		} else {
 			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".floating"));
