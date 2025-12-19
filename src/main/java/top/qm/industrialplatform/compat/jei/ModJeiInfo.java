@@ -17,7 +17,8 @@ public class ModJeiInfo {
 	private static IRecipeRegistration registration;
 
 	static MutableComponent setTran(String key) {
-		return Component.translatable(String.format("jei.info.%s.%s", IndustrialPlatform.MODID, key));
+		String tranKey = String.format("jei.info.%s.%s", IndustrialPlatform.MODID, key);
+		return Component.translatable(tranKey);
 	}
 
 	public static void init(IRecipeRegistration registration) {
