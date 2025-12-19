@@ -4,7 +4,12 @@
   "tooltip.industrial_platform.industrial_platform": "§a空手右键调节平台类型\n§a空手潜行右键以切换是否向上下填充\n§a以任意石头右键展开平台",
   "tooltip.industrial_platform.industrial_platform.off": "§e按住Shift查看详情",
   "tooltip.industrial_platform.fluid_pool": "§a以任意石头右键展开流体池",
+  "config.jade.plugin_industrial_platform.common": "工业平台:物品提示",
   "message.industrial_platform.done": "平台放置成功!",
   "message.industrial_platform.pool_done": "流体池已展开!",
-  "message.industrial_platform.too_low": "太低了!流体池无法展开!"
+  "message.industrial_platform.too_low": "太低了!流体池无法展开!",
+  "tooltip.jade.industrialplatform.light": "平台尺寸: 1x1区块",
+  "tooltip.jade.industrialplatform.heavy": "平台尺寸: 3x3区块",
+  "tooltip.jade.industrialplatform.floating": "平台上方的方块将被移除",
+  "tooltip.jade.industrialplatform.filling": "平台上方的方块将会保留"
 }
