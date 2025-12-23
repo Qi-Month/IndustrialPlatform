@@ -30,6 +30,7 @@ public class ModJeiInfo {
 			registration.addIngredientInfo(item, VanillaTypes.ITEM_STACK, setTran(key));
 		}
 	}
+
 	public static void addJeiInfo(TagKey<Item> tag, String key) {
 		if (registration == null) {
 			return;

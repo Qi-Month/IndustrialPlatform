@@ -11,19 +11,19 @@ import top.nebula.industrialplatform.utils.AddCreativeModeTabs;
 
 @Mod(IndustrialPlatform.MODID)
 public class IndustrialPlatform {
-    public static final String MODID = "industrial_platform";
-    public static final String NAME = "Industrial Platform";
-    public static final Logger LOGGER = LogManager.getLogger(NAME);
+	public static final String MODID = "industrial_platform";
+	public static final String NAME = "Industrial Platform";
+	public static final Logger LOGGER = LogManager.getLogger(NAME);
 
-    public static ResourceLocation loadResource(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MODID, path);
-    }
+	public static ResourceLocation loadResource(String path) {
+		return ResourceLocation.fromNamespaceAndPath(MODID, path);
+	}
 
-    public IndustrialPlatform(FMLJavaModLoadingContext context) {
-        IEventBus event = context.getModEventBus();
+	public IndustrialPlatform(FMLJavaModLoadingContext context) {
+		IEventBus event = context.getModEventBus();
 
-        BlockRegister.register(event);
+		BlockRegister.register(event);
 
-        AddCreativeModeTabs.register(event);
-    }
+		AddCreativeModeTabs.register(event);
+	}
 }

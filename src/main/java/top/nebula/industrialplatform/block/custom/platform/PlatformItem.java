@@ -16,23 +16,23 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class PlatformItem extends BlockItem {
-    public PlatformItem(Block block, Properties properties) {
-        super(block, properties);
-    }
+	public PlatformItem(Block block, Properties properties) {
+		super(block, properties);
+	}
 
-    // 添加Tooltip
-    @OnlyIn(Dist.CLIENT)
-    @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        if (ModList.get().isLoaded("jei")) return;
+	// 添加Tooltip
+	@OnlyIn(Dist.CLIENT)
+	@Override
+	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+		if (ModList.get().isLoaded("jei")) return;
 
-        if (Screen.hasShiftDown()) {
-            String translated = Component.translatable("tooltip.industrial_platform.industrial_platform").getString();
-            for (String line : translated.split("\n")) {
-                tooltip.add(Component.literal(line));
-            }
-        } else {
-            tooltip.add(Component.translatable("tooltip.industrial_platform.industrial_platform.off"));
-        }
-    }
+		if (Screen.hasShiftDown()) {
+			String translated = Component.translatable("tooltip.industrial_platform.industrial_platform").getString();
+			for (String line : translated.split("\n")) {
+				tooltip.add(Component.literal(line));
+			}
+		} else {
+			tooltip.add(Component.translatable("tooltip.industrial_platform.industrial_platform.off"));
+		}
+	}
 }

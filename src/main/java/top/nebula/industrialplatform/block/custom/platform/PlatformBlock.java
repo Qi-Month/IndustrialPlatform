@@ -42,143 +42,143 @@ import static top.nebula.industrialplatform.utils.IPLogic.*;
 @SuppressWarnings("ALL")
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class PlatformBlock extends Block implements IWrenchReactive {
-    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
-    public static final EnumProperty PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
-    public static final BooleanProperty FLOATING = PlatformProperties.FLOATING;
+	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
+	public static final EnumProperty PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
+	public static final BooleanProperty FLOATING = PlatformProperties.FLOATING;
 
-    public PlatformBlock() {
-        super(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
-        this.registerDefaultState(this.stateDefinition.any()
-                .setValue(WATERLOGGED, false)
-                .setValue(FLOATING, false)
-                .setValue(PLATFORM_MODE, PlatformMode.INDUSTRIAL_LIGHT));
-    }
+	public PlatformBlock() {
+		super(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
+		this.registerDefaultState(this.stateDefinition.any()
+				.setValue(WATERLOGGED, false)
+				.setValue(FLOATING, false)
+				.setValue(PLATFORM_MODE, PlatformMode.INDUSTRIAL_LIGHT));
+	}
 
-    @Override
-    public void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(PLATFORM_MODE);
-        builder.add(FLOATING);
-        builder.add(WATERLOGGED);
-    }
+	@Override
+	public void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+		builder.add(PLATFORM_MODE);
+		builder.add(FLOATING);
+		builder.add(WATERLOGGED);
+	}
 
-    @Override
-    public FluidState getFluidState(BlockState state) {
-        return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
-    }
+	@Override
+	public FluidState getFluidState(BlockState state) {
+		return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+	}
 
-    @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        if (state.getValue(WATERLOGGED)) {
-            level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
-        }
-        return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
-    }
+	@Override
+	public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+		if (state.getValue(WATERLOGGED)) {
+			level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+		}
+		return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
+	}
 
-    @Override
-    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return Block.box(0, 0, 0, 16, 12, 16);
-    }
+	@Override
+	public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+		return Block.box(0, 0, 0, 16, 12, 16);
+	}
 
-    @SubscribeEvent
-    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        Level level = event.getLevel();
-        BlockPos blockPos = event.getPos();
-        Player player = event.getEntity();
-        InteractionHand hand = event.getHand();
-        ItemStack item = player.getItemInHand(hand);
-        BlockState state = level.getBlockState(blockPos);
+	@SubscribeEvent
+	public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+		Level level = event.getLevel();
+		BlockPos blockPos = event.getPos();
+		Player player = event.getEntity();
+		InteractionHand hand = event.getHand();
+		ItemStack item = player.getItemInHand(hand);
+		BlockState state = level.getBlockState(blockPos);
 
-        if (level.isClientSide() || !(state.getBlock() instanceof PlatformBlock)) {
-            return;
-        }
+		if (level.isClientSide() || !(state.getBlock() instanceof PlatformBlock)) {
+			return;
+		}
 
-        // 判断是否为扳手或木棍
-        boolean isStickAndWench = item.is(IPTags.Items.WRENCH) || item.is(Items.STICK);
-        boolean isStone = item.is(IPTags.Items.STONE);
+		// 判断是否为扳手或木棍
+		boolean isStickAndWench = item.is(IPTags.Items.WRENCH) || item.is(Items.STICK);
+		boolean isStone = item.is(IPTags.Items.STONE);
 
-        ServerLevel serverLevel = (ServerLevel) level;
+		ServerLevel serverLevel = (ServerLevel) level;
 
-        if (isStickAndWench && hand == InteractionHand.MAIN_HAND && player.isCrouching()) {
-            // 调整器蹲下：切换 FLOATING
-            serverLevel.setBlock(blockPos, state.cycle(FLOATING), 3);
-            player.swing(InteractionHand.MAIN_HAND, true);
-        } else if (isStickAndWench && hand == InteractionHand.MAIN_HAND) {
-            // 调整器右键：切换 PLATFORM_MODE
-            serverLevel.setBlock(blockPos, state.cycle(PLATFORM_MODE), 3);
-            player.swing(InteractionHand.MAIN_HAND, true);
-        } else if (isStone && hand == InteractionHand.MAIN_HAND) {
-            // 石头右键：生成结构
-            int posX = blockPos.getX();
-            int posY = blockPos.getY();
-            int posZ = blockPos.getZ();
-            int finX = (int) Math.floor(posX / 16.0) * 16;
-            int finZ = (int) Math.floor(posZ / 16.0) * 16;
+		if (isStickAndWench && hand == InteractionHand.MAIN_HAND && player.isCrouching()) {
+			// 调整器蹲下：切换 FLOATING
+			serverLevel.setBlock(blockPos, state.cycle(FLOATING), 3);
+			player.swing(InteractionHand.MAIN_HAND, true);
+		} else if (isStickAndWench && hand == InteractionHand.MAIN_HAND) {
+			// 调整器右键：切换 PLATFORM_MODE
+			serverLevel.setBlock(blockPos, state.cycle(PLATFORM_MODE), 3);
+			player.swing(InteractionHand.MAIN_HAND, true);
+		} else if (isStone && hand == InteractionHand.MAIN_HAND) {
+			// 石头右键：生成结构
+			int posX = blockPos.getX();
+			int posY = blockPos.getY();
+			int posZ = blockPos.getZ();
+			int finX = (int) Math.floor(posX / 16.0) * 16;
+			int finZ = (int) Math.floor(posZ / 16.0) * 16;
 
-            if (state.getValue(FLOATING)) {
-                if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
-                    placeStructure(serverLevel, finX, posY, finZ, "industrial");
-                } else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
-                    placeExtendedStructure(serverLevel, finX, posY, finZ, "industrial");
-                } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
-                    placeStructure(serverLevel, finX, posY, finZ, "checkerboard");
-                } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-                    placeExtendedStructure(serverLevel, finX, posY, finZ, "checkerboard");
-                }
-            } else {
-                if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
-                    fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
-                    fillAreaConditional(serverLevel, finX, posY - 11, finZ, finX + 15, posY - 1, finZ + 15);
-                    placeStructure(serverLevel, finX, posY, finZ, "industrial");
-                } else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
-                    fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
-                    fillAreaConditional(serverLevel, finX - 16, posY - 11, finZ - 16, finX + 31, posY - 1, finZ + 31);
-                    placeExtendedStructure(serverLevel, finX, posY, finZ, "industrial");
-                } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
-                    fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
-                    fillAreaConditional(serverLevel, finX, posY - 11, finZ, finX + 15, posY - 1, finZ + 15);
-                    placeStructure(serverLevel, finX, posY, finZ, "checkerboard");
-                } else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-                    fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
-                    fillAreaConditional(serverLevel, finX - 16, posY - 11, finZ - 16, finX + 31, posY - 1, finZ + 31);
-                    placeExtendedStructure(serverLevel, finX, posY, finZ, "checkerboard");
-                }
-            }
+			if (state.getValue(FLOATING)) {
+				if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
+					placeStructure(serverLevel, finX, posY, finZ, "industrial");
+				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
+					placeExtendedStructure(serverLevel, finX, posY, finZ, "industrial");
+				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
+					placeStructure(serverLevel, finX, posY, finZ, "checkerboard");
+				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
+					placeExtendedStructure(serverLevel, finX, posY, finZ, "checkerboard");
+				}
+			} else {
+				if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
+					fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
+					fillAreaConditional(serverLevel, finX, posY - 11, finZ, finX + 15, posY - 1, finZ + 15);
+					placeStructure(serverLevel, finX, posY, finZ, "industrial");
+				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
+					fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
+					fillAreaConditional(serverLevel, finX - 16, posY - 11, finZ - 16, finX + 31, posY - 1, finZ + 31);
+					placeExtendedStructure(serverLevel, finX, posY, finZ, "industrial");
+				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
+					fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + 11, finZ + 15);
+					fillAreaConditional(serverLevel, finX, posY - 11, finZ, finX + 15, posY - 1, finZ + 15);
+					placeStructure(serverLevel, finX, posY, finZ, "checkerboard");
+				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
+					fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + 11, finZ + 31);
+					fillAreaConditional(serverLevel, finX - 16, posY - 11, finZ - 16, finX + 31, posY - 1, finZ + 31);
+					placeExtendedStructure(serverLevel, finX, posY, finZ, "checkerboard");
+				}
+			}
 
-            MutableComponent successfulKey = Component.translatable("message.industrial_platform.done")
-                    .withStyle(ChatFormatting.GREEN);
-            player.displayClientMessage(successfulKey, true);
-            consumeItem(player, item, hand);
-            event.setCanceled(true);
-        }
+			MutableComponent successfulKey = Component.translatable("message.industrial_platform.done")
+					.withStyle(ChatFormatting.GREEN);
+			player.displayClientMessage(successfulKey, true);
+			consumeItem(player, item, hand);
+			event.setCanceled(true);
+		}
 
-        event.setCancellationResult(InteractionResult.SUCCESS);
-    }
+		event.setCancellationResult(InteractionResult.SUCCESS);
+	}
 
-    public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos blockPos, PathComputationType type) {
-        return false;
-    }
+	public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos blockPos, PathComputationType type) {
+		return false;
+	}
 
 
-    public PlatformBlock(Properties properties) {
-        super(properties);
-    }
+	public PlatformBlock(Properties properties) {
+		super(properties);
+	}
 
-    @Override
-    public void onWrenchHover(ServerLevel level, BlockPos pos, BlockState state) {
-        if (state.getValue(FLOATING) == true) {
-            if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY || state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-                WrenchParticleHandler.extendedLevitation(level, pos);
-            } else {
-                WrenchParticleHandler.levitation(level, pos);
-            }
-        } else {
-            if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY || state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-                WrenchParticleHandler.extendedFilling(level, pos);
-            } else {
-                WrenchParticleHandler.filling(level, pos);
-            }
-        }
-    }
+	@Override
+	public void onWrenchHover(ServerLevel level, BlockPos pos, BlockState state) {
+		if (state.getValue(FLOATING) == true) {
+			if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY || state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
+				WrenchParticleHandler.extendedLevitation(level, pos);
+			} else {
+				WrenchParticleHandler.levitation(level, pos);
+			}
+		} else {
+			if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY || state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
+				WrenchParticleHandler.extendedFilling(level, pos);
+			} else {
+				WrenchParticleHandler.filling(level, pos);
+			}
+		}
+	}
 
 
 }

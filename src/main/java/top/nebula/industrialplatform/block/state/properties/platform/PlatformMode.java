@@ -4,18 +4,18 @@ import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
 public enum PlatformMode implements StringRepresentable {
-    INDUSTRIAL_LIGHT("industrial_light"),
-    INDUSTRIAL_HEAVY("industrial_heavy"),
-    CHECKERBOARD_LIGHT("checkerboard_light"),
-    CHECKERBOARD_HEAVY("checkerboard_heavy");
+	INDUSTRIAL_LIGHT("industrial_light"),
+	INDUSTRIAL_HEAVY("industrial_heavy"),
+	CHECKERBOARD_LIGHT("checkerboard_light"),
+	CHECKERBOARD_HEAVY("checkerboard_heavy");
 
-    private final String name;
+	private final String name;
 
-    PlatformMode(String name) {
-        this.name = name;
-    }
+	PlatformMode(String name) {
+		this.name = name;
+	}
 
-    public @NotNull String getSerializedName() {
-        return this.name;
-    }
+	public @NotNull String getSerializedName() {
+		return this.name;
+	}
 }

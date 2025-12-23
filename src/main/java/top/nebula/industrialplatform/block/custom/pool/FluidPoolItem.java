@@ -10,31 +10,30 @@ import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 public class FluidPoolItem extends BlockItem {
-    public FluidPoolItem(Block block, Properties properties) {
-        super(block, properties);
-    }
+	public FluidPoolItem(Block block, Properties properties) {
+		super(block, properties);
+	}
 
-    // 添加 Tooltip
-    @OnlyIn(Dist.CLIENT)
-    @Override
-    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        if (ModList.get().isLoaded("jei")) return;
+	// 添加 Tooltip
+	@OnlyIn(Dist.CLIENT)
+	@Override
+	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+		if (ModList.get().isLoaded("jei")) return;
 
-        if (Screen.hasShiftDown()) {
-            String translated = Component.translatable("tooltip.industrial_platform.fluid_pool").getString();
-            for (String line : translated.split("\n")) {
-                tooltip.add(Component.literal(line));
-            }
-        } else {
-            tooltip.add(Component.translatable("tooltip.industrial_platform.industrial_platform.off"));
-        }
-    }
+		if (Screen.hasShiftDown()) {
+			String translated = Component.translatable("tooltip.industrial_platform.fluid_pool").getString();
+			for (String line : translated.split("\n")) {
+				tooltip.add(Component.literal(line));
+			}
+		} else {
+			tooltip.add(Component.translatable("tooltip.industrial_platform.industrial_platform.off"));
+		}
+	}
 
 }
