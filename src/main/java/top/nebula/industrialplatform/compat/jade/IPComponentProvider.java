@@ -23,20 +23,24 @@ public enum IPComponentProvider implements IBlockComponentProvider {
 		boolean isFloating = state.getValue(PlatformBlock.FLOATING);
 
 		if (isIndustrial) {
-			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".industrial"));
+			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.industrial")));
 		} else {
-			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".checkerboard"));
+			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.checkerboard")));
 		}
 		if (isLight) {
-			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".light"));
+			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.light")));
 		} else {
-			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".heavy"));
+			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.heavy")));
 		}
 		if (isFloating) {
-			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".filling"));
+			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.filling")));
 		} else {
-			tooltip.add(Component.translatable("tooltip.jade." + IndustrialPlatform.MODID + ".floating"));
+			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.floating")));
 		}
+	}
+
+	String addTranKey(String key) {
+		return String.format(key, IndustrialPlatform.MODID);
 	}
 
 	@Override

@@ -9,8 +9,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.ModList;
 import org.jetbrains.annotations.NotNull;
+import top.nebula.industrialplatform.utils.CheckModLoaded;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -24,7 +24,9 @@ public class FluidPoolItem extends BlockItem {
 	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-		if (ModList.get().isLoaded("jei")) return;
+		if (CheckModLoaded.hasJei()) {
+			return;
+		}
 
 		if (Screen.hasShiftDown()) {
 			String translated = Component.translatable("tooltip.industrial_platform.fluid_pool").getString();
