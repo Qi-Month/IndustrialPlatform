@@ -3,10 +3,12 @@ package top.nebula.industrialplatform;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import top.nebula.industrialplatform.block.BlockRegister;
+import top.nebula.industrialplatform.config.CommonConfig;
 import top.nebula.industrialplatform.utils.AddCreativeModeTabs;
 
 @Mod(IndustrialPlatform.MODID)
@@ -20,10 +22,12 @@ public class IndustrialPlatform {
 	}
 
 	public IndustrialPlatform(FMLJavaModLoadingContext context) {
-		IEventBus event = context.getModEventBus();
+		IEventBus bus = context.getModEventBus();
 
-		BlockRegister.register(event);
+		context.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC, "nebula/industrial_platform/common.toml");
 
-		AddCreativeModeTabs.register(event);
+		BlockRegister.register(bus);
+
+		AddCreativeModeTabs.register(bus);
 	}
 }

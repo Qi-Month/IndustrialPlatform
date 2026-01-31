@@ -10,7 +10,7 @@ import top.nebula.industrialplatform.block.custom.pool.FluidPoolBlock;
 import top.nebula.industrialplatform.block.custom.pool.FluidPoolItem;
 import top.nebula.industrialplatform.block.custom.platform.PlatformBlock;
 import top.nebula.industrialplatform.block.custom.platform.PlatformItem;
-import top.nebula.industrialplatform.utils.CheckModLoaded;
+import top.nebula.libs.compat.ICheckModLoaded;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -30,7 +30,7 @@ public class BlockRegister {
 			return new PlatformItem(block, new Item.Properties());
 		});
 
-		if (CheckModLoaded.hasCreate()) {
+		if (ICheckModLoaded.hasCreate()) {
 			FLUID_POOL = registerBlock("fluid_pool", FluidPoolBlock::new, (block) -> {
 				return new FluidPoolItem(block, new Item.Properties());
 			});

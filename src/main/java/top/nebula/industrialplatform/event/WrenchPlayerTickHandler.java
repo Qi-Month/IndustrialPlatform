@@ -13,6 +13,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import top.nebula.industrialplatform.IndustrialPlatform;
 import top.nebula.industrialplatform.utils.IPTags;
+import top.nebula.industrialplatform.utils.IWrenchReactive;
 
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID)
 public class WrenchPlayerTickHandler {

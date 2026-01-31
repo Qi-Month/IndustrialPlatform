@@ -30,7 +30,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
-import top.nebula.industrialplatform.event.IWrenchReactive;
+import top.nebula.industrialplatform.utils.IWrenchReactive;
 import top.nebula.industrialplatform.event.WrenchParticleHandler;
 import top.nebula.industrialplatform.utils.IPTags;
 import top.nebula.industrialplatform.IndustrialPlatform;

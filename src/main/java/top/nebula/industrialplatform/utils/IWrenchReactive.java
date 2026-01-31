@@ -1,4 +1,4 @@
-package top.nebula.industrialplatform.event;
+package top.nebula.industrialplatform.utils;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
