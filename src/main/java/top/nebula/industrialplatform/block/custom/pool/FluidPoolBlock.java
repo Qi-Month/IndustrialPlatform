@@ -84,6 +84,4 @@ public class FluidPoolBlock extends Block implements IWrenchReactive {
 	public void onWrenchHover(ServerLevel level, BlockPos pos, BlockState state) {
 		WrenchParticleHandler.levitation(level, pos);
 	}
-
-
 }
