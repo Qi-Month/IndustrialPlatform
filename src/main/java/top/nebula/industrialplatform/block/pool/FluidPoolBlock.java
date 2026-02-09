@@ -1,4 +1,4 @@
-package top.nebula.industrialplatform.block.custom.pool;
+package top.nebula.industrialplatform.block.pool;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -74,7 +74,6 @@ public class FluidPoolBlock extends Block implements IWrenchReactive {
 			event.setCanceled(true);
 		}
 	}
-
 
 	public FluidPoolBlock(Properties properties) {
 		super(properties);

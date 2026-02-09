@@ -5,7 +5,7 @@ import snownee.jade.api.IWailaCommonRegistration;
 import snownee.jade.api.IWailaPlugin;
 import snownee.jade.api.WailaPlugin;
 import top.nebula.industrialplatform.IndustrialPlatform;
-import top.nebula.industrialplatform.block.custom.platform.PlatformBlock;
+import top.nebula.industrialplatform.block.platform.PlatformBlock;
 
 @WailaPlugin
 public class IPJadePlugin implements IWailaPlugin {

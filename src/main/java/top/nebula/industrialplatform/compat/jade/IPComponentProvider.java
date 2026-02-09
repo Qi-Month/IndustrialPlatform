@@ -8,7 +8,7 @@ import snownee.jade.api.IBlockComponentProvider;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
 import top.nebula.industrialplatform.IndustrialPlatform;
-import top.nebula.industrialplatform.block.custom.platform.PlatformBlock;
+import top.nebula.industrialplatform.block.platform.PlatformBlock;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformMode;
 
 public enum IPComponentProvider implements IBlockComponentProvider {

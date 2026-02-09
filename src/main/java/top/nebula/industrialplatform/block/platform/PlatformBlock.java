@@ -1,4 +1,4 @@
-package top.nebula.industrialplatform.block.custom.platform;
+package top.nebula.industrialplatform.block.platform;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -158,7 +158,6 @@ public class PlatformBlock extends Block implements IWrenchReactive {
 		return false;
 	}
 
-
 	public PlatformBlock(Properties properties) {
 		super(properties);
 	}
@@ -179,6 +178,4 @@ public class PlatformBlock extends Block implements IWrenchReactive {
 			}
 		}
 	}
-
-
 }

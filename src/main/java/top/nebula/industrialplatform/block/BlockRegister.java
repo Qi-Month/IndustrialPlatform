@@ -6,10 +6,10 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import top.nebula.industrialplatform.IndustrialPlatform;
-import top.nebula.industrialplatform.block.custom.pool.FluidPoolBlock;
-import top.nebula.industrialplatform.block.custom.pool.FluidPoolItem;
-import top.nebula.industrialplatform.block.custom.platform.PlatformBlock;
-import top.nebula.industrialplatform.block.custom.platform.PlatformItem;
+import top.nebula.industrialplatform.block.pool.FluidPoolBlock;
+import top.nebula.industrialplatform.block.pool.FluidPoolItem;
+import top.nebula.industrialplatform.block.platform.PlatformBlock;
+import top.nebula.industrialplatform.block.platform.PlatformItem;
 import top.nebula.industrialplatform.utils.ICheckModLoaded;
 
 import java.util.function.Function;
@@ -44,12 +44,9 @@ public class BlockRegister {
 		ITEMS.register(event);
 	}
 
-	private static <T extends Block> Supplier<T> registerBlock(
-			String name,
-			Supplier<T> supplier,
-			Function<T, Item> item
-	) {
+	private static <T extends Block> Supplier<T> registerBlock(String name, Supplier<T> supplier, Function<T, Item> item) {
 		Supplier<T> block = BLOCKS.register(name, supplier);
+
 		ITEMS.register(name, () -> {
 			return item.apply(block.get());
 		});

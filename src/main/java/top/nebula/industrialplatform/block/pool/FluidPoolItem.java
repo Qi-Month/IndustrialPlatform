@@ -1,4 +1,4 @@
-package top.nebula.industrialplatform.block.custom.pool;
+package top.nebula.industrialplatform.block.pool;
 
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -20,7 +20,6 @@ public class FluidPoolItem extends BlockItem {
 		super(block, properties);
 	}
 
-	// 添加 Tooltip
 	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {

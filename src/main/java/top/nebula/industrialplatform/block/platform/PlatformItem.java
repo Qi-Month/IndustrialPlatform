@@ -1,4 +1,4 @@
-package top.nebula.industrialplatform.block.custom.platform;
+package top.nebula.industrialplatform.block.platform;
 
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
