@@ -11,14 +11,6 @@ public interface ICheckModLoaded {
 		return hasMod("create");
 	}
 
-	static boolean hasTCon() {
-		return hasMod("tconstruct");
-	}
-
-	static boolean hasKubeJS() {
-		return hasMod("kubejs");
-	}
-
 	static boolean hasJade() {
 		return hasMod("jade");
 	}
