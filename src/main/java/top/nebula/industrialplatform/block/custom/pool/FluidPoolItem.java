@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
-import top.nebula.libs.compat.ICheckModLoaded;
+import top.nebula.industrialplatform.utils.ICheckModLoaded;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -37,5 +37,4 @@ public class FluidPoolItem extends BlockItem {
 			tooltip.add(Component.translatable("tooltip.industrial_platform.industrial_platform.off"));
 		}
 	}
-
 }

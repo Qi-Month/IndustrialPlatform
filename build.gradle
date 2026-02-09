@@ -30,7 +30,7 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 
-jarJar.enable()
+//jarJar.enable()
 
 minecraft {
     mappings channel: 'parchment', version: '2023.09.03-1.20.1'
@@ -111,10 +111,6 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    // Nebul libs
-    implementation files("libs/Nebula Libs-1.5.0.jar")
-    implementation name: 'Nebula Libs-1.5.0'
-    jarJar(group: "top.nebula", name: "Nebula Libs", version: "[1.5.0,)")
     // CoFH Core
     implementation fg.deobf("curse.maven:cofh_core-69162:${cofh_id}")
     // Jade
