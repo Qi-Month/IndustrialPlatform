@@ -7,10 +7,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import top.nebula.industrialplatform.IndustrialPlatform;
+import top.nebula.industrialplatform.block.state.properties.platform.PlatformProperties;
 import top.nebula.industrialplatform.config.CommonConfig;
 import top.nebula.industrialplatform.utils.IWrenchReactive;
 import top.nebula.industrialplatform.utils.ItemMatcher;
@@ -43,8 +45,8 @@ public class WrenchPlayerTickHandler {
 		BlockPos center = player.blockPosition();
 
 		for (BlockPos pos : BlockPos.betweenClosed(
-				center.offset(-3, -3, -3),
-				center.offset(3, 3, 3)
+				center.offset(-15, -15, -15),
+				center.offset(15, 15, 15)
 		)) {
 			BlockState state = level.getBlockState(pos);
 			Block block = state.getBlock();

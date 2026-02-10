@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID, value = Dist.CLIENT)
-public class ClientWrenchHandler {
+public class ClientBlockStateHandler {
 
 	private static final int SCAN_RADIUS_XZ = 48;
 	private static final ExecutorService SCAN_EXECUTOR = Executors.newSingleThreadExecutor((runnable) -> {
@@ -37,10 +37,6 @@ public class ClientWrenchHandler {
 		return thread;
 	});
 	private static final AtomicBoolean scanning = new AtomicBoolean(false);
-
-	private static boolean isAdjuster(ItemStack stack) {
-		return ItemMatcher.matches(stack, CommonConfig.ADJUSTER);
-	}
 
 	@SubscribeEvent
 	public static void onClientTick(TickEvent.ClientTickEvent event) {
@@ -54,12 +50,6 @@ public class ClientWrenchHandler {
 
 		long tick = level.getGameTime();
 
-		if (!isAdjuster(player.getMainHandItem())) {
-			if (!BoundaryRenderData.getEntries().isEmpty()) {
-				BoundaryRenderData.clear();
-			}
-			return;
-		}
 
 		if (tick % 5 != 0) {
 			if (BoundaryRenderData.isExpired(tick)) {
@@ -95,6 +85,11 @@ public class ClientWrenchHandler {
 						PlatformMode mode = state.getValue(PlatformProperties.PLATFORM_MODE);
 						boolean extended = mode == PlatformMode.INDUSTRIAL_HEAVY || mode == PlatformMode.CHECKERBOARD_HEAVY;
 						boolean floating = state.getValue(PlatformProperties.FLOATING);
+						boolean displayPreview = state.getValue(PlatformProperties.DISPLAYPREVIEW);
+
+						if (!displayPreview) {
+							return;
+						}
 
 						if (isPlayerInBoundary(playerX, playerZ, pos, extended)) {
 							newEntries.add(new BoundaryRenderData.BoundaryEntry(pos.immutable(), extended, floating));
