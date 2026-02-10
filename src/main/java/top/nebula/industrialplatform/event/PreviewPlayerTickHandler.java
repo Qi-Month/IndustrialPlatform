@@ -7,20 +7,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import top.nebula.industrialplatform.IndustrialPlatform;
-import top.nebula.industrialplatform.block.state.properties.platform.PlatformProperties;
 import top.nebula.industrialplatform.config.CommonConfig;
-import top.nebula.industrialplatform.utils.IWrenchReactive;
+import top.nebula.industrialplatform.utils.IPreviewReactive;
 import top.nebula.industrialplatform.utils.ItemMatcher;
 
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID)
-public class WrenchPlayerTickHandler {
-	private static boolean isAdjuster(ItemStack stack) {
-		return ItemMatcher.matches(stack, CommonConfig.ADJUSTER);
+public class PreviewPlayerTickHandler {
+	private static boolean isPreviewTrigger(ItemStack stack) {
+		return ItemMatcher.matches(stack, CommonConfig.ADJUSTER) || ItemMatcher.matches(stack, CommonConfig.TRIGGER_BLOCK);
 	}
 
 	@SubscribeEvent
@@ -35,7 +33,7 @@ public class WrenchPlayerTickHandler {
 		if (!(level instanceof ServerLevel serverLevel)) {
 			return;
 		}
-		if (!isAdjuster(player.getMainHandItem())) {
+		if (!isPreviewTrigger(player.getMainHandItem())) {
 			return;
 		}
 		if (player.tickCount % 5 != 0) {
@@ -51,8 +49,8 @@ public class WrenchPlayerTickHandler {
 			BlockState state = level.getBlockState(pos);
 			Block block = state.getBlock();
 
-			if (block instanceof IWrenchReactive reactive) {
-				reactive.onWrenchHover(serverLevel, pos, state);
+			if (block instanceof IPreviewReactive reactive) {
+				reactive.onPreviewHover(serverLevel, pos, state);
 			}
 		}
 	}

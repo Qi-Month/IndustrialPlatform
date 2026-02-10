@@ -22,7 +22,7 @@ public class CommonConfig {
 				.comment("Examples: \"#forge:stone\", \"minecraft:cobblestone\"")
 				.defineListAllowEmpty(
 						"trigger_block",
-						List.of("#forge:stones"),
+						List.of("#forge:stone","minecraft:cobblestone"),
 						CommonConfig::validateString
 				);
 

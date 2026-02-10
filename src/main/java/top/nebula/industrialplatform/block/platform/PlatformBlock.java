@@ -43,14 +43,12 @@ public class PlatformBlock extends Block {
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 	public static final EnumProperty PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
 	public static final BooleanProperty FLOATING = PlatformProperties.FLOATING;
-	public static final BooleanProperty DISPLAYPREVIEW = PlatformProperties.DISPLAY_PREVIEW;
 
 	public PlatformBlock() {
 		super(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
 		this.registerDefaultState(this.stateDefinition.any()
 				.setValue(WATERLOGGED, false)
 				.setValue(FLOATING, false)
-				.setValue(DISPLAYPREVIEW, false)
 				.setValue(PLATFORM_MODE, PlatformMode.INDUSTRIAL_LIGHT));
 	}
 
@@ -58,7 +56,6 @@ public class PlatformBlock extends Block {
 	public void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
 		builder.add(PLATFORM_MODE);
 		builder.add(FLOATING);
-		builder.add(DISPLAYPREVIEW);
 		builder.add(WATERLOGGED);
 	}
 
