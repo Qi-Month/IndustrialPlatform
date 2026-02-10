@@ -2,12 +2,41 @@ package top.nebula.industrialplatform.config;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
 
+import java.util.List;
+
 public class CommonConfig {
 	private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+
+	public static final ModConfigSpec.ConfigValue<List<? extends String>> TRIGGER_BLOCK;
+	public static final ModConfigSpec.ConfigValue<List<? extends String>> ADJUSTER;
 
 	static {
 		BUILDER.comment("All settings below will only take effect after restarting the server or client.")
 				.push("general");
+
+		TRIGGER_BLOCK = BUILDER
+				.comment(
+						"Items that can trigger platform placement (right-click).",
+						"Use '#namespace:path' for tags, 'namespace:path' for item IDs.",
+						"Examples: '#c:stones', 'minecraft:cobblestone'"
+				)
+				.defineListAllowEmpty(
+						"trigger_block",
+						List.of("#c:stones"),
+						CommonConfig::validateString
+				);
+
+		ADJUSTER = BUILDER
+				.comment(
+						"Items that can adjust platform mode (right-click) and show boundary preview (hold).",
+						"Use '#namespace:path' for tags, 'namespace:path' for item IDs.",
+						"Examples: '#c:tools/wrench', 'minecraft:stick'"
+				)
+				.defineListAllowEmpty(
+						"adjuster",
+						List.of("#c:tools/wrench", "minecraft:stick"),
+						CommonConfig::validateString
+				);
 
 		BUILDER.pop();
 	}

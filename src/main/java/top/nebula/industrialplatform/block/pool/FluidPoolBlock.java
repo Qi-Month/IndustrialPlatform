@@ -17,7 +17,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import top.nebula.industrialplatform.IndustrialPlatform;
-import top.nebula.industrialplatform.utils.IPTags;
+import top.nebula.industrialplatform.config.CommonConfig;
+import top.nebula.industrialplatform.utils.ItemMatcher;
 
 import static top.nebula.industrialplatform.utils.IPLogic.*;
 
@@ -42,8 +43,8 @@ public class FluidPoolBlock extends Block {
 			return;
 		}
 
-		// 判断是否为石头
-		boolean isStone = item.is(IPTags.Items.STONE);
+		// 判断是否为放置物品
+		boolean isStone = ItemMatcher.matches(item, CommonConfig.TRIGGER_BLOCK);
 
 		ServerLevel serverLevel = (ServerLevel) level;
 

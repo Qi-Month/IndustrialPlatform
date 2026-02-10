@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,7 +16,8 @@ import top.nebula.industrialplatform.block.platform.PlatformBlock;
 import top.nebula.industrialplatform.block.pool.FluidPoolBlock;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformMode;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformProperties;
-import top.nebula.industrialplatform.utils.IPTags;
+import top.nebula.industrialplatform.config.CommonConfig;
+import top.nebula.industrialplatform.utils.ItemMatcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class ClientWrenchHandler {
 	private static final AtomicBoolean scanning = new AtomicBoolean(false);
 
 	private static boolean isAdjuster(ItemStack stack) {
-		return stack.is(IPTags.Items.WRENCH) || stack.is(Items.STICK);
+		return ItemMatcher.matches(stack, CommonConfig.ADJUSTER);
 	}
 
 	@SubscribeEvent
