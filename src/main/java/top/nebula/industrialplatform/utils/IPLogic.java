@@ -20,7 +20,7 @@ import java.util.Optional;
 public class IPLogic {
 	public static void placeStructure(ServerLevel level, int x, int y, int z, String structureId) {
 		StructureTemplateManager manager = level.getStructureManager();
-		ResourceLocation structureName = IndustrialPlatform.loadResource("industrial_platform/" + structureId);
+		ResourceLocation structureName = IndustrialPlatform.loadResource(structureId);
 		Optional<StructureTemplate> template = manager.get(structureName);
 		template.ifPresent((temp) -> {
 			temp.placeInWorld(
@@ -39,7 +39,7 @@ public class IPLogic {
 
 	public static void placeExtendedStructure(ServerLevel level, int x, int y, int z, String structureId) {
 		StructureTemplateManager manager = level.getStructureManager();
-		ResourceLocation structureName = IndustrialPlatform.loadResource("industrial_platform/" + structureId);
+		ResourceLocation structureName = IndustrialPlatform.loadResource(structureId);
 		Optional<StructureTemplate> template = manager.get(structureName);
 		for (int i = x - 16; i <= x + 16; i = i + 16) {
 			for (int j = z - 16; j <= z + 16; j = j + 16) {

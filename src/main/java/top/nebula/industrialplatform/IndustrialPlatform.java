@@ -9,7 +9,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import top.nebula.industrialplatform.block.BlockRegister;
 import top.nebula.industrialplatform.config.CommonConfig;
-import top.nebula.industrialplatform.utils.AddCreativeModeTabs;
 
 @Mod(IndustrialPlatform.MODID)
 public class IndustrialPlatform {
@@ -27,7 +26,5 @@ public class IndustrialPlatform {
 		context.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC, "nebula/industrial_platform/common.toml");
 
 		BlockRegister.register(bus);
-
-		AddCreativeModeTabs.register(bus);
 	}
 }

@@ -1,16 +1,13 @@
-package top.nebula.industrialplatform.utils;
+package top.nebula.industrialplatform.event;
 
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import top.nebula.industrialplatform.block.BlockRegister;
 
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class AddCreativeModeTabs {
-	public static void register(IEventBus event) {
-		event.register(AddCreativeModeTabs.class);
-	}
-
 	@SubscribeEvent
 	public static void buildContents(BuildCreativeModeTabContentsEvent event) {
 		if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
