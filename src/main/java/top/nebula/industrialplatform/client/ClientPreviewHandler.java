@@ -19,7 +19,6 @@ import top.nebula.industrialplatform.block.state.properties.platform.PlatformPro
 import top.nebula.industrialplatform.config.CommonConfig;
 import top.nebula.industrialplatform.utils.ItemMatcher;
 
-import javax.print.DocFlavor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
