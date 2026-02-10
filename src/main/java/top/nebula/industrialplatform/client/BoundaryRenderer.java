@@ -20,16 +20,16 @@ public class BoundaryRenderer {
 
 	// Cyan
 	private static final float FLOAT_R = 0.0f;
-	private static final float FLOAT_G = 0.8f;
+	private static final float FLOAT_G = 1.0f;
 	private static final float FLOAT_B = 1.0f;
 
 	// Orange
-	private static final float SOLID_R = 1.0f;
-	private static final float SOLID_G = 0.5f;
+	private static final float SOLID_R = 0.9f;
+	private static final float SOLID_G = 0.35f;
 	private static final float SOLID_B = 0.0f;
 
-	private static final float BASE_ALPHA = 0.08f;
-	private static final float WAVE_AMPLITUDE = 0.22f;
+	private static final float BASE_ALPHA = 0.15f;
+	private static final float WAVE_AMPLITUDE = 0.35f;
 	private static final float STRIP_HEIGHT = 4.0f;
 	private static final float WAVE_SPEED = 0.1f;
 	private static final float WAVE_FREQUENCY = 0.15f;
