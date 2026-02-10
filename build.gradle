@@ -27,7 +27,7 @@ repositories {
 }
 
 base {
-    archivesName = mod_id
+    archivesName = "${mod_id}-${minecraft_version}"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -86,10 +86,10 @@ dependencies {
     // Kiwi
     runtimeOnly("curse.maven:kiwi-303657:${kiwi_id}")
     // Jade
-    implementation ("curse.maven:jade-324717:${jade_id}")
+    implementation("curse.maven:jade-324717:${jade_id}")
     // Jei
-    compileOnly ("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
-    runtimeOnly ("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+    compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
+    runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
