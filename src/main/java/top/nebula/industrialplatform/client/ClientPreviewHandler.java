@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @EventBusSubscriber(modid = IndustrialPlatform.MODID, value = Dist.CLIENT)
-public class ClientWrenchHandler {
+public class ClientPreviewHandler {
 
 	private static final int SCAN_RADIUS_XZ = 48;
 	private static final ExecutorService SCAN_EXECUTOR = Executors.newSingleThreadExecutor(r -> {
@@ -38,8 +38,8 @@ public class ClientWrenchHandler {
 	});
 	private static final AtomicBoolean scanning = new AtomicBoolean(false);
 
-	private static boolean isAdjuster(ItemStack stack) {
-		return ItemMatcher.matches(stack, CommonConfig.ADJUSTER);
+	private static boolean isPreviewTrigger(ItemStack stack) {
+		return ItemMatcher.matches(stack, CommonConfig.ADJUSTER) || ItemMatcher.matches(stack, CommonConfig.TRIGGER_BLOCK);
 	}
 
 	@SubscribeEvent
@@ -54,7 +54,7 @@ public class ClientWrenchHandler {
 
 		long tick = level.getGameTime();
 
-		if (!isAdjuster(player.getMainHandItem())) {
+		if (!isPreviewTrigger(player.getMainHandItem()) && !isPreviewTrigger(player.getOffhandItem())) {
 			if (!BoundaryRenderData.getEntries().isEmpty()) {
 				BoundaryRenderData.clear();
 			}

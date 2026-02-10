@@ -9,6 +9,8 @@ public class CommonConfig {
 
 	public static final ModConfigSpec.ConfigValue<List<? extends String>> TRIGGER_BLOCK;
 	public static final ModConfigSpec.ConfigValue<List<? extends String>> ADJUSTER;
+	public static final ModConfigSpec.IntValue TOP_FILLING_DISTANCE;
+	public static final ModConfigSpec.IntValue BOTTOM_FILLING_DISTANCE;
 
 	static {
 		BUILDER.comment("All settings below will only take effect after restarting the server or client.")
@@ -35,6 +37,18 @@ public class CommonConfig {
 						() -> "",
 						CommonConfig::validateString
 				);
+
+		TOP_FILLING_DISTANCE = BUILDER
+				.comment("The distance that the platform fills on its top")
+				.comment("type: int")
+				.comment("default: 5")
+				.defineInRange("top_filling_distance", 5, 0, 64);
+
+		BOTTOM_FILLING_DISTANCE = BUILDER
+				.comment("The distance that the platform fills on its bottom")
+				.comment("type: int")
+				.comment("default: 5")
+				.defineInRange("bottom_filling_distance", 5, 0, 64);
 
 		BUILDER.pop();
 	}
