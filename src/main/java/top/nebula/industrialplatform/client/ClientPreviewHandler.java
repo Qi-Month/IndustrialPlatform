@@ -95,7 +95,6 @@ public class ClientPreviewHandler {
 						PlatformMode mode = state.getValue(PlatformProperties.PLATFORM_MODE);
 						boolean extended = mode == PlatformMode.INDUSTRIAL_HEAVY || mode == PlatformMode.CHECKERBOARD_HEAVY;
 						boolean floating = state.getValue(PlatformProperties.FLOATING);
-						boolean displayPreview = state.getValue(PlatformProperties.DISPLAY_PREVIEW);
 
 						if (isPlayerInBoundary(playerX, playerZ, pos, extended)) {
 							newEntries.add(new BoundaryRenderData.BoundaryEntry(pos.immutable(), extended, floating));
