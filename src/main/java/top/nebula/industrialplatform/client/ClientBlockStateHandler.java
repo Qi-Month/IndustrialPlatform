@@ -3,7 +3,6 @@ package top.nebula.industrialplatform.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -16,8 +15,6 @@ import top.nebula.industrialplatform.block.platform.PlatformBlock;
 import top.nebula.industrialplatform.block.pool.FluidPoolBlock;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformMode;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformProperties;
-import top.nebula.industrialplatform.config.CommonConfig;
-import top.nebula.industrialplatform.utils.ItemMatcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +26,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID, value = Dist.CLIENT)
 public class ClientBlockStateHandler {
-
 	private static final int SCAN_RADIUS_XZ = 48;
 	private static final ExecutorService SCAN_EXECUTOR = Executors.newSingleThreadExecutor((runnable) -> {
 		Thread thread = new Thread(runnable, "IP-BoundaryScan");
@@ -85,7 +81,7 @@ public class ClientBlockStateHandler {
 						PlatformMode mode = state.getValue(PlatformProperties.PLATFORM_MODE);
 						boolean extended = mode == PlatformMode.INDUSTRIAL_HEAVY || mode == PlatformMode.CHECKERBOARD_HEAVY;
 						boolean floating = state.getValue(PlatformProperties.FLOATING);
-						boolean displayPreview = state.getValue(PlatformProperties.DISPLAYPREVIEW);
+						boolean displayPreview = state.getValue(PlatformProperties.DISPLAY_PREVIEW);
 
 						if (!displayPreview) {
 							return;

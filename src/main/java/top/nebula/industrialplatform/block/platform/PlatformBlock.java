@@ -10,7 +10,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -44,7 +43,7 @@ public class PlatformBlock extends Block {
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 	public static final EnumProperty PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
 	public static final BooleanProperty FLOATING = PlatformProperties.FLOATING;
-	public static final BooleanProperty DISPLAYPREVIEW = PlatformProperties.DISPLAYPREVIEW;
+	public static final BooleanProperty DISPLAYPREVIEW = PlatformProperties.DISPLAY_PREVIEW;
 
 	public PlatformBlock() {
 		super(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
@@ -53,7 +52,6 @@ public class PlatformBlock extends Block {
 				.setValue(FLOATING, false)
 				.setValue(DISPLAYPREVIEW, false)
 				.setValue(PLATFORM_MODE, PlatformMode.INDUSTRIAL_LIGHT));
-
 	}
 
 	@Override

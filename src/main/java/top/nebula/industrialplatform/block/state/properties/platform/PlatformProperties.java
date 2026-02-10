@@ -5,7 +5,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 
 public class PlatformProperties {
 	public static final BooleanProperty FLOATING = BooleanProperty.create("floating");
-	public static final BooleanProperty DISPLAYPREVIEW = BooleanProperty.create("displayPreview");
+	public static final BooleanProperty DISPLAY_PREVIEW = BooleanProperty.create("display_preview");
 
 	public PlatformProperties() {
 	}
