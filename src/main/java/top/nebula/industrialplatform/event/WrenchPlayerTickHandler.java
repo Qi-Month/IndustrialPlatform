@@ -17,7 +17,6 @@ import top.nebula.industrialplatform.utils.IWrenchReactive;
 
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID)
 public class WrenchPlayerTickHandler {
-
 	private static boolean isAdjuster(ItemStack stack) {
 		return stack.is(IPTags.Items.WRENCH) || stack.is(Items.STICK);
 	}

@@ -30,8 +30,6 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
-import top.nebula.industrialplatform.utils.IWrenchReactive;
-import top.nebula.industrialplatform.event.WrenchParticleHandler;
 import top.nebula.industrialplatform.utils.IPTags;
 import top.nebula.industrialplatform.IndustrialPlatform;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformMode;
@@ -41,7 +39,7 @@ import static top.nebula.industrialplatform.utils.IPLogic.*;
 
 @SuppressWarnings("ALL")
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class PlatformBlock extends Block implements IWrenchReactive {
+public class PlatformBlock extends Block {
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 	public static final EnumProperty PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
 	public static final BooleanProperty FLOATING = PlatformProperties.FLOATING;
@@ -160,22 +158,5 @@ public class PlatformBlock extends Block implements IWrenchReactive {
 
 	public PlatformBlock(Properties properties) {
 		super(properties);
-	}
-
-	@Override
-	public void onWrenchHover(ServerLevel level, BlockPos pos, BlockState state) {
-		if (state.getValue(FLOATING) == true) {
-			if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY || state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-				WrenchParticleHandler.extendedLevitation(level, pos);
-			} else {
-				WrenchParticleHandler.levitation(level, pos);
-			}
-		} else {
-			if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY || state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-				WrenchParticleHandler.extendedFilling(level, pos);
-			} else {
-				WrenchParticleHandler.filling(level, pos);
-			}
-		}
 	}
 }

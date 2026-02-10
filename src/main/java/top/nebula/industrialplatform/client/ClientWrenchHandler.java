@@ -67,6 +67,7 @@ public class ClientWrenchHandler {
 			if (block instanceof PlatformBlock) {
 				boolean floating = state.getValue(PlatformProperties.FLOATING);
 				PlatformMode mode = state.getValue(PlatformProperties.PLATFORM_MODE);
+
 				boolean extended = mode == PlatformMode.INDUSTRIAL_HEAVY || mode == PlatformMode.CHECKERBOARD_HEAVY;
 				newEntries.add(new BoundaryRenderData.BoundaryEntry(pos.immutable(), extended, floating));
 			} else if (block instanceof FluidPoolBlock) {

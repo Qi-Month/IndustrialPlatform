@@ -17,15 +17,13 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import top.nebula.industrialplatform.IndustrialPlatform;
-import top.nebula.industrialplatform.utils.IWrenchReactive;
-import top.nebula.industrialplatform.event.WrenchParticleHandler;
 import top.nebula.industrialplatform.utils.IPTags;
 
 import static top.nebula.industrialplatform.utils.IPLogic.*;
 
 @SuppressWarnings("ALL")
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class FluidPoolBlock extends Block implements IWrenchReactive {
+public class FluidPoolBlock extends Block {
 	public FluidPoolBlock() {
 		super(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
 		this.registerDefaultState(this.stateDefinition.any());
@@ -77,10 +75,5 @@ public class FluidPoolBlock extends Block implements IWrenchReactive {
 
 	public FluidPoolBlock(Properties properties) {
 		super(properties);
-	}
-
-	@Override
-	public void onWrenchHover(ServerLevel level, BlockPos pos, BlockState state) {
-		WrenchParticleHandler.levitation(level, pos);
 	}
 }

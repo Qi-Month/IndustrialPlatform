@@ -111,8 +111,8 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    // kivi
-    runtimeOnly fg.deobf("curse.maven:kiwi-303657:${kiwi_id}")
+    // CoFH Core
+    runtimeOnly fg.deobf("curse.maven:cofh_core-69162:${cofh_id}")
     // Jade
     implementation fg.deobf("curse.maven:jade-324717:${jade_id}")
     // Jei
