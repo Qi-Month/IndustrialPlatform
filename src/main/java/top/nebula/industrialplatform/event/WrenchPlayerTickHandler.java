@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -12,13 +11,14 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import top.nebula.industrialplatform.IndustrialPlatform;
-import top.nebula.industrialplatform.utils.IPTags;
+import top.nebula.industrialplatform.config.CommonConfig;
 import top.nebula.industrialplatform.utils.IWrenchReactive;
+import top.nebula.industrialplatform.utils.ItemMatcher;
 
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID)
 public class WrenchPlayerTickHandler {
 	private static boolean isAdjuster(ItemStack stack) {
-		return stack.is(IPTags.Items.WRENCH) || stack.is(Items.STICK);
+		return ItemMatcher.matches(stack, CommonConfig.ADJUSTER);
 	}
 
 	@SubscribeEvent

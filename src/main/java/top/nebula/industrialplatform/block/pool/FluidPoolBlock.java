@@ -17,7 +17,8 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import top.nebula.industrialplatform.IndustrialPlatform;
-import top.nebula.industrialplatform.utils.IPTags;
+import top.nebula.industrialplatform.config.CommonConfig;
+import top.nebula.industrialplatform.utils.ItemMatcher;
 
 import static top.nebula.industrialplatform.utils.IPLogic.*;
 
@@ -43,7 +44,7 @@ public class FluidPoolBlock extends Block {
 		}
 
 		// 判断是否为石头
-		boolean isStone = item.is(IPTags.Items.STONE);
+		boolean isStone = ItemMatcher.matches(item, CommonConfig.TRIGGER_BLOCK);
 
 		ServerLevel serverLevel = (ServerLevel) level;
 

@@ -10,7 +10,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -30,10 +29,11 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
-import top.nebula.industrialplatform.utils.IPTags;
+import top.nebula.industrialplatform.config.CommonConfig;
 import top.nebula.industrialplatform.IndustrialPlatform;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformMode;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformProperties;
+import top.nebula.industrialplatform.utils.ItemMatcher;
 
 import static top.nebula.industrialplatform.utils.IPLogic.*;
 
@@ -90,9 +90,9 @@ public class PlatformBlock extends Block {
 			return;
 		}
 
-		// 判断是否为扳手或木棍
-		boolean isStickAndWench = item.is(IPTags.Items.WRENCH) || item.is(Items.STICK);
-		boolean isStone = item.is(IPTags.Items.STONE);
+		// 判断是否为调整器或放置物品
+		boolean isStickAndWench = ItemMatcher.matches(item, CommonConfig.ADJUSTER);
+		boolean isStone = ItemMatcher.matches(item, CommonConfig.TRIGGER_BLOCK);
 
 		ServerLevel serverLevel = (ServerLevel) level;
 
