@@ -47,5 +47,3 @@ Rightclick with empty hand while sneaking to adjust whether filling the space ab
 空手潜行右键调节是否向上向下填充
  
 使用任意石头右键平台以展开平台
- 
-禁止将本mod上传至mcmod.cn
