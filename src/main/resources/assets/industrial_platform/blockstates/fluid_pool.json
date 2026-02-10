@@ -1,0 +1,7 @@
+{
+    "variants": {
+        "": {
+            "model": "industrial_platform:block/fluid_pool"
+        }
+    }
+}

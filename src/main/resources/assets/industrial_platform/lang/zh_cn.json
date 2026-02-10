@@ -1,0 +1,19 @@
+{
+  "block.industrial_platform.industrial_platform": "工业平台",
+  "block.industrial_platform.fluid_pool": "流体池",
+  "tooltip.industrial_platform.industrial_platform.off": "§e按住Shift查看详情",
+  "tooltip.industrial_platform.industrial_platform": "§a右键调节平台类型\n§a潜行右键以切换是否向上下填充\n§a以任意石头右键展开平台",
+  "tooltip.industrial_platform.fluid_pool": "§a以任意石头右键展开流体池",
+  "config.jade.plugin_industrial_platform.common": "工业平台: 物品提示",
+  "message.industrial_platform.done": "平台放置成功!",
+  "message.industrial_platform.pool_done": "流体池已展开!",
+  "message.industrial_platform.too_low": "太低了!，流体池无法展开!",
+  "tooltip.jade.industrial_platform.industrial": "平台类型: 工业平台",
+  "tooltip.jade.industrial_platform.checkerboard": "平台类型: 棋盘格平台",
+  "tooltip.jade.industrial_platform.light": "平台尺寸: 1x1区块",
+  "tooltip.jade.industrial_platform.heavy": "平台尺寸: 3x3区块",
+  "tooltip.jade.industrial_platform.floating": "平台上方的方块将被移除",
+  "tooltip.jade.industrial_platform.filling": "平台上方的方块将会保留",
+  "jei.info.industrial_platform.platform": "使用木棍或扳手进行调节\n手持调节器靠近平台方块以显示展开预览\n站立右键调节平台类型\n潜行右键以切换是否向上下填充\n以任意石头右键展开平台",
+  "jei.info.industrial_platform.fluid_pool": "以任意石头右键展开流体池\n手持调节器靠近流体池方块以显示展开预览\n流体池不会清除上方方块\n展开的流体池容量超过1万格, 足够支持机械动力的无限流体"
+}

@@ -1,0 +1,7 @@
+{
+	"parent": "industrial_platform:block/industrial_platform_model",
+	"textures": {
+		"top": "industrial_platform:block/type/checkerboard_heavy",
+		"side": "industrial_platform:block/levitational/true"
+	}
+}

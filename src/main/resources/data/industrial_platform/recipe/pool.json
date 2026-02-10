@@ -1,0 +1,32 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"key": {
+		"A": {
+			"tag": "c:dyes/yellow"
+		},
+		"B": {
+			"tag": "c:dyes/black"
+		},
+		"C": {
+			"tag": "industrial_platform:deepslate"
+		},
+		"D": {
+			"tag": "c:stones"
+		}
+	},
+	"pattern": [
+		"A B",
+		"D D",
+		"DCD"
+	],
+	"result": {
+		"id": "industrial_platform:fluid_pool",
+		"count": 1
+	},
+	"neoforge:conditions": [
+		{
+			"type": "neoforge:mod_loaded",
+			"modid": "create"
+		}
+	]
+}

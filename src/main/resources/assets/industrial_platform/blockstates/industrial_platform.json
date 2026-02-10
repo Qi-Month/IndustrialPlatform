@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "type=industrial_light,floating=false": {
+      "model": "industrial_platform:block/industrial_light_basic"
+    },
+    "type=industrial_heavy,floating=false": {
+      "model": "industrial_platform:block/industrial_heavy_basic"
+    },
+    "type=checkerboard_light,floating=false": {
+      "model": "industrial_platform:block/checkerboard_light_basic"
+    },
+    "type=checkerboard_heavy,floating=false": {
+      "model": "industrial_platform:block/checkerboard_heavy_basic"
+    },
+    "type=industrial_light,floating=true": {
+      "model": "industrial_platform:block/industrial_light_levitational"
+    },
+    "type=industrial_heavy,floating=true": {
+      "model": "industrial_platform:block/industrial_heavy_levitational"
+    },
+    "type=checkerboard_light,floating=true": {
+      "model": "industrial_platform:block/checkerboard_light_levitational"
+    },
+    "type=checkerboard_heavy,floating=true": {
+      "model": "industrial_platform:block/checkerboard_heavy_levitational"
+    }
+  }
+}
