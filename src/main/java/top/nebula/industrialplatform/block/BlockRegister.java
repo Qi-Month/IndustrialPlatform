@@ -39,9 +39,9 @@ public class BlockRegister {
 		}
 	}
 
-	public static void register(IEventBus event) {
-		BLOCKS.register(event);
-		ITEMS.register(event);
+	public static void register(IEventBus bus) {
+		BLOCKS.register(bus);
+		ITEMS.register(bus);
 	}
 
 	private static <T extends Block> Supplier<T> registerBlock(String name, Supplier<T> supplier, Function<T, Item> item) {
