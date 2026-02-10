@@ -73,8 +73,4 @@ public class FluidPoolBlock extends Block {
 			event.setCanceled(true);
 		}
 	}
-
-	public FluidPoolBlock(Properties properties) {
-		super(properties);
-	}
 }

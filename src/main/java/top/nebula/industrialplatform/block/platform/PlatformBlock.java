@@ -155,8 +155,4 @@ public class PlatformBlock extends Block {
 	public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos blockPos, PathComputationType type) {
 		return false;
 	}
-
-	public PlatformBlock(Properties properties) {
-		super(properties);
-	}
 }
