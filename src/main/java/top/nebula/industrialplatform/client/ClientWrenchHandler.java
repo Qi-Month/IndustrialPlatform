@@ -31,8 +31,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ClientWrenchHandler {
 
 	private static final int SCAN_RADIUS_XZ = 48;
-	private static final ExecutorService SCAN_EXECUTOR = Executors.newSingleThreadExecutor(r -> {
-		Thread thread = new Thread(r, "IP-BoundaryScan");
+	private static final ExecutorService SCAN_EXECUTOR = Executors.newSingleThreadExecutor((runnable) -> {
+		Thread thread = new Thread(runnable, "IP-BoundaryScan");
 		thread.setDaemon(true);
 		return thread;
 	});
