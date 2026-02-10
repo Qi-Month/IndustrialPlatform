@@ -29,10 +29,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @EventBusSubscriber(modid = IndustrialPlatform.MODID, value = Dist.CLIENT)
 public class ClientPreviewHandler {
-
 	private static final int SCAN_RADIUS_XZ = 48;
-	private static final ExecutorService SCAN_EXECUTOR = Executors.newSingleThreadExecutor(r -> {
-		Thread t = new Thread(r, "IP-BoundaryScan");
+	private static final ExecutorService SCAN_EXECUTOR = Executors.newSingleThreadExecutor((runnable) -> {
+		Thread t = new Thread(runnable, "IP-BoundaryScan");
 		t.setDaemon(true);
 		return t;
 	});

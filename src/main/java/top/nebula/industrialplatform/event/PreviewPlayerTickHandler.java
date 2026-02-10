@@ -17,7 +17,6 @@ import top.nebula.industrialplatform.utils.IPreviewReactive;
 
 @EventBusSubscriber(modid = IndustrialPlatform.MODID)
 public class PreviewPlayerTickHandler {
-
 	private static boolean isPreviewTrigger(ItemStack stack) {
 		return ItemMatcher.matches(stack, CommonConfig.ADJUSTER) || ItemMatcher.matches(stack, CommonConfig.TRIGGER_BLOCK);
 	}
@@ -40,8 +39,8 @@ public class PreviewPlayerTickHandler {
 		BlockPos center = player.blockPosition();
 
 		for (BlockPos pos : BlockPos.betweenClosed(
-				center.offset(-3, -3, -3),
-				center.offset(3, 3, 3)
+				center.offset(-15, -15, -15),
+				center.offset(15, 15, 15)
 		)) {
 			BlockState state = level.getBlockState(pos);
 			Block block = state.getBlock();

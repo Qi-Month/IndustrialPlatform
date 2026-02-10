@@ -9,7 +9,6 @@ import top.nebula.industrialplatform.block.BlockRegister;
 
 @EventBusSubscriber(modid = IndustrialPlatform.MODID)
 public class AddCreativeModeTabs {
-
 	@SubscribeEvent
 	public static void buildContents(BuildCreativeModeTabContentsEvent event) {
 		if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {

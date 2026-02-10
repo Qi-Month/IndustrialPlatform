@@ -53,9 +53,9 @@ public class CommonConfig {
 		BUILDER.pop();
 	}
 
-	private static boolean validateString(Object obj) {
-		return obj instanceof String;
-	}
-
 	public static final ModConfigSpec SPEC = BUILDER.build();
+
+	private static boolean validateString(Object object) {
+		return object instanceof String;
+	}
 }

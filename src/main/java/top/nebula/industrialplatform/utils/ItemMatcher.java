@@ -10,7 +10,6 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 import java.util.List;
 
 public class ItemMatcher {
-
 	public static boolean matches(ItemStack stack, ModConfigSpec.ConfigValue<List<? extends String>> configValue) {
 		if (stack.isEmpty()) return false;
 		List<? extends String> entries = configValue.get();

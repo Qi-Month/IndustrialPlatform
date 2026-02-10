@@ -21,19 +21,9 @@ public class ModJeiPlugin implements IModPlugin {
 	public void registerRecipes(@NotNull IRecipeRegistration registration) {
 		init(registration);
 
-		addJeiInfo(
-				BlockRegister.INDUSTRIAL_PLATFORM.get()
-						.asItem()
-						.getDefaultInstance(),
-				"platform"
-		);
+		addJeiInfo(BlockRegister.INDUSTRIAL_PLATFORM.get().asItem().getDefaultInstance(), "platform");
 		if (BlockRegister.FLUID_POOL != null) {
-			addJeiInfo(
-					BlockRegister.FLUID_POOL.get()
-							.asItem()
-							.getDefaultInstance(),
-					"fluid_pool"
-			);
+			addJeiInfo(BlockRegister.FLUID_POOL.get().asItem().getDefaultInstance(), "fluid_pool");
 		}
 	}
 }

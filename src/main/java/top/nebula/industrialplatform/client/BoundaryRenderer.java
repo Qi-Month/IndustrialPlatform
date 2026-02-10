@@ -17,7 +17,6 @@ import java.util.List;
 
 @EventBusSubscriber(modid = IndustrialPlatform.MODID, value = Dist.CLIENT)
 public class BoundaryRenderer {
-
 	// Cyan
 	private static final float FLOAT_R = 0.0f;
 	private static final float FLOAT_G = 1.0f;
@@ -36,13 +35,19 @@ public class BoundaryRenderer {
 
 	@SubscribeEvent
 	public static void onRenderLevel(RenderLevelStageEvent event) {
-		if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
+		if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
+			return;
+		}
 
 		List<BoundaryRenderData.BoundaryEntry> entries = BoundaryRenderData.getEntries();
-		if (entries.isEmpty()) return;
+		if (entries.isEmpty()) {
+			return;
+		}
 
 		Level level = Minecraft.getInstance().level;
-		if (level == null) return;
+		if (level == null) {
+			return;
+		}
 
 		Vec3 camera = event.getCamera().getPosition();
 		PoseStack poseStack = event.getPoseStack();
@@ -77,9 +82,7 @@ public class BoundaryRenderer {
 		poseStack.popPose();
 	}
 
-	private static void drawBoundary(BufferBuilder builder, Matrix4f matrix,
-									  BoundaryRenderData.BoundaryEntry entry,
-									  float bottom, float top, float time) {
+	private static void drawBoundary(BufferBuilder builder, Matrix4f matrix, BoundaryRenderData.BoundaryEntry entry, float bottom, float top, float time) {
 		int posX = entry.pos().getX();
 		int posZ = entry.pos().getZ();
 		int finX = (int) Math.floor(posX / 16.0) * 16;
@@ -87,9 +90,13 @@ public class BoundaryRenderer {
 
 		float r, g, b;
 		if (entry.floating()) {
-			r = FLOAT_R; g = FLOAT_G; b = FLOAT_B;
+			r = FLOAT_R;
+			g = FLOAT_G;
+			b = FLOAT_B;
 		} else {
-			r = SOLID_R; g = SOLID_G; b = SOLID_B;
+			r = SOLID_R;
+			g = SOLID_G;
+			b = SOLID_B;
 		}
 
 		float minX, minZ, maxX, maxZ;

@@ -1,6 +1,5 @@
 package top.nebula.industrialplatform.utils;
 
-
 import net.neoforged.fml.ModList;
 
 public interface ICheckModLoaded {
