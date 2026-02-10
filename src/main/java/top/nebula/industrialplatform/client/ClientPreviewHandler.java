@@ -54,7 +54,7 @@ public class ClientPreviewHandler {
 
 		long tick = level.getGameTime();
 
-		if (!isPreviewTrigger(player.getMainHandItem())) {
+		if (!isPreviewTrigger(player.getMainHandItem()) && !isPreviewTrigger(player.getOffhandItem())) {
 			if (!BoundaryRenderData.getEntries().isEmpty()) {
 				BoundaryRenderData.clear();
 			}

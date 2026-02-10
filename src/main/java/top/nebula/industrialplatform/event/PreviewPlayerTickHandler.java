@@ -33,7 +33,7 @@ public class PreviewPlayerTickHandler {
 		if (!(level instanceof ServerLevel serverLevel)) {
 			return;
 		}
-		if (!isPreviewTrigger(player.getMainHandItem())) {
+		if (!isPreviewTrigger(player.getMainHandItem()) && !isPreviewTrigger(player.getOffhandItem())) {
 			return;
 		}
 		if (player.tickCount % 5 != 0) {
