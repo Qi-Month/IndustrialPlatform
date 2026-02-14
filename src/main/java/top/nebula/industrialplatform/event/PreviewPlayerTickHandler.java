@@ -12,8 +12,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import top.nebula.industrialplatform.IndustrialPlatform;
 import top.nebula.industrialplatform.config.CommonConfig;
-import top.nebula.industrialplatform.utils.ItemMatcher;
-import top.nebula.industrialplatform.utils.IPreviewReactive;
+import top.nebula.industrialplatform.api.ItemMatcher;
+import top.nebula.industrialplatform.api.IPreviewReactive;
 
 @EventBusSubscriber(modid = IndustrialPlatform.MODID)
 public class PreviewPlayerTickHandler {

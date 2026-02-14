@@ -1,4 +1,4 @@
-package top.nebula.industrialplatform.utils;
+package top.nebula.industrialplatform.event;
 
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.SubscribeEvent;

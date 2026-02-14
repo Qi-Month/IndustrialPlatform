@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
-import top.nebula.industrialplatform.utils.ICheckModLoaded;
+import top.nebula.industrialplatform.api.ICheckModLoaded;
 
 import java.util.List;
 

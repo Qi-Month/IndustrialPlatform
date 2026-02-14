@@ -1,4 +1,4 @@
-package top.nebula.industrialplatform.utils;
+package top.nebula.industrialplatform.api;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;

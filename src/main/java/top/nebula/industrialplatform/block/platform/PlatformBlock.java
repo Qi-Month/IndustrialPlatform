@@ -10,6 +10,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -29,19 +30,18 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
-import top.nebula.industrialplatform.utils.ItemMatcher;
+import top.nebula.industrialplatform.api.ItemMatcher;
 import top.nebula.industrialplatform.config.CommonConfig;
 import top.nebula.industrialplatform.IndustrialPlatform;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformMode;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformProperties;
-
-import static top.nebula.industrialplatform.utils.IPLogic.*;
+import top.nebula.industrialplatform.api.IPLogic;
 
 @SuppressWarnings("ALL")
 @EventBusSubscriber(modid = IndustrialPlatform.MODID)
-public class PlatformBlock extends Block {
+public class PlatformBlock extends Block implements SimpleWaterloggedBlock {
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
-	public static final EnumProperty PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
+	public static final EnumProperty<PlatformMode> PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
 	public static final BooleanProperty FLOATING = PlatformProperties.FLOATING;
 
 	public PlatformBlock() {
@@ -53,15 +53,25 @@ public class PlatformBlock extends Block {
 	}
 
 	@Override
-	public void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-		builder.add(PLATFORM_MODE);
-		builder.add(FLOATING);
-		builder.add(WATERLOGGED);
+	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+		builder.add(PLATFORM_MODE, FLOATING, WATERLOGGED);
+	}
+
+	@Override
+	public BlockState getStateForPlacement(BlockPlaceContext context) {
+		FluidState fluidstate = context.getLevel().getFluidState(context.getClickedPos());
+
+		return this.defaultBlockState()
+				.setValue(WATERLOGGED, fluidstate.getType() == Fluids.WATER)
+				.setValue(FLOATING, false)
+				.setValue(PLATFORM_MODE, PlatformMode.INDUSTRIAL_LIGHT);
 	}
 
 	@Override
 	public FluidState getFluidState(BlockState state) {
-		return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+		return state.getValue(WATERLOGGED)
+				? Fluids.WATER.getSource(false)
+				: super.getFluidState(state);
 	}
 
 	@Override
@@ -90,75 +100,71 @@ public class PlatformBlock extends Block {
 			return;
 		}
 
-		// 判断是否为调整器或放置物品
-		boolean isStickAndWench = ItemMatcher.matches(item, CommonConfig.ADJUSTER);
-		boolean isStone = ItemMatcher.matches(item, CommonConfig.TRIGGER_BLOCK);
+		boolean isAdjuster = ItemMatcher.matches(item, CommonConfig.ADJUSTER);
+		boolean isTriggerBlock = ItemMatcher.matches(item, CommonConfig.TRIGGER_BLOCK);
 
 		ServerLevel serverLevel = (ServerLevel) level;
 
-		if (isStickAndWench && hand == InteractionHand.MAIN_HAND && player.isCrouching()) {
-			// 调整器蹲下：切换 FLOATING
+		if (isAdjuster && hand == InteractionHand.MAIN_HAND && player.isCrouching()) {
 			serverLevel.setBlock(blockPos, state.cycle(FLOATING), 3);
 			player.swing(InteractionHand.MAIN_HAND, true);
-		} else if (isStickAndWench && hand == InteractionHand.MAIN_HAND) {
-			// 调整器右键：切换 PLATFORM_MODE
+		} else if (isAdjuster && hand == InteractionHand.MAIN_HAND) {
 			serverLevel.setBlock(blockPos, state.cycle(PLATFORM_MODE), 3);
 			player.swing(InteractionHand.MAIN_HAND, true);
-		} else if (isStone && hand == InteractionHand.MAIN_HAND) {
-			// 石头右键：生成结构
+		} else if (isTriggerBlock && hand == InteractionHand.MAIN_HAND) {
 			int posX = blockPos.getX();
 			int posY = blockPos.getY();
 			int posZ = blockPos.getZ();
 			int finX = (int) Math.floor(posX / 16.0) * 16;
 			int finZ = (int) Math.floor(posZ / 16.0) * 16;
+
 			int topFilling = CommonConfig.TOP_FILLING_DISTANCE.get();
 			int bottomFilling = CommonConfig.BOTTOM_FILLING_DISTANCE.get();
 
 			if (state.getValue(FLOATING)) {
 				if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
-					placeStructure(serverLevel, finX, posY, finZ, "industrial");
+					IPLogic.placeStructure(serverLevel, finX, posY, finZ, "industrial");
 				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
-					placeExtendedStructure(serverLevel, finX, posY, finZ, "industrial");
+					IPLogic.placeExtendedStructure(serverLevel, finX, posY, finZ, "industrial");
 				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
-					placeStructure(serverLevel, finX, posY, finZ, "checkerboard");
+					IPLogic.placeStructure(serverLevel, finX, posY, finZ, "checkerboard");
 				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-					placeExtendedStructure(serverLevel, finX, posY, finZ, "checkerboard");
+					IPLogic.placeExtendedStructure(serverLevel, finX, posY, finZ, "checkerboard");
 				}
 			} else {
 				if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
-					fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + topFilling, finZ + 15);
-					fillAreaConditional(serverLevel, finX, posY - bottomFilling, finZ, finX + 15, posY - 1, finZ + 15);
-					placeStructure(serverLevel, finX, posY, finZ, "industrial");
+					IPLogic.fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + topFilling, finZ + 15);
+					IPLogic.fillAreaConditional(serverLevel, finX, posY - bottomFilling, finZ, finX + 15, posY - 1, finZ + 15);
+					IPLogic.placeStructure(serverLevel, finX, posY, finZ, "industrial");
 				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
-					fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + topFilling, finZ + 31);
-					fillAreaConditional(serverLevel, finX - 16, posY - bottomFilling, finZ - 16, finX + 31, posY - 1, finZ + 31);
-					placeExtendedStructure(serverLevel, finX, posY, finZ, "industrial");
+					IPLogic.fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + topFilling, finZ + 31);
+					IPLogic.fillAreaConditional(serverLevel, finX - 16, posY - bottomFilling, finZ - 16, finX + 31, posY - 1, finZ + 31);
+					IPLogic.placeExtendedStructure(serverLevel, finX, posY, finZ, "industrial");
 				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
-					fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + topFilling, finZ + 15);
-					fillAreaConditional(serverLevel, finX, posY - bottomFilling, finZ, finX + 15, posY - 1, finZ + 15);
-					placeStructure(serverLevel, finX, posY, finZ, "checkerboard");
+					IPLogic.fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + topFilling, finZ + 15);
+					IPLogic.fillAreaConditional(serverLevel, finX, posY - bottomFilling, finZ, finX + 15, posY - 1, finZ + 15);
+					IPLogic.placeStructure(serverLevel, finX, posY, finZ, "checkerboard");
 				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-					fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + topFilling, finZ + 31);
-					fillAreaConditional(serverLevel, finX - 16, posY - bottomFilling, finZ - 16, finX + 31, posY - 1, finZ + 31);
-					placeExtendedStructure(serverLevel, finX, posY, finZ, "checkerboard");
+					IPLogic.fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + topFilling, finZ + 31);
+					IPLogic.fillAreaConditional(serverLevel, finX - 16, posY - bottomFilling, finZ - 16, finX + 31, posY - 1, finZ + 31);
+					IPLogic.placeExtendedStructure(serverLevel, finX, posY, finZ, "checkerboard");
 				}
 			}
 
 			MutableComponent successfulKey = Component.translatable("message.industrial_platform.done")
 					.withStyle(ChatFormatting.GREEN);
+
 			player.displayClientMessage(successfulKey, true);
-			consumeItem(player, item, hand);
+			IPLogic.consumeItem(player, item, hand);
+
 			event.setCanceled(true);
 		}
 
 		event.setCancellationResult(InteractionResult.SUCCESS);
 	}
 
-	public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos blockPos, PathComputationType type) {
+	@Override
+	public boolean isPathfindable(BlockState state, PathComputationType type) {
 		return false;
-	}
-
-	public PlatformBlock(Properties properties) {
-		super(properties);
 	}
 }

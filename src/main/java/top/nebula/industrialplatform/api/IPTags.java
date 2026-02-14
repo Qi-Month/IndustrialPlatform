@@ -1,4 +1,4 @@
-package top.nebula.industrialplatform.utils;
+package top.nebula.industrialplatform.api;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;

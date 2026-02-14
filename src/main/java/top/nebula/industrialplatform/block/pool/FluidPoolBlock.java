@@ -18,9 +18,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import top.nebula.industrialplatform.IndustrialPlatform;
 import top.nebula.industrialplatform.config.CommonConfig;
-import top.nebula.industrialplatform.utils.ItemMatcher;
-
-import static top.nebula.industrialplatform.utils.IPLogic.*;
+import top.nebula.industrialplatform.api.ItemMatcher;
+import top.nebula.industrialplatform.api.IPLogic;
 
 @SuppressWarnings("ALL")
 @EventBusSubscriber(modid = IndustrialPlatform.MODID)
@@ -62,14 +61,14 @@ public class FluidPoolBlock extends Block {
 				player.displayClientMessage(failKey, true);
 				return;
 			}
-			placeStructure(serverLevel, finX, posY - 31, finZ, "pool_top");
-			placeStructure(serverLevel, finX, posY - 63, finZ, "pool_bottom");
+			IPLogic.placeStructure(serverLevel, finX, posY - 31, finZ, "pool_top");
+			IPLogic.placeStructure(serverLevel, finX, posY - 63, finZ, "pool_bottom");
 
 			MutableComponent successfulKey = Component.translatable("message.industrial_platform.pool_done")
 					.withStyle(ChatFormatting.GREEN);
 			player.displayClientMessage(successfulKey, true);
 
-			consumeItem(player, item, hand);
+			IPLogic.consumeItem(player, item, hand);
 			event.setCanceled(true);
 		}
 	}
