@@ -10,7 +10,7 @@ import top.nebula.industrialplatform.block.pool.FluidPoolBlock;
 import top.nebula.industrialplatform.block.pool.FluidPoolItem;
 import top.nebula.industrialplatform.block.platform.PlatformBlock;
 import top.nebula.industrialplatform.block.platform.PlatformItem;
-import top.nebula.industrialplatform.utils.ICheckModLoaded;
+import top.nebula.industrialplatform.api.ICheckModLoaded;
 
 import java.util.function.Function;
 import java.util.function.Supplier;

@@ -12,8 +12,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import top.nebula.industrialplatform.IndustrialPlatform;
 import top.nebula.industrialplatform.config.CommonConfig;
-import top.nebula.industrialplatform.utils.IPreviewReactive;
-import top.nebula.industrialplatform.utils.ItemMatcher;
+import top.nebula.industrialplatform.api.IPreviewReactive;
+import top.nebula.industrialplatform.api.ItemMatcher;
 
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID)
 public class PreviewPlayerTickHandler {

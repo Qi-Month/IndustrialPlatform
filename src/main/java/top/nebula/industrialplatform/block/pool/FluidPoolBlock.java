@@ -18,9 +18,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import top.nebula.industrialplatform.IndustrialPlatform;
 import top.nebula.industrialplatform.config.CommonConfig;
-import top.nebula.industrialplatform.utils.ItemMatcher;
-
-import static top.nebula.industrialplatform.utils.IPLogic.*;
+import top.nebula.industrialplatform.api.ItemMatcher;
+import top.nebula.industrialplatform.api.IPLogic;
 
 @SuppressWarnings("ALL")
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -44,11 +43,11 @@ public class FluidPoolBlock extends Block {
 		}
 
 		// 判断是否为石头
-		boolean isStone = ItemMatcher.matches(item, CommonConfig.TRIGGER_BLOCK);
+		boolean isTriggerBlock = ItemMatcher.matches(item, CommonConfig.TRIGGER_BLOCK);
 
 		ServerLevel serverLevel = (ServerLevel) level;
 
-		if (isStone && hand == InteractionHand.MAIN_HAND) {
+		if (isTriggerBlock && hand == InteractionHand.MAIN_HAND) {
 			// 石头右键：生成结构
 			int posX = blockPos.getX();
 			int posY = blockPos.getY();
@@ -62,14 +61,14 @@ public class FluidPoolBlock extends Block {
 				player.displayClientMessage(failKey, true);
 				return;
 			}
-			placeStructure(serverLevel, finX, posY - 31, finZ, "pool_top");
-			placeStructure(serverLevel, finX, posY - 63, finZ, "pool_bottom");
+			IPLogic.placeStructure(serverLevel, finX, posY - 31, finZ, "pool_top");
+			IPLogic.placeStructure(serverLevel, finX, posY - 63, finZ, "pool_bottom");
 
 			MutableComponent successfulKey = Component.translatable("message.industrial_platform.pool_done")
 					.withStyle(ChatFormatting.GREEN);
 			player.displayClientMessage(successfulKey, true);
 
-			consumeItem(player, item, hand);
+			IPLogic.consumeItem(player, item, hand);
 			event.setCanceled(true);
 		}
 	}

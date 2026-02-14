@@ -17,7 +17,7 @@ import top.nebula.industrialplatform.block.pool.FluidPoolBlock;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformMode;
 import top.nebula.industrialplatform.block.state.properties.platform.PlatformProperties;
 import top.nebula.industrialplatform.config.CommonConfig;
-import top.nebula.industrialplatform.utils.ItemMatcher;
+import top.nebula.industrialplatform.api.ItemMatcher;
 
 import java.util.ArrayList;
 import java.util.List;
