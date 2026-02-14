@@ -55,14 +55,14 @@ public class FluidPoolBlock extends Block {
 			int finX = (int) Math.floor(posX / 16.0) * 16;
 			int finZ = (int) Math.floor(posZ / 16.0) * 16;
 
-			if (posY <= 0) {
+			if (posY <= -10) {
 				MutableComponent failKey = Component.translatable("message.industrial_platform.too_low")
 						.withStyle(ChatFormatting.RED);
 				player.displayClientMessage(failKey, true);
 				return;
 			}
 			IPLogic.placeStructure(serverLevel, finX, posY - 31, finZ, "pool_top");
-			IPLogic.placeStructure(serverLevel, finX, posY - 63, finZ, "pool_bottom");
+			IPLogic.placeStructure(serverLevel, finX, posY - 52, finZ, "pool_bottom");
 
 			MutableComponent successfulKey = Component.translatable("message.industrial_platform.pool_done")
 					.withStyle(ChatFormatting.GREEN);
