@@ -26,14 +26,10 @@ public class BlockRegister {
 		BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, IndustrialPlatform.MODID);
 		ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, IndustrialPlatform.MODID);
 
-		INDUSTRIAL_PLATFORM = registerBlock("industrial_platform", PlatformBlock::new, (block) -> {
-			return new PlatformItem(block, new Item.Properties());
-		});
+		INDUSTRIAL_PLATFORM = registerBlock("industrial_platform", PlatformBlock::new, PlatformItem::new);
 
 		if (ICheckModLoaded.hasCreate()) {
-			FLUID_POOL = registerBlock("fluid_pool", FluidPoolBlock::new, (block) -> {
-				return new FluidPoolItem(block, new Item.Properties());
-			});
+			FLUID_POOL = registerBlock("fluid_pool", FluidPoolBlock::new, FluidPoolItem::new);
 		} else {
 			FLUID_POOL = null;
 		}

@@ -16,8 +16,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class FluidPoolItem extends BlockItem {
-	public FluidPoolItem(Block block, Properties properties) {
-		super(block, properties);
+	public FluidPoolItem(Block block) {
+		super(block, new Properties());
 	}
 
 	@OnlyIn(Dist.CLIENT)

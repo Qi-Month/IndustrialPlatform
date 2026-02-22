@@ -16,8 +16,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class PlatformItem extends BlockItem {
-	public PlatformItem(Block block, Properties properties) {
-		super(block, properties);
+	public PlatformItem(Block block) {
+		super(block, new Properties());
 	}
 
 	@OnlyIn(Dist.CLIENT)
