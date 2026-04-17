@@ -23,8 +23,8 @@ public class BlockRegister {
 	public static final Supplier<Block> FLUID_POOL;
 
 	static {
-		BLOCKS = DeferredRegister.create(BuiltInRegistries.BLOCK, IndustrialPlatform.MODID);
-		ITEMS = DeferredRegister.create(BuiltInRegistries.ITEM, IndustrialPlatform.MODID);
+		BLOCKS = DeferredRegister.createBlocks(IndustrialPlatform.MODID);
+		ITEMS = DeferredRegister.createItems(IndustrialPlatform.MODID);
 
 		INDUSTRIAL_PLATFORM = registerBlock("industrial_platform", PlatformBlock::new, (block) -> {
 			return new PlatformItem(block, new Item.Properties());
