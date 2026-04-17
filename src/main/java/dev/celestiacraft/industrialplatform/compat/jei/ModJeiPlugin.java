@@ -8,8 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.block.BlockRegister;
 
-import static dev.celestiacraft.industrialplatform.compat.jei.ModJeiInfo.*;
-
 @JeiPlugin
 public class ModJeiPlugin implements IModPlugin {
 	@Override
@@ -19,11 +17,21 @@ public class ModJeiPlugin implements IModPlugin {
 
 	@Override
 	public void registerRecipes(@NotNull IRecipeRegistration registration) {
-		init(registration);
+		ModJeiInfo.init(registration);
 
-		addJeiInfo(BlockRegister.INDUSTRIAL_PLATFORM.get().asItem().getDefaultInstance(), "platform");
+		ModJeiInfo.addJeiInfo(
+				BlockRegister.INDUSTRIAL_PLATFORM.get()
+						.asItem()
+						.getDefaultInstance(),
+				"platform"
+		);
 		if (BlockRegister.FLUID_POOL != null) {
-			addJeiInfo(BlockRegister.FLUID_POOL.get().asItem().getDefaultInstance(), "fluid_pool");
+			ModJeiInfo.addJeiInfo(
+					BlockRegister.FLUID_POOL.get()
+							.asItem().
+							getDefaultInstance(),
+					"fluid_pool"
+			);
 		}
 	}
 }
