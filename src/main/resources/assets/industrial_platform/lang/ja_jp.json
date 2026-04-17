@@ -1,0 +1,19 @@
+{
+	"block.industrial_platform.industrial_platform": "工業用足場",
+	"block.industrial_platform.fluid_pool": "液体プール",
+	"tooltip.industrial_platform.industrial_platform.off": "§eShiftを長押しで詳細情報を表示",
+	"tooltip.industrial_platform.industrial_platform": "§a調整にはレンチまたは棒が必要です。\nShift+右クリックで、上下の空間を埋めるかどうかを選択します。\n任意の石を持って右クリックすると、足場を設置します。",
+	"tooltip.industrial_platform.fluid_pool": "§a任意の石を持って右クリックすると、無限のプールを設置します。",
+	"config.jade.plugin_industrial_platform.common": "Industrial Platformのツールチップ",
+	"message.industrial_platform.done": "足場の設置に成功しました！",
+	"message.industrial_platform.pool_done": "プールの設置に成功しました！",
+	"message.industrial_platform.too_low": "高度が低すぎるため、無限のプールを設置できません！",
+	"tooltip.jade.industrial_platform.industrial": "足場の種類: 工業用",
+	"tooltip.jade.industrial_platform.checkerboard": "足場の種類: 格子模様",
+	"tooltip.jade.industrial_platform.light": "足場のサイズ: 1x1 チャンク",
+	"tooltip.jade.industrial_platform.heavy": "足場のサイズ: 3x3 チャンク",
+	"tooltip.jade.industrial_platform.floating": "上方のブロックを削除する",
+	"tooltip.jade.industrial_platform.filling": "上方のブロックを保持する",
+	"jei.info.industrial_platform.platform": "調整にはレンチまたは棒が必要です。\nレンチか棒を手に持ってブロックの横に立つと、プレビューが表示されます。\n右クリックで足場の種類を調整します。\nShift+右クリックで、空間を埋めるかどうかを選択します。\n任意の石を持って右クリックすると、足場を設置します。",
+	"jei.info.industrial_platform.fluid_pool": "任意の石を持って右クリックすると、無限のプールを設置します。\nレンチか棒を手に持ってブロックの横に立つと、プレビューが表示されます。\n液体プールは、上方のブロックを削除しません。\nこのプールは1万ブロックを超えており、Createの無限液体源に対応しています。"
+}
