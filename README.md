@@ -20,11 +20,11 @@ Infinity Fluid Pool(1x1 chunks, 62 blocks deep to create enough space for Create
 
  
 
-Rightclick with empty hand to switch types of Industrial Platform
+Right click with empty hand to switch types of Industrial Platform
 
  
 
-Rightclick with empty hand while sneaking to adjust whether filling the space above and below the platform
+Right click with empty hand while sneaking to adjust whether filling the space above and below the platform
 
  
 
