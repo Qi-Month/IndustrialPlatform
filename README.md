@@ -1,12 +1,9 @@
 This mod allows players to place an industrial platform which automatically fits the chunks of Minecraft game.
  
-
 Place it to the places you want to place a platform, and rightclick it with any stones to deploy the platform
  
-
 We provide 5 kinds of platform:
  
-
 Light Industrial Platform(1x1 chunks, made by concrete and deepslate tiles)
  
 Heavy Industrial Platform(3x3 chunks, made by concrete and deepslate tiles)
@@ -15,18 +12,13 @@ Light Checkerboard Platform(1x1 chunks, made by concrete with clear block edges)
  
 Heavy Checkerboard Platform(3x3 chunks, made by concrete with clear block edges)
  
-
 Infinity Fluid Pool(1x1 chunks, 62 blocks deep to create enough space for Create infinity Fluid) 
 
- 
+Rignt click with empty hand to switch types of Industrial Platform
 
-Rigntclick with empty hand to switch types of Industrial Platform
+Right click with empty hand while sneaking to adjust whether filling the space above and below the platform
 
- 
-
-Rightclick with empty hand while sneaking to adjust whether filling the space above and below the platform
-
- 
+---
 
 本模组提供了一个自动对齐区块的便携工业平台
  
