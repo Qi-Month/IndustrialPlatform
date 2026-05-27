@@ -1,6 +1,5 @@
 package dev.celestiacraft.industrialplatform.block;
 
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.bus.api.IEventBus;
@@ -10,14 +9,13 @@ import dev.celestiacraft.industrialplatform.block.pool.FluidPoolBlock;
 import dev.celestiacraft.industrialplatform.block.pool.FluidPoolItem;
 import dev.celestiacraft.industrialplatform.block.platform.PlatformBlock;
 import dev.celestiacraft.industrialplatform.block.platform.PlatformItem;
-import dev.celestiacraft.industrialplatform.api.ICheckModLoaded;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class BlockRegister {
-	private static final DeferredRegister<Block> BLOCKS;
-	private static final DeferredRegister<Item> ITEMS;
+	public static final DeferredRegister<Block> BLOCKS;
+	public static final DeferredRegister<Item> ITEMS;
 
 	public static final Supplier<Block> INDUSTRIAL_PLATFORM;
 	public static final Supplier<Block> FLUID_POOL;
@@ -30,13 +28,9 @@ public class BlockRegister {
 			return new PlatformItem(block, new Item.Properties());
 		});
 
-		if (ICheckModLoaded.hasCreate()) {
-			FLUID_POOL = registerBlock("fluid_pool", FluidPoolBlock::new, (block) -> {
-				return new FluidPoolItem(block, new Item.Properties());
-			});
-		} else {
-			FLUID_POOL = null;
-		}
+		FLUID_POOL = registerBlock("fluid_pool", FluidPoolBlock::new, (block) -> {
+			return new FluidPoolItem(block, new Item.Properties());
+		});
 	}
 
 	public static void register(IEventBus bus) {

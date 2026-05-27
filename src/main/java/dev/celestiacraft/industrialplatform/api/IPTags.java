@@ -1,9 +1,12 @@
 package dev.celestiacraft.industrialplatform.api;
 
+import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 
 public class IPTags {
 	public static class Items {
@@ -11,12 +14,30 @@ public class IPTags {
 			return ItemTags.create(ResourceLocation.fromNamespaceAndPath(namespace, name));
 		}
 
-		public static TagKey<Item> STONE;
-		public static TagKey<Item> WRENCH;
+		public static TagKey<Item>
+				STONE,
+				WRENCH,
+				DEEPSLATE;
 
 		static {
-			STONE = createTag("c", "stones");
-			WRENCH = createTag("c", "tools/wrench");
+			STONE = createTag("forge", "stone");
+			WRENCH = createTag("forge", "tools/wrench");
+			DEEPSLATE = createTag("forge", "deepslate");
+		}
+	}
+
+	public static class Blocks {
+		private static TagKey<Block> createTag(String namespace, String name) {
+			return BlockTags.create(ResourceLocation.fromNamespaceAndPath(namespace, name));
+		}
+
+		public static TagKey<Block>
+				NO_DROP_BLOCKS,
+				DEEPSLATE;
+
+		static {
+			NO_DROP_BLOCKS = createTag(IndustrialPlatform.MODID, "no_drop_blocks");
+			DEEPSLATE = createTag("forge", "deepslate");
 		}
 	}
 }

@@ -125,11 +125,11 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock {
 				if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
 					IPLogic.placeStructure(serverLevel, finX, posY, finZ, "industrial");
 				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
-					IPLogic.placeExtendedStructure(serverLevel, finX, posY, finZ, "industrial");
+					IPLogic.placeStructure(serverLevel, finX - 16, posY, finZ - 16, "industrial_h");
 				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
 					IPLogic.placeStructure(serverLevel, finX, posY, finZ, "checkerboard");
 				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-					IPLogic.placeExtendedStructure(serverLevel, finX, posY, finZ, "checkerboard");
+					IPLogic.placeStructure(serverLevel, finX - 16, posY, finZ - 16, "checkerboard_h");
 				}
 			} else {
 				if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
@@ -139,7 +139,7 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock {
 				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
 					IPLogic.fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + topFilling, finZ + 31);
 					IPLogic.fillAreaConditional(serverLevel, finX - 16, posY - bottomFilling, finZ - 16, finX + 31, posY - 1, finZ + 31);
-					IPLogic.placeExtendedStructure(serverLevel, finX, posY, finZ, "industrial");
+					IPLogic.placeStructure(serverLevel, finX - 16, posY, finZ - 16, "industrial_h");
 				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
 					IPLogic.fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + topFilling, finZ + 15);
 					IPLogic.fillAreaConditional(serverLevel, finX, posY - bottomFilling, finZ, finX + 15, posY - 1, finZ + 15);
@@ -147,7 +147,7 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock {
 				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
 					IPLogic.fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + topFilling, finZ + 31);
 					IPLogic.fillAreaConditional(serverLevel, finX - 16, posY - bottomFilling, finZ - 16, finX + 31, posY - 1, finZ + 31);
-					IPLogic.placeExtendedStructure(serverLevel, finX, posY, finZ, "checkerboard");
+					IPLogic.placeStructure(serverLevel, finX - 16, posY, finZ - 16, "checkerboard_h");
 				}
 			}
 

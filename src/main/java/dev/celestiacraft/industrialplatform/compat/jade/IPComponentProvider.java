@@ -39,7 +39,7 @@ public enum IPComponentProvider implements IComponentProvider<BlockAccessor> {
 		}
 	}
 
-	String addTranKey(String key) {
+	private String addTranKey(String key) {
 		return String.format(key, IndustrialPlatform.MODID);
 	}
 

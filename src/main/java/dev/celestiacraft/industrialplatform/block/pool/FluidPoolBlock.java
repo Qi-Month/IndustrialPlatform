@@ -62,7 +62,7 @@ public class FluidPoolBlock extends Block {
 				return;
 			}
 			IPLogic.placeStructure(serverLevel, finX, posY - 31, finZ, "pool_top");
-			IPLogic.placeStructure(serverLevel, finX, posY - 52, finZ, "pool_bottom");
+			IPLogic.placeStructure(serverLevel, finX, posY - 54, finZ, "pool_bottom");
 
 			MutableComponent successfulKey = Component.translatable("message.industrial_platform.pool_done")
 					.withStyle(ChatFormatting.GREEN);
