@@ -35,7 +35,7 @@ public class DataGenerators {
 
 		generator.addProvider(event.includeServer(), blockTags);
 		generator.addProvider(event.includeServer(), itemTags);
-		generator.addProvider(event.includeServer(), new IPRecipeProvider(output));
+		generator.addProvider(event.includeServer(), new IPRecipeProvider(output, provider));
 		generator.addProvider(event.includeServer(), new IPLootTableProvider(output, provider));
 	}
 }
