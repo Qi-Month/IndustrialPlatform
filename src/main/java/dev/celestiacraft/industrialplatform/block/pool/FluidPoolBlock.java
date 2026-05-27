@@ -21,7 +21,6 @@ import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import dev.celestiacraft.industrialplatform.api.ItemMatcher;
 import dev.celestiacraft.industrialplatform.api.IPLogic;
 
-@SuppressWarnings("ALL")
 @EventBusSubscriber(modid = IndustrialPlatform.MODID)
 public class FluidPoolBlock extends Block {
 	public FluidPoolBlock() {

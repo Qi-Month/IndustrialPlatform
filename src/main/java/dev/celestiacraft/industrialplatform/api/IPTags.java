@@ -20,9 +20,9 @@ public class IPTags {
 				DEEPSLATE;
 
 		static {
-			STONE = createTag("forge", "stone");
-			WRENCH = createTag("forge", "tools/wrench");
-			DEEPSLATE = createTag("forge", "deepslate");
+			STONE = createTag("c", "stone");
+			WRENCH = createTag("c", "tools/wrench");
+			DEEPSLATE = createTag("c", "deepslate");
 		}
 	}
 
@@ -37,7 +37,7 @@ public class IPTags {
 
 		static {
 			NO_DROP_BLOCKS = createTag(IndustrialPlatform.MODID, "no_drop_blocks");
-			DEEPSLATE = createTag("forge", "deepslate");
+			DEEPSLATE = createTag("c", "deepslate");
 		}
 	}
 }

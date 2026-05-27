@@ -1,5 +1,6 @@
 package dev.celestiacraft.industrialplatform.datagen;
 
+import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.datagen.language.LanguageGenerate;
 import dev.celestiacraft.industrialplatform.datagen.language.locale.Chinese;
 import dev.celestiacraft.industrialplatform.datagen.language.locale.English;
@@ -11,13 +12,13 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.concurrent.CompletableFuture;
 
+@EventBusSubscriber(modid = IndustrialPlatform.MODID)
 public class DataGenerators {
 	@SubscribeEvent
 	public static void onDatagen(GatherDataEvent event) {
@@ -38,6 +39,6 @@ public class DataGenerators {
 		generator.addProvider(event.includeServer(), blockTags);
 		generator.addProvider(event.includeServer(), itemTags);
 		generator.addProvider(event.includeServer(), new IPRecipeProvider(output, provider));
-		generator.addProvider(event.includeServer(), new IPLootTableProvider(output, new HashSet<>(), new ArrayList<>(), provider));
+		generator.addProvider(event.includeServer(), new IPLootTableProvider(output, provider));
 	}
 }

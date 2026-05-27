@@ -1,0 +1,19 @@
+{
+	"block.industrial_platform.industrial_platform": "工業臺",
+	"block.industrial_platform.fluid_pool": "液池",
+	"tooltip.industrial_platform.industrial_platform.off": "§e押Shift以詳覽",
+	"tooltip.industrial_platform.industrial_platform": "§a右擊以調臺之屬類\n§a伏而右键以更當於上下填之否\n§a以任石右擊，展臺",
+	"tooltip.industrial_platform.fluid_pool": "§a以任石右擊，展液池",
+	"config.jade.plugin_industrial_platform.common": "工業臺：物之注文",
+	"message.industrial_platform.done": "臺已置！可喜可賀。",
+	"message.industrial_platform.pool_done": "液池已展！可喜可賀。",
+	"message.industrial_platform.too_low": "勢過卑！液池无以展！",
+	"tooltip.jade.industrial_platform.industrial": "臺之屬類：工业臺",
+	"tooltip.jade.industrial_platform.checkerboard": "臺之屬類：棋枰交紋臺",
+	"tooltip.jade.industrial_platform.light": "臺之尺寸：一乘一區塊",
+	"tooltip.jade.industrial_platform.heavy": "臺之尺寸：三乘三區塊",
+	"tooltip.jade.industrial_platform.floating": "除臺上方之塊",
+	"tooltip.jade.industrial_platform.filling": "留臺上方之塊",
+	"jei.info.industrial_platform.platform": "以棍或钳調之\n持調器近臺塊，以觀展形\n立而右擊，以調臺類\n伏而右键以更當於上下填之否\n以任石右擊，展臺",
+	"jei.info.industrial_platform.fluid_pool": "以任石右擊，展液池\n持調器近液池塊，以觀展形\n液池不除上塊\n液池既展，容逾萬格，足供創藝无竭之流"
+}

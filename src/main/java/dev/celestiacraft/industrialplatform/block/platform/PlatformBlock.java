@@ -37,7 +37,6 @@ import dev.celestiacraft.industrialplatform.block.state.properties.platform.Plat
 import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformProperties;
 import dev.celestiacraft.industrialplatform.api.IPLogic;
 
-@SuppressWarnings("ALL")
 @EventBusSubscriber(modid = IndustrialPlatform.MODID)
 public class PlatformBlock extends Block implements SimpleWaterloggedBlock {
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
