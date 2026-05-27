@@ -14,6 +14,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.concurrent.CompletableFuture;
 
 public class DataGenerators {
@@ -36,6 +38,6 @@ public class DataGenerators {
 		generator.addProvider(event.includeServer(), blockTags);
 		generator.addProvider(event.includeServer(), itemTags);
 		generator.addProvider(event.includeServer(), new IPRecipeProvider(output, provider));
-		generator.addProvider(event.includeServer(), new IPLootTableProvider(output, provider));
+		generator.addProvider(event.includeServer(), new IPLootTableProvider(output, new HashSet<>(), new ArrayList<>(), provider));
 	}
 }
