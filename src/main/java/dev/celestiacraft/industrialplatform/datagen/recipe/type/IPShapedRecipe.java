@@ -56,7 +56,8 @@ public class IPShapedRecipe extends IPRecipeProvider {
 				.define('D', Tags.Items.STONES)
 				.unlockedBy("stone", has(Tags.Items.STONES))
 				.save(
-						output.withConditions(new ModLoadedCondition("create")),
+//						output.withConditions(new ModLoadedCondition("create")),
+						output,
 						IndustrialPlatform.loadResource("pool")
 				);
 
@@ -70,7 +71,8 @@ public class IPShapedRecipe extends IPRecipeProvider {
 				.define('D', Tags.Items.STONES)
 				.unlockedBy("stone", has(Tags.Items.STONES))
 				.save(
-						output.withConditions(new ModLoadedCondition("create")),
+//						output.withConditions(new ModLoadedCondition("create")),
+						output,
 						IndustrialPlatform.loadResource("pool2")
 				);
 	}
