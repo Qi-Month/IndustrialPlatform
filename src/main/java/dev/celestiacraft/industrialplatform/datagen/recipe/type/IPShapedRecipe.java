@@ -25,49 +25,22 @@ public class IPShapedRecipe extends IPRecipeProvider {
 
 	private static void shaped(RecipeOutput output) {
 		ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, BlockRegister.INDUSTRIAL_PLATFORM.get())
-				.pattern("ACB")
-				.pattern("DDD")
-				.pattern("DDD")
-				.define('A', Tags.Items.DYES_YELLOW)
-				.define('B', Tags.Items.DYES_BLACK)
+				.pattern("ABA")
+				.pattern("CCC")
+				.pattern("CCC")
+				.define('A', Tags.Items.DYES)
+				.define('B', Tags.Items.STONES)
 				.define('C', IPTags.Items.DEEPSLATE)
-				.define('D', Tags.Items.STONES)
 				.unlockedBy("stone", has(Tags.Items.STONES))
 				.save(output, IndustrialPlatform.loadResource("platform"));
 
-		ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, BlockRegister.INDUSTRIAL_PLATFORM.get())
-				.pattern("ACB")
-				.pattern("DDD")
-				.pattern("DDD")
-				.define('A', Tags.Items.DYES_BLACK)
-				.define('B', Tags.Items.DYES_YELLOW)
-				.define('C', IPTags.Items.DEEPSLATE)
-				.define('D', Tags.Items.STONES)
-				.unlockedBy("stone", has(Tags.Items.STONES))
-				.save(output, IndustrialPlatform.loadResource("platform_2"));
-
 		ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, BlockRegister.FLUID_POOL.get())
-				.pattern("A B")
-				.pattern("D D")
-				.pattern("DCD")
-				.define('A', Tags.Items.DYES_BLACK)
-				.define('B', Tags.Items.DYES_YELLOW)
-				.define('C', IPTags.Items.DEEPSLATE)
-				.define('D', Tags.Items.STONES)
-				.unlockedBy("stone", has(Tags.Items.STONES))
-				.save(
-						output.withConditions(new ModLoadedCondition("create")),
-						IndustrialPlatform.loadResource("pool")
-				);
-
-		ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, BlockRegister.FLUID_POOL.get())
-				.pattern("A B")
-				.pattern("D D")
-				.pattern("DCD")
-				.define('A', Tags.Items.DYES_BLACK)
-				.define('B', Tags.Items.DYES_YELLOW)
-				.define('C', IPTags.Items.DEEPSLATE)
-				.define('D', Tags.Items.STONES)
+				.pattern("A A")
+				.pattern("B B")
+				.pattern("BBB")
+				.define('A', Tags.Items.DYES)
+				.define('B', IPTags.Items.DEEPSLATE)
+				.define('C', Tags.Items.STONES)
 				.unlockedBy("stone", has(Tags.Items.STONES))
 				.save(
 						output.withConditions(new ModLoadedCondition("create")),
