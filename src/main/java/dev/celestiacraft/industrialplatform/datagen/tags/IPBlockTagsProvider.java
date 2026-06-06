@@ -36,6 +36,7 @@ public class IPBlockTagsProvider extends BlockTagsProvider {
 				.addTag(Tags.Blocks.SANDS)
 				.addTag(Tags.Blocks.SANDSTONE_BLOCKS)
 				.addTag(Tags.Blocks.NETHERRACKS)
+				.addOptionalTag(Tags.Blocks.ORES)
 				.addOptionalTag(Tags.Blocks.STONES)
 				.addOptionalTag(Tags.Blocks.COBBLESTONES)
 				.addOptionalTag(IPTags.Blocks.DEEPSLATE);
