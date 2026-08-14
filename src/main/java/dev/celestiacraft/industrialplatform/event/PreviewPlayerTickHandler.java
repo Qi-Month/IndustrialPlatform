@@ -42,10 +42,7 @@ public class PreviewPlayerTickHandler {
 
 		BlockPos center = player.blockPosition();
 
-		for (BlockPos pos : BlockPos.betweenClosed(
-				center.offset(-15, -15, -15),
-				center.offset(15, 15, 15)
-		)) {
+		for (BlockPos pos : getFirstAndSeconPos(center)) {
 			BlockState state = level.getBlockState(pos);
 			Block block = state.getBlock();
 
@@ -53,5 +50,12 @@ public class PreviewPlayerTickHandler {
 				reactive.onPreviewHover(serverLevel, pos, state);
 			}
 		}
+	}
+
+	private static Iterable<BlockPos> getFirstAndSeconPos(BlockPos center) {
+		return BlockPos.betweenClosed(
+				center.offset(-15, -15, -15),
+				center.offset(15, 15, 15)
+		);
 	}
 }
