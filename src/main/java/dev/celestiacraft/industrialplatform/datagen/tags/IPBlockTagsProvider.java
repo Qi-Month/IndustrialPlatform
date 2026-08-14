@@ -2,7 +2,7 @@ package dev.celestiacraft.industrialplatform.datagen.tags;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.api.IPTags;
-import dev.celestiacraft.industrialplatform.block.BlockRegister;
+import dev.celestiacraft.industrialplatform.block.IPBlocks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
@@ -44,11 +44,11 @@ public class IPBlockTagsProvider extends BlockTagsProvider {
 				.addOptionalTag(IPTags.Blocks.DEEPSLATE);
 
 		tag(Tags.Blocks.NEEDS_WOOD_TOOL)
-				.add(BlockRegister.INDUSTRIAL_PLATFORM.get())
-				.add(BlockRegister.FLUID_POOL.get());
+				.add(IPBlocks.INDUSTRIAL_PLATFORM.get())
+				.add(IPBlocks.FLUID_POOL.get());
 
 		tag(BlockTags.MINEABLE_WITH_PICKAXE)
-				.add(BlockRegister.INDUSTRIAL_PLATFORM.get())
-				.add(BlockRegister.FLUID_POOL.get());
+				.add(IPBlocks.INDUSTRIAL_PLATFORM.get())
+				.add(IPBlocks.FLUID_POOL.get());
 	}
 }

@@ -7,7 +7,7 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import dev.celestiacraft.industrialplatform.block.BlockRegister;
+import dev.celestiacraft.industrialplatform.block.IPBlocks;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 
 @Mod(IndustrialPlatform.MODID)
@@ -25,6 +25,6 @@ public class IndustrialPlatform {
 
 		context.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC, "nebula/industrial_platform/common.toml");
 
-		BlockRegister.register(bus);
+		IPBlocks.register(bus);
 	}
 }

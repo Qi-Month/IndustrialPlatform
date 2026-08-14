@@ -1,6 +1,6 @@
 package dev.celestiacraft.industrialplatform.datagen.loot;
 
-import dev.celestiacraft.industrialplatform.block.BlockRegister;
+import dev.celestiacraft.industrialplatform.block.IPBlocks;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.block.Block;
@@ -17,13 +17,13 @@ public class IPBlockLoot extends BlockLootSubProvider {
 
 	@Override
 	protected void generate() {
-		dropSelf(BlockRegister.INDUSTRIAL_PLATFORM.get());
-		dropSelf(BlockRegister.FLUID_POOL.get());
+		dropSelf(IPBlocks.INDUSTRIAL_PLATFORM.get());
+		dropSelf(IPBlocks.FLUID_POOL.get());
 	}
 
 	@Override
 	protected @NotNull Iterable<Block> getKnownBlocks() {
-		return BlockRegister.BLOCKS.getEntries()
+		return IPBlocks.BLOCKS.getEntries()
 				.stream()
 				.map(RegistryObject::get)::iterator;
 	}

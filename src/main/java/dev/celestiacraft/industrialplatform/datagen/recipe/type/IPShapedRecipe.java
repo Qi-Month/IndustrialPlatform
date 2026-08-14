@@ -2,7 +2,7 @@ package dev.celestiacraft.industrialplatform.datagen.recipe.type;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.api.IPTags;
-import dev.celestiacraft.industrialplatform.block.BlockRegister;
+import dev.celestiacraft.industrialplatform.block.IPBlocks;
 import dev.celestiacraft.industrialplatform.datagen.recipe.IPRecipeProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
@@ -20,7 +20,7 @@ public class IPShapedRecipe extends IPRecipeProvider {
 	}
 
 	public static void register(Consumer<FinishedRecipe> consumer) {
-		ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, BlockRegister.INDUSTRIAL_PLATFORM.get())
+		ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, IPBlocks.INDUSTRIAL_PLATFORM.get())
 				.pattern("ABA")
 				.pattern("CCC")
 				.pattern("CCC")
@@ -33,7 +33,7 @@ public class IPShapedRecipe extends IPRecipeProvider {
 		ConditionalRecipe.builder()
 				.addCondition(new ModLoadedCondition("create"))
 				.addRecipe((recipe) -> {
-					ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, BlockRegister.FLUID_POOL.get())
+					ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, IPBlocks.FLUID_POOL.get())
 							.pattern("A A")
 							.pattern("B B")
 							.pattern("BBB")

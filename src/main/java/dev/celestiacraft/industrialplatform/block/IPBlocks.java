@@ -14,7 +14,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class BlockRegister {
+public class IPBlocks {
 	public static final DeferredRegister<Block> BLOCKS;
 	public static final DeferredRegister<Item> ITEMS;
 
