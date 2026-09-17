@@ -36,10 +36,10 @@ public class IPShapedRecipe extends IPRecipeProvider {
 					ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, IPBlocks.FLUID_POOL.get())
 							.pattern("A A")
 							.pattern("B B")
-							.pattern("BBB")
+							.pattern("BCB")
 							.define('A', Tags.Items.DYES)
-							.define('C', IPTags.Items.DEEPSLATE)
-							.define('D', Tags.Items.STONE)
+							.define('B', IPTags.Items.DEEPSLATE)
+							.define('C', Tags.Items.STONE)
 							.unlockedBy("stone", has(Tags.Items.STONE))
 							.save(recipe, IndustrialPlatform.loadResource("pool"));
 				})

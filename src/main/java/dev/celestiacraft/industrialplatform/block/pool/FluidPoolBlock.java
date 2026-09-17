@@ -42,8 +42,8 @@ public class FluidPoolBlock extends Block {
 			return;
 		}
 
-		// 判断是否为石头
-		boolean isTriggerBlock = ItemMatcher.matches(item, CommonConfig.TRIGGER_BLOCK);
+		// 判断是否为搭建材料
+		boolean isTriggerBlock = ItemMatcher.matches(item, CommonConfig.PLATFORM_MATERIAL);
 
 		ServerLevel serverLevel = (ServerLevel) level;
 

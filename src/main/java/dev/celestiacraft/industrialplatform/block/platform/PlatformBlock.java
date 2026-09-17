@@ -1,20 +1,39 @@
 package dev.celestiacraft.industrialplatform.block.platform;
 
+import dev.celestiacraft.industrialplatform.api.IPLogic;
+import dev.celestiacraft.industrialplatform.api.IPTags;
+import dev.celestiacraft.industrialplatform.api.ItemMatcher;
+import dev.celestiacraft.industrialplatform.block.IPlatformController;
+import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformMode;
+import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformProperties;
+import dev.celestiacraft.industrialplatform.config.CommonConfig;
+import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
+import dev.celestiacraft.industrialplatform.item.FillAdjusterItem;
+import dev.celestiacraft.industrialplatform.menu.PlatformBuildMenu;
+import dev.celestiacraft.industrialplatform.platform.PlatformGenerator;
+import dev.celestiacraft.industrialplatform.platform.PlatformLayout;
+import dev.celestiacraft.industrialplatform.platform.PlatformPalette;
+import dev.celestiacraft.industrialplatform.platform.PlatformStyle;
+import dev.celestiacraft.industrialplatform.platform.blueprint.PlatformBlueprint;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -24,22 +43,14 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
-import dev.celestiacraft.industrialplatform.config.CommonConfig;
-import dev.celestiacraft.industrialplatform.IndustrialPlatform;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformMode;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformProperties;
-import dev.celestiacraft.industrialplatform.api.ItemMatcher;
-import dev.celestiacraft.industrialplatform.api.IPLogic;
 
 @SuppressWarnings("ALL")
-@Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class PlatformBlock extends Block implements SimpleWaterloggedBlock {
+public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPlatformController {
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 	public static final EnumProperty<PlatformMode> PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
 	public static final BooleanProperty FLOATING = PlatformProperties.FLOATING;
@@ -87,80 +98,220 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock {
 		return Block.box(0, 0, 0, 16, 12, 16);
 	}
 
-	@SubscribeEvent
-	public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-		Level level = event.getLevel();
-		BlockPos blockPos = event.getPos();
-		Player player = event.getEntity();
-		InteractionHand hand = event.getHand();
-		ItemStack item = player.getItemInHand(hand);
-		BlockState state = level.getBlockState(blockPos);
+	/**
+	 * 手持调节器右键打开搭建界面, 不再直接展开平台
+	 */
+	@Override
+	public @NotNull InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
+		ItemStack held = player.getItemInHand(hand);
 
-		if (level.isClientSide() || !(state.getBlock() instanceof PlatformBlock)) {
-			return;
+		if (!handlesInteraction(held)) {
+			return InteractionResult.PASS;
 		}
 
-		boolean isAdjuster = ItemMatcher.matches(item, CommonConfig.ADJUSTER);
-		boolean isTriggerBlock = ItemMatcher.matches(item, CommonConfig.TRIGGER_BLOCK);
+		if (level.isClientSide()) {
+			return InteractionResult.SUCCESS;
+		}
 
-		ServerLevel serverLevel = (ServerLevel) level;
-
-		if (isAdjuster && hand == InteractionHand.MAIN_HAND && player.isCrouching()) {
-			serverLevel.setBlock(blockPos, state.cycle(FLOATING), 3);
-			player.swing(InteractionHand.MAIN_HAND, true);
-		} else if (isAdjuster && hand == InteractionHand.MAIN_HAND) {
-			serverLevel.setBlock(blockPos, state.cycle(PLATFORM_MODE), 3);
-			player.swing(InteractionHand.MAIN_HAND, true);
-		} else if (isTriggerBlock && hand == InteractionHand.MAIN_HAND) {
-			int posX = blockPos.getX();
-			int posY = blockPos.getY();
-			int posZ = blockPos.getZ();
-			int finX = (int) Math.floor(posX / 16.0) * 16;
-			int finZ = (int) Math.floor(posZ / 16.0) * 16;
-
-			int topFilling = CommonConfig.TOP_FILLING_DISTANCE.get();
-			int bottomFilling = CommonConfig.BOTTOM_FILLING_DISTANCE.get();
-
-			if (state.getValue(FLOATING)) {
-				if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
-					IPLogic.placeStructure(serverLevel, finX, posY, finZ, "industrial");
-				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
-					IPLogic.placeStructure(serverLevel, finX - 16, posY, finZ - 16, "industrial_h");
-				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
-					IPLogic.placeStructure(serverLevel, finX, posY, finZ, "checkerboard");
-				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-					IPLogic.placeStructure(serverLevel, finX - 16, posY, finZ - 16, "checkerboard_h");
-				}
-			} else {
-				if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT) {
-					IPLogic.fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + topFilling, finZ + 15);
-					IPLogic.fillAreaConditional(serverLevel, finX, posY - bottomFilling, finZ, finX + 15, posY - 1, finZ + 15);
-					IPLogic.placeStructure(serverLevel, finX, posY, finZ, "industrial");
-				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY) {
-					IPLogic.fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + topFilling, finZ + 31);
-					IPLogic.fillAreaConditional(serverLevel, finX - 16, posY - bottomFilling, finZ - 16, finX + 31, posY - 1, finZ + 31);
-					IPLogic.placeStructure(serverLevel, finX - 16, posY, finZ - 16, "industrial_h");
-				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT) {
-					IPLogic.fillArea(serverLevel, finX, posY + 1, finZ, finX + 15, posY + topFilling, finZ + 15);
-					IPLogic.fillAreaConditional(serverLevel, finX, posY - bottomFilling, finZ, finX + 15, posY - 1, finZ + 15);
-					IPLogic.placeStructure(serverLevel, finX, posY, finZ, "checkerboard");
-				} else if (state.getValue(PLATFORM_MODE) == PlatformMode.CHECKERBOARD_HEAVY) {
-					IPLogic.fillArea(serverLevel, finX - 16, posY + 1, finZ - 16, finX + 31, posY + topFilling, finZ + 31);
-					IPLogic.fillAreaConditional(serverLevel, finX - 16, posY - bottomFilling, finZ - 16, finX + 31, posY - 1, finZ + 31);
-					IPLogic.placeStructure(serverLevel, finX - 16, posY, finZ - 16, "checkerboard_h");
-				}
+		// 界面开着就打开搭建界面, 关着就是以前那套玩法
+		if (CommonConfig.ENABLE_BUILDER_UI.get()) {
+			if (player instanceof ServerPlayer serverPlayer) {
+				IPlatformController.openBuilder(serverPlayer, pos);
 			}
 
-			MutableComponent successfulKey = Component.translatable("message.industrial_platform.done")
-					.withStyle(ChatFormatting.GREEN);
-
-			player.displayClientMessage(successfulKey, true);
-			IPLogic.consumeItem(player, item, hand);
-
-			event.setCanceled(true);
+			return InteractionResult.SUCCESS;
 		}
 
-		event.setCancellationResult(InteractionResult.SUCCESS);
+		return classicUse(state, level, pos, player, hand, held);
+	}
+
+	/**
+	 * 手里拿的东西会不会被这个交互吃掉(客户端也要用同一套判断, 不然两边动作对不上)
+	 */
+	private static boolean handlesInteraction(ItemStack held) {
+		if (ItemMatcher.matches(held, CommonConfig.ADJUSTER)) {
+			return true;
+		}
+
+		if (CommonConfig.ENABLE_BUILDER_UI.get()) {
+			return false;
+		}
+
+		return held.getItem() instanceof FillAdjusterItem || isMaterial(held);
+	}
+
+	public static boolean isMaterial(ItemStack stack) {
+		return ItemMatcher.matches(stack, CommonConfig.PLATFORM_MATERIAL) || stack.is(IPTags.Items.PLATFORM_MATERIAL);
+	}
+
+	/**
+	 * 界面关掉时的老玩法: 调节器切模式/悬浮, 材料或填充调节器右键直接展开
+	 */
+	private static InteractionResult classicUse(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack held) {
+		if (ItemMatcher.matches(held, CommonConfig.ADJUSTER)) {
+			if (hand != InteractionHand.MAIN_HAND) {
+				return InteractionResult.PASS;
+			}
+
+			// 站着切平台类型, 潜行切悬浮
+			level.setBlock(pos, player.isCrouching() ? state.cycle(FLOATING) : state.cycle(PLATFORM_MODE), 3);
+			player.swing(InteractionHand.MAIN_HAND, true);
+			return InteractionResult.SUCCESS;
+		}
+
+		int upFill;
+		int downFill;
+		boolean consume = false;
+
+		if (held.getItem() instanceof FillAdjusterItem) {
+			upFill = FillAdjusterItem.getUpFill(held);
+			downFill = FillAdjusterItem.getDownFill(held);
+		} else if (hand == InteractionHand.MAIN_HAND && isMaterial(held)) {
+			upFill = CommonConfig.TOP_FILLING_DISTANCE.get();
+			downFill = CommonConfig.BOTTOM_FILLING_DISTANCE.get();
+			consume = true;
+		} else {
+			return InteractionResult.PASS;
+		}
+
+		if (!(level instanceof ServerLevel serverLevel)) {
+			return InteractionResult.SUCCESS;
+		}
+
+		PlatformMode mode = state.getValue(PLATFORM_MODE);
+		buildPlatform(serverLevel, pos, mode, upFill, downFill);
+
+		player.displayClientMessage(Component.translatable("message.industrial_platform.done").withStyle(ChatFormatting.GREEN), true);
+
+		if (consume) {
+			IPLogic.consumeItem(player, held, hand);
+		}
+
+		return InteractionResult.SUCCESS;
+	}
+
+	/**
+	 * 老方块(内置款式)的入口: 把模式翻译成 样式 + 尺寸 + 默认调色板
+	 *
+	 * @param upFill   向上清理的格数, 0 表示保留上方方块
+	 * @param downFill 向下填充垫底方块的格数
+	 */
+	public static boolean buildPlatform(ServerLevel level, BlockPos controllerPos, PlatformMode mode, int upFill, int downFill) {
+		PlatformStyle style = PlatformStyle.of(mode);
+		int chunks = mode.isHeavy() ? 3 : 1;
+
+		boolean built = buildPlatform(level, controllerPos, style, PlatformLayout.of(chunks, chunks), PlatformPalette.defaults(style), upFill, downFill);
+
+		// 控制器方块还有可能留在原地, 把这次搭建的模式写回去
+		BlockState state = level.getBlockState(controllerPos);
+		if (state.getBlock() instanceof PlatformBlock) {
+			level.setBlock(controllerPos, state
+					.setValue(PLATFORM_MODE, mode)
+					.setValue(FLOATING, getUpFill(upFill) == 0 && getDownFill(downFill) == 0), 3);
+		}
+
+		return built;
+	}
+
+	/**
+	 * 按 样式 + 尺寸 + 调色板 铺平台, 底板由 {@link PlatformGenerator} 算出来, 不再读结构文件
+	 *
+	 * @param upFill   向上清理的格数, 0 表示保留上方方块
+	 * @param downFill 向下填充垫底方块的格数
+	 */
+	public static boolean buildPlatform(ServerLevel level, BlockPos controllerPos, PlatformStyle style, PlatformLayout layout, PlatformPalette palette, int upFill, int downFill) {
+		int chunks = PlatformLayout.BLOCKS_PER_CHUNK;
+		int chunkX = Math.floorDiv(controllerPos.getX(), chunks) * chunks;
+		int chunkZ = Math.floorDiv(controllerPos.getZ(), chunks) * chunks;
+
+		// 控制器所在区块尽量落在平台中间: 1x1 与 3x3 的结果和改造前完全一致
+		int originX = chunkX - ((layout.chunksX() - 1) / 2) * chunks;
+		int originZ = chunkZ - ((layout.chunksZ() - 1) / 2) * chunks;
+		int originY = controllerPos.getY();
+
+		int width = layout.width();
+		int depth = layout.depth();
+		int up = getUpFill(upFill);
+		int down = getDownFill(downFill);
+
+		if (up > 0) {
+			IPLogic.fillArea(level, originX, originY + 1, originZ, originX + width - 1, originY + up, originZ + depth - 1);
+		}
+		if (down > 0) {
+			IPLogic.fillAreaConditional(level, originX, originY - down, originZ, originX + width - 1, originY - 1, originZ + depth - 1);
+		}
+
+		PlatformGenerator.forEachDeck(style, palette, layout, (localX, localZ, state) ->
+				IPLogic.placeGenerated(level, new BlockPos(originX + localX, originY, originZ + localZ), state));
+
+		BlockState state = level.getBlockState(controllerPos);
+		if (state.getBlock() instanceof PlatformBlock) {
+			level.setBlock(controllerPos, state.setValue(FLOATING, up == 0 && down == 0), 3);
+		}
+
+		return true;
+	}
+
+	/**
+	 * 照着蓝图铺: 底板/层数/方块全部来自蓝图 NBT
+	 *
+	 * @param upFill   蓝图上方再清理多少格
+	 * @param downFill 蓝图下方垫多少格
+	 */
+	public static boolean buildBlueprint(ServerLevel level, BlockPos controllerPos, PlatformBlueprint blueprint, int upFill, int downFill) {
+		int chunkSize = PlatformLayout.BLOCKS_PER_CHUNK;
+		int chunkX = Math.floorDiv(controllerPos.getX(), chunkSize) * chunkSize;
+		int chunkZ = Math.floorDiv(controllerPos.getZ(), chunkSize) * chunkSize;
+
+		int sizeX = Math.max(1, blueprint.sizeX());
+		int sizeY = Math.max(1, blueprint.sizeY());
+		int sizeZ = Math.max(1, blueprint.sizeZ());
+
+		int originX = chunkX - ((PlatformLayout.chunksOf(sizeX) - 1) / 2) * chunkSize;
+		int originZ = chunkZ - ((PlatformLayout.chunksOf(sizeZ) - 1) / 2) * chunkSize;
+		int originY = controllerPos.getY();
+
+		int up = getUpFill(upFill);
+		int down = getDownFill(downFill);
+
+		if (up > 0) {
+			int clearFrom = originY + sizeY;
+			IPLogic.fillArea(level, originX, clearFrom, originZ, originX + sizeX - 1, clearFrom + up - 1, originZ + sizeZ - 1);
+		}
+
+		if (down > 0) {
+			IPLogic.fillAreaConditional(level, originX, originY - down, originZ, originX + sizeX - 1, originY - 1, originZ + sizeZ - 1);
+		}
+
+		for (PlatformBlueprint.PlacedBlock placed : blueprint.getBlocks()) {
+			BlockPos target = new BlockPos(
+					originX + placed.pos().getX(),
+					originY + placed.pos().getY(),
+					originZ + placed.pos().getZ()
+			);
+
+			IPLogic.placeGenerated(level, target, placed.state());
+		}
+
+		return true;
+	}
+
+	private static int getUpFill(int upFill) {
+		return Mth.clamp(upFill, PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
+	}
+
+	private static int getDownFill(int downFill) {
+		return Mth.clamp(downFill, PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
+	}
+
+	@Override
+	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+		// 控制器被结构覆盖/挖掉时, 顺手清掉它保存的搭建设置
+		if (!state.is(newState.getBlock()) && level instanceof ServerLevel serverLevel) {
+			PlatformSettingsStorage.get(serverLevel).remove(pos);
+		}
+
+		super.onRemove(state, level, pos, newState, isMoving);
 	}
 
 	@Override

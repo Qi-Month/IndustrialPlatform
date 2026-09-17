@@ -17,12 +17,17 @@ public class IPTags {
 		public static TagKey<Item>
 				STONE,
 				WRENCH,
-				DEEPSLATE;
+				DEEPSLATE,
+				/**
+				 * 可以用于搭建平台的材料, 搭建界面的槽位接受这个物品标签
+				 */
+				PLATFORM_MATERIAL;
 
 		static {
 			STONE = createTag("forge", "stone");
 			WRENCH = createTag("forge", "tools/wrench");
 			DEEPSLATE = createTag("forge", "deepslate");
+			PLATFORM_MATERIAL = createTag(IndustrialPlatform.MODID, "platform_material");
 		}
 	}
 

@@ -18,6 +18,7 @@ public class IPBlockLoot extends BlockLootSubProvider {
 	@Override
 	protected void generate() {
 		dropSelf(IPBlocks.INDUSTRIAL_PLATFORM.get());
+		dropSelf(IPBlocks.PLATFORM_DESIGNER.get());
 		dropSelf(IPBlocks.FLUID_POOL.get());
 	}
 

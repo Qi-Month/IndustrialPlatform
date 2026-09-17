@@ -6,6 +6,7 @@ import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import dev.celestiacraft.industrialplatform.block.IPBlocks;
+import dev.celestiacraft.industrialplatform.item.IPItems;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class AddCreativeModeTabs {
@@ -13,6 +14,8 @@ public class AddCreativeModeTabs {
 	public static void buildContents(BuildCreativeModeTabContentsEvent event) {
 		if (event.getTabKey().equals(CreativeModeTabs.TOOLS_AND_UTILITIES)) {
 			event.accept(IPBlocks.INDUSTRIAL_PLATFORM.get().asItem());
+			event.accept(IPBlocks.PLATFORM_DESIGNER.get().asItem());
+			event.accept(IPItems.FILL_ADJUSTER.get());
 			if (ICheckModLoaded.hasCreate()) {
 				event.accept(IPBlocks.FLUID_POOL.get().asItem());
 			}

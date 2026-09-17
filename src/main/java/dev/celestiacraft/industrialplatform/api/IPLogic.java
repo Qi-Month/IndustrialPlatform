@@ -1,6 +1,7 @@
 package dev.celestiacraft.industrialplatform.api;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
+import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -9,7 +10,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
@@ -24,20 +24,35 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public class IPLogic {
-	public static void placeStructure(ServerLevel level, int x, int y, int z, String structureId) {
+	/**
+	 * 结构文件是否存在, 用于在破坏地形之前做检查
+	 */
+	public static boolean hasStructure(ServerLevel level, String structureId) {
+		return getTemplate(level, structureId).isPresent();
+	}
+
+	public static boolean placeStructure(ServerLevel level, int x, int y, int z, String structureId) {
+		Optional<StructureTemplate> template = getTemplate(level, structureId);
+		if (template.isEmpty()) {
+			return false;
+		}
+
+		template.get().placeInWorld(
+				level,
+				new BlockPos(x, y, z),
+				new BlockPos(x, y, z),
+				createSafePlaceSettings(level),
+				level.random,
+				3
+		);
+
+		return true;
+	}
+
+	private static Optional<StructureTemplate> getTemplate(ServerLevel level, String structureId) {
 		StructureTemplateManager manager = level.getStructureManager();
 		ResourceLocation structureName = IndustrialPlatform.loadResource(structureId);
-		Optional<StructureTemplate> template = manager.get(structureName);
-		template.ifPresent((temp) -> {
-			temp.placeInWorld(
-					level,
-					new BlockPos(x, y, z),
-					new BlockPos(x, y, z),
-					createSafePlaceSettings(level),
-					level.random,
-					3
-			);
-		});
+		return manager.get(structureName);
 	}
 
 	private static StructurePlaceSettings createSafePlaceSettings(ServerLevel level) {
@@ -48,6 +63,9 @@ public class IPLogic {
 				.addProcessor(new DropBeforePlaceProcessor(level));
 	}
 
+	/**
+	 * 向上清理: 不管原来是什么(草/树/水/石头), 一律顶成空气, 不可破坏的方块跳过
+	 */
 	public static void fillArea(ServerLevel level, int x0, int y0, int z0, int x1, int y1, int z1) {
 		for (int x = x0; x <= x1; x++) {
 			for (int y = y0; y <= y1; y++) {
@@ -63,7 +81,7 @@ public class IPLogic {
 			for (int y = y0; y <= y1; y++) {
 				for (int z = z0; z <= z1; z++) {
 					BlockPos pos = new BlockPos(x, y, z);
-					fillStoneIfOpen(level, pos);
+					fillStone(level, pos);
 				}
 			}
 		}
@@ -75,6 +93,29 @@ public class IPLogic {
 		if (!player.isCreative()) {
 			stack.shrink(1);
 		}
+	}
+
+	/**
+	 * 把生成出来的方块放下去: 不可破坏的方块跳过, 其余按规则替换
+	 *
+	 * @return 是否真的放上去了
+	 */
+	public static boolean placeGenerated(ServerLevel level, BlockPos pos, BlockState state) {
+		BlockState existing = level.getBlockState(pos);
+
+		if (isUnbreakable(level, pos, existing)) {
+			return false;
+		}
+
+		if (existing.equals(state)) {
+			return true;
+		}
+
+		if (!existing.isAir()) {
+			level.destroyBlock(pos, shouldDrop(existing));
+		}
+
+		return level.setBlock(pos, state, 3);
 	}
 
 	private static boolean isUnbreakable(ServerLevel level, BlockPos pos, BlockState state) {
@@ -91,9 +132,12 @@ public class IPLogic {
 		return true;
 	}
 
-	private static boolean fillStoneIfOpen(ServerLevel level, BlockPos pos) {
+	/**
+	 * 向下填充: 不管原来是什么, 一律顶成垫底方块(不可破坏的方块跳过)
+	 */
+	private static boolean fillStone(ServerLevel level, BlockPos pos) {
 		BlockState state = level.getBlockState(pos);
-		if (!state.isAir() && !(state.getBlock() instanceof LiquidBlock)) {
+		if (isUnbreakable(level, pos, state) || state.is(Blocks.STONE)) {
 			return false;
 		}
 
@@ -110,7 +154,14 @@ public class IPLogic {
 		return true;
 	}
 
+	/**
+	 * 被顶掉的方块掉不掉落, 默认不掉(配置里可开)
+	 */
 	private static boolean shouldDrop(BlockState state) {
+		if (!CommonConfig.CLEANUP_DROPS.get()) {
+			return false;
+		}
+
 		ResourceLocation blockId = ForgeRegistries.BLOCKS.getKey(state.getBlock());
 		return !IndustrialPlatform.loadResource("industrial_platform").equals(blockId)
 				&& !IndustrialPlatform.loadResource("fluid_pool").equals(blockId)

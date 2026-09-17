@@ -1,0 +1,6 @@
+{
+	"parent": "minecraft:item/handheld",
+	"textures": {
+		"layer0": "industrial_platform:item/fill_adjuster"
+	}
+}

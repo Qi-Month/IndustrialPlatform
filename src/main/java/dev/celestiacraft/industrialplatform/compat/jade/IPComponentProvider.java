@@ -33,9 +33,9 @@ public enum IPComponentProvider implements IBlockComponentProvider {
 			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.heavy")));
 		}
 		if (isFloating) {
-			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.filling")));
-		} else {
 			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.floating")));
+		} else {
+			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.filling")));
 		}
 	}
 

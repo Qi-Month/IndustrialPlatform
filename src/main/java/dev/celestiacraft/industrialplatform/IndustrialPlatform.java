@@ -9,6 +9,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import dev.celestiacraft.industrialplatform.block.IPBlocks;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
+import dev.celestiacraft.industrialplatform.item.IPItems;
+import dev.celestiacraft.industrialplatform.menu.IPMenus;
+import dev.celestiacraft.industrialplatform.network.IPNetwork;
 
 @Mod(IndustrialPlatform.MODID)
 public class IndustrialPlatform {
@@ -23,8 +26,12 @@ public class IndustrialPlatform {
 	public IndustrialPlatform(FMLJavaModLoadingContext context) {
 		IEventBus bus = context.getModEventBus();
 
-		context.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC, "nebula/industrial_platform/common.toml");
+		context.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC, "nebula/" + MODID + "/common.toml");
 
 		IPBlocks.register(bus);
+		IPItems.register(bus);
+		IPMenus.register(bus);
+
+		IPNetwork.register();
 	}
 }
