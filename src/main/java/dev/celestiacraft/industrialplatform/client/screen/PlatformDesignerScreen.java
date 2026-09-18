@@ -91,7 +91,13 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	private String selectedId = "";
 	private int scroll;
 	private int materialScroll;
+	private int upFill;
+	private int downFill;
 	private boolean updatingWidgets;
+	/**
+	 * 玩家是否已经改动过设置, 改动之后客户端以自己为准, 不再跟随服务端数据槽
+	 */
+	private boolean settingsChanged;
 
 	public PlatformDesignerScreen(PlatformDesignerMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);
@@ -114,19 +120,16 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 		}
 		scroll = Math.max(0, indexOf(selectedId) - 1);
 
-		upFillField = createFillField(topPos + FILL_ROW_UP_Y, menu.getUpFill(), this::onUpFillTyped);
-		downFillField = createFillField(topPos + FILL_ROW_UP_Y + FILL_ROW_HEIGHT, menu.getDownFill(), this::onDownFillTyped);
+		upFill = menu.getUpFill();
+		downFill = menu.getDownFill();
 
-		upMinus = addRenderableWidget(createStepButton(MINUS_X, FILL_ROW_UP_Y, "-", (button) -> {
-			setUpFill(menu.getUpFill() - 1);
-		}));
-		upPlus = addRenderableWidget(createStepButton(PLUS_X, FILL_ROW_UP_Y, "+", (button) -> setUpFill(menu.getUpFill() + 1)));
-		downMinus = addRenderableWidget(createStepButton(MINUS_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT, "-", (button) -> {
-			setDownFill(menu.getDownFill() - 1);
-		}));
-		downPlus = addRenderableWidget(createStepButton(PLUS_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT, "+", (button) -> {
-			setDownFill(menu.getDownFill() + 1);
-		}));
+		upFillField = createFillField(topPos + FILL_ROW_UP_Y, upFill, this::onUpFillTyped);
+		downFillField = createFillField(topPos + FILL_ROW_UP_Y + FILL_ROW_HEIGHT, downFill, this::onDownFillTyped);
+
+		upMinus = addRenderableWidget(createStepButton(MINUS_X, FILL_ROW_UP_Y, "-", (button) -> setUpFill(upFill - 1)));
+		upPlus = addRenderableWidget(createStepButton(PLUS_X, FILL_ROW_UP_Y, "+", (button) -> setUpFill(upFill + 1)));
+		downMinus = addRenderableWidget(createStepButton(MINUS_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT, "-", (button) -> setDownFill(downFill - 1)));
+		downPlus = addRenderableWidget(createStepButton(PLUS_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT, "+", (button) -> setDownFill(downFill + 1)));
 
 		addRenderableWidget(upFillField);
 		addRenderableWidget(downFillField);
@@ -195,10 +198,13 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 			return;
 		}
 
-		int parsed = parseFill(text, menu.getUpFill());
-		if (parsed != menu.getUpFill()) {
-			sendFill(parsed, menu.getDownFill());
+		int parsed = parseFill(text, upFill);
+		if (parsed == upFill) {
+			return;
 		}
+
+		upFill = parsed;
+		sendFill(upFill, downFill);
 	}
 
 	private void onDownFillTyped(String text) {
@@ -206,10 +212,13 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 			return;
 		}
 
-		int parsed = parseFill(text, menu.getDownFill());
-		if (parsed != menu.getDownFill()) {
-			sendFill(menu.getUpFill(), parsed);
+		int parsed = parseFill(text, downFill);
+		if (parsed == downFill) {
+			return;
 		}
+
+		downFill = parsed;
+		sendFill(upFill, downFill);
 	}
 
 	private static int parseFill(String text, int fallback) {
@@ -225,21 +234,62 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	}
 
 	private void setUpFill(int value) {
-		sendFill(PlatformDesignerMenu.clampFill(value), menu.getDownFill());
+		int clamped = PlatformDesignerMenu.clampFill(value);
+		boolean changed = clamped != upFill;
+
+		upFill = clamped;
+		updatingWidgets = true;
+		upFillField.setValue(String.valueOf(clamped));
+		updatingWidgets = false;
+
+		if (changed) {
+			sendFill(upFill, downFill);
+		}
 	}
 
 	private void setDownFill(int value) {
-		sendFill(menu.getUpFill(), PlatformDesignerMenu.clampFill(value));
+		int clamped = PlatformDesignerMenu.clampFill(value);
+		boolean changed = clamped != downFill;
+
+		downFill = clamped;
+		updatingWidgets = true;
+		downFillField.setValue(String.valueOf(clamped));
+		updatingWidgets = false;
+
+		if (changed) {
+			sendFill(upFill, downFill);
+		}
 	}
 
 	private void sendFill(int upFill, int downFill) {
+		settingsChanged = true;
 		IPNetwork.sendToServer(new PlatformSettingsPacket(upFill, downFill, 0));
+	}
+
+	/**
+	 * 界面刚打开时数据槽还没同步过来, 这里把服务端的权威值补上
+	 */
+	private void syncFromMenu() {
+		if (settingsChanged) {
+			return;
+		}
+
+		int serverUpFill = menu.getUpFill();
+		int serverDownFill = menu.getDownFill();
+
+		if (serverUpFill == upFill && serverDownFill == downFill) {
+			return;
+		}
+
+		upFill = serverUpFill;
+		downFill = serverDownFill;
+		normalizeFields();
 	}
 
 	private void normalizeFields() {
 		updatingWidgets = true;
-		upFillField.setValue(String.valueOf(menu.getUpFill()));
-		downFillField.setValue(String.valueOf(menu.getDownFill()));
+		upFillField.setValue(String.valueOf(upFill));
+		downFillField.setValue(String.valueOf(downFill));
 		updatingWidgets = false;
 	}
 
@@ -303,12 +353,12 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 			}
 
 			if (isOverFillControls(upFillField, upMinus, upPlus, mouseX, mouseY)) {
-				setUpFill(menu.getUpFill() + (delta > 0.0D ? 1 : -1));
+				setUpFill(upFill + (delta > 0.0D ? 1 : -1));
 				return true;
 			}
 
 			if (isOverFillControls(downFillField, downMinus, downPlus, mouseX, mouseY)) {
-				setDownFill(menu.getDownFill() + (delta > 0.0D ? 1 : -1));
+				setDownFill(downFill + (delta > 0.0D ? 1 : -1));
 				return true;
 			}
 		}
@@ -353,6 +403,7 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 
 		scroll = Mth.clamp(scroll, 0, maxScroll());
 		materialScroll = Mth.clamp(materialScroll, 0, maxMaterialScroll());
+		syncFromMenu();
 		updatePageButtons();
 		updateBuildButton();
 		updatePreview();
@@ -369,9 +420,9 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 				menu.getControllerPos(),
 				entry.sizeX(),
 				entry.sizeZ(),
-				menu.getUpFill() == 0 && menu.getDownFill() == 0,
-				menu.getUpFill(),
-				menu.getDownFill()
+				upFill == 0 && downFill == 0,
+				upFill,
+				downFill
 		));
 	}
 
