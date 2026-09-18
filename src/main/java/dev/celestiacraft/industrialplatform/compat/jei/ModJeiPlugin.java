@@ -6,7 +6,7 @@ import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
-import dev.celestiacraft.industrialplatform.block.BlockRegister;
+import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
 
 @JeiPlugin
 public class ModJeiPlugin implements IModPlugin {
@@ -20,14 +20,14 @@ public class ModJeiPlugin implements IModPlugin {
 		ModJeiInfo.init(registration);
 
 		ModJeiInfo.addJeiInfo(
-				BlockRegister.INDUSTRIAL_PLATFORM.get()
+				IPBlocks.INDUSTRIAL_PLATFORM.get()
 						.asItem()
 						.getDefaultInstance(),
 				"platform"
 		);
-		if (BlockRegister.FLUID_POOL != null) {
+		if (IPBlocks.FLUID_POOL != null) {
 			ModJeiInfo.addJeiInfo(
-					BlockRegister.FLUID_POOL.get()
+					IPBlocks.FLUID_POOL.get()
 							.asItem().
 							getDefaultInstance(),
 					"fluid_pool"

@@ -17,12 +17,14 @@ public class IPTags {
 		public static TagKey<Item>
 				STONE,
 				WRENCH,
-				DEEPSLATE;
+				DEEPSLATE,
+				PLATFORM_MATERIAL;
 
 		static {
 			STONE = createTag("c", "stone");
 			WRENCH = createTag("c", "tools/wrench");
 			DEEPSLATE = createTag("c", "deepslate");
+			PLATFORM_MATERIAL = createTag(IndustrialPlatform.MODID, "platform_material");
 		}
 	}
 

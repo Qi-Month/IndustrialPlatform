@@ -1,5 +1,10 @@
 package dev.celestiacraft.industrialplatform;
 
+import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
+import dev.celestiacraft.industrialplatform.common.register.IPItems;
+import dev.celestiacraft.industrialplatform.common.register.IPMenus;
+import dev.celestiacraft.industrialplatform.config.CommonConfig;
+import dev.celestiacraft.industrialplatform.network.IPNetwork;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -7,8 +12,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import dev.celestiacraft.industrialplatform.block.BlockRegister;
-import dev.celestiacraft.industrialplatform.config.CommonConfig;
 
 @Mod(IndustrialPlatform.MODID)
 public class IndustrialPlatform {
@@ -21,8 +24,12 @@ public class IndustrialPlatform {
 	}
 
 	public IndustrialPlatform(IEventBus bus, ModContainer container) {
-		container.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC, "nebula/industrial_platform/common.toml");
+		container.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC, "nebula/" + MODID + "/common.toml");
 
-		BlockRegister.register(bus);
+		bus.addListener(IPNetwork::register);
+
+		IPBlocks.register(bus);
+		IPItems.register(bus);
+		IPMenus.register(bus);
 	}
 }

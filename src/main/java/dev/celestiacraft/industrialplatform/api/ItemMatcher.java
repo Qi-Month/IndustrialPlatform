@@ -1,5 +1,6 @@
 package dev.celestiacraft.industrialplatform.api;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -11,10 +12,13 @@ import java.util.List;
 
 public class ItemMatcher {
 	public static boolean matches(ItemStack stack, ModConfigSpec.ConfigValue<List<? extends String>> configValue) {
-		if (stack.isEmpty()) return false;
+		if (stack.isEmpty()) {
+			return false;
+		}
 		List<? extends String> entries = configValue.get();
+
 		for (String entry : entries) {
-			if (entry.startsWith("#")) {
+			if (!entry.isEmpty() && entry.charAt(0) == '#') {
 				String tagId = entry.substring(1);
 				ResourceLocation loc = ResourceLocation.tryParse(tagId);
 				if (loc != null) {
@@ -23,7 +27,7 @@ public class ItemMatcher {
 				}
 			} else {
 				ResourceLocation loc = ResourceLocation.tryParse(entry);
-				if (loc != null && stack.getItem().equals(net.minecraft.core.registries.BuiltInRegistries.ITEM.get(loc))) {
+				if (loc != null && stack.getItem().equals(BuiltInRegistries.ITEM.get(loc))) {
 					return true;
 				}
 			}

@@ -2,6 +2,7 @@ package dev.celestiacraft.industrialplatform.datagen.language;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.datagen.language.type.BlockLanguage;
+import dev.celestiacraft.industrialplatform.datagen.language.type.ItemLanguage;
 import dev.celestiacraft.industrialplatform.datagen.language.type.OtherLanguage;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ public class LanguageGenerate {
 	public static final List<List<String>> TRANSLATION_LIST = new ArrayList<>();
 
 	public static void register() {
+		ItemLanguage.addLang();
 		BlockLanguage.addLang();
 		OtherLanguage.addLang();
 	}

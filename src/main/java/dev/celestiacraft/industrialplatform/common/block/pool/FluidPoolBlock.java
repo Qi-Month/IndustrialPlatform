@@ -1,4 +1,4 @@
-package dev.celestiacraft.industrialplatform.block.pool;
+package dev.celestiacraft.industrialplatform.common.block.pool;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -13,19 +13,21 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.fml.common.Mod;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import dev.celestiacraft.industrialplatform.api.ItemMatcher;
 import dev.celestiacraft.industrialplatform.api.IPLogic;
 
+@SuppressWarnings("ALL")
 @EventBusSubscriber(modid = IndustrialPlatform.MODID)
 public class FluidPoolBlock extends Block {
 	public FluidPoolBlock() {
 		super(BlockBehaviour.Properties.ofFullCopy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
-		this.registerDefaultState(this.stateDefinition.any());
+		registerDefaultState(stateDefinition.any());
 	}
 
 	@SubscribeEvent
@@ -41,12 +43,12 @@ public class FluidPoolBlock extends Block {
 			return;
 		}
 
-		// 判断是否为放置物品
-		boolean isStone = ItemMatcher.matches(item, CommonConfig.TRIGGER_BLOCK);
+		// 判断是否为搭建材料
+		boolean isTriggerBlock = ItemMatcher.matches(item, CommonConfig.PLATFORM_MATERIAL);
 
 		ServerLevel serverLevel = (ServerLevel) level;
 
-		if (isStone && hand == InteractionHand.MAIN_HAND) {
+		if (isTriggerBlock && hand == InteractionHand.MAIN_HAND) {
 			// 石头右键：生成结构
 			int posX = blockPos.getX();
 			int posY = blockPos.getY();
@@ -70,9 +72,5 @@ public class FluidPoolBlock extends Block {
 			IPLogic.consumeItem(player, item, hand);
 			event.setCanceled(true);
 		}
-	}
-
-	public FluidPoolBlock(Properties properties) {
-		super(properties);
 	}
 }

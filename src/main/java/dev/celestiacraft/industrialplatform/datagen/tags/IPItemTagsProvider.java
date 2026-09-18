@@ -29,5 +29,17 @@ public class IPItemTagsProvider extends ItemTagsProvider {
 		tag(IPTags.Items.DEEPSLATE)
 				.add(Items.DEEPSLATE)
 				.add(Items.COBBLED_DEEPSLATE);
+
+		// 可以放进平台搭建界面材料槽的物品
+		tag(IPTags.Items.PLATFORM_MATERIAL)
+				.addTag(Tags.Items.STONES)
+				.addTag(Tags.Items.COBBLESTONES)
+				.add(Items.STONE)
+				.add(Items.COBBLESTONE)
+				.add(Items.DEEPSLATE)
+				.add(Items.COBBLED_DEEPSLATE)
+				.add(Items.ANDESITE)
+				.add(Items.DIORITE)
+				.add(Items.GRANITE);
 	}
 }
