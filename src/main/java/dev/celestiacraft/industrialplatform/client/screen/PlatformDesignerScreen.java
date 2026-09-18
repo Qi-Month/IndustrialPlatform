@@ -3,7 +3,7 @@ package dev.celestiacraft.industrialplatform.client.screen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.client.BoundaryRenderData;
-import dev.celestiacraft.industrialplatform.menu.PlatformDesignerMenu;
+import dev.celestiacraft.industrialplatform.common.menu.PlatformDesignerMenu;
 import dev.celestiacraft.industrialplatform.network.IPNetwork;
 import dev.celestiacraft.industrialplatform.network.packet.DesignerSelectPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformBuildPacket;
@@ -58,10 +58,17 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	private static final int MATERIAL_Y = 158;
 	private static final int MATERIAL_STEP = 20;
 	private static final int MATERIAL_SLOTS = 6;
-	private static final int BUILD_X = 164;
+	private static final int BUILD_X = 172;
 	private static final int BUILD_Y = 158;
-	private static final int BUILD_WIDTH = 64;
+	private static final int BUILD_WIDTH = 56;
 	private static final int BUILD_HEIGHT = 20;
+	/**
+	 * 材料翻页按钮(材料超过一页时才亮)
+	 */
+	private static final int PAGE_SIZE = 16;
+	private static final int PAGE_PREV_X = 132;
+	private static final int PAGE_NEXT_X = 150;
+	private static final int PAGE_Y = 159;
 	private static final int LABEL_X = 12;
 
 	private static final int COLOR_TITLE = 0xFF404040;
@@ -78,6 +85,8 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	private Button downMinus;
 	private Button downPlus;
 	private Button buildButton;
+	private Button pagePrev;
+	private Button pageNext;
 
 	private String selectedId = "";
 	private int scroll;
@@ -87,73 +96,79 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	public PlatformDesignerScreen(PlatformDesignerMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);
 
-		this.imageWidth = PlatformDesignerMenu.PANEL_WIDTH;
-		this.imageHeight = PlatformDesignerMenu.PANEL_HEIGHT;
-		this.titleLabelX = 8;
-		this.titleLabelY = 6;
-		this.inventoryLabelX = PlatformDesignerMenu.INVENTORY_X;
-		this.inventoryLabelY = this.imageHeight - 94;
+		imageWidth = PlatformDesignerMenu.PANEL_WIDTH;
+		imageHeight = PlatformDesignerMenu.PANEL_HEIGHT;
+		titleLabelX = 8;
+		titleLabelY = 6;
+		inventoryLabelX = PlatformDesignerMenu.INVENTORY_X;
+		inventoryLabelY = imageHeight - 94;
 	}
 
 	@Override
 	protected void init() {
 		super.init();
 
-		this.selectedId = ClientBlueprintData.getSelected();
-		if (this.selectedId.isEmpty()) {
-			this.selectedId = this.menu.getBlueprintId();
+		selectedId = ClientBlueprintData.getSelected();
+		if (selectedId.isEmpty()) {
+			selectedId = menu.getBlueprintId();
 		}
-		this.scroll = Math.max(0, indexOf(this.selectedId) - 1);
+		scroll = Math.max(0, indexOf(selectedId) - 1);
 
-		this.upFillField = this.createFillField(this.topPos + FILL_ROW_UP_Y, this.menu.getUpFill(), this::onUpFillTyped);
-		this.downFillField = this.createFillField(this.topPos + FILL_ROW_UP_Y + FILL_ROW_HEIGHT, this.menu.getDownFill(), this::onDownFillTyped);
+		upFillField = createFillField(topPos + FILL_ROW_UP_Y, menu.getUpFill(), this::onUpFillTyped);
+		downFillField = createFillField(topPos + FILL_ROW_UP_Y + FILL_ROW_HEIGHT, menu.getDownFill(), this::onDownFillTyped);
 
-		this.upMinus = this.addRenderableWidget(this.createStepButton(MINUS_X, FILL_ROW_UP_Y, "-", (button) -> {
-			this.setUpFill(this.menu.getUpFill() - 1);
+		upMinus = addRenderableWidget(createStepButton(MINUS_X, FILL_ROW_UP_Y, "-", (button) -> {
+			setUpFill(menu.getUpFill() - 1);
 		}));
-		this.upPlus = this.addRenderableWidget(this.createStepButton(PLUS_X, FILL_ROW_UP_Y, "+", (button) -> this.setUpFill(this.menu.getUpFill() + 1)));
-		this.downMinus = this.addRenderableWidget(this.createStepButton(MINUS_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT, "-", (button) -> {
-			this.setDownFill(this.menu.getDownFill() - 1);
+		upPlus = addRenderableWidget(createStepButton(PLUS_X, FILL_ROW_UP_Y, "+", (button) -> setUpFill(menu.getUpFill() + 1)));
+		downMinus = addRenderableWidget(createStepButton(MINUS_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT, "-", (button) -> {
+			setDownFill(menu.getDownFill() - 1);
 		}));
-		this.downPlus = this.addRenderableWidget(this.createStepButton(PLUS_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT, "+", (button) -> {
-			this.setDownFill(this.menu.getDownFill() + 1);
+		downPlus = addRenderableWidget(createStepButton(PLUS_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT, "+", (button) -> {
+			setDownFill(menu.getDownFill() + 1);
 		}));
 
-		this.addRenderableWidget(this.upFillField);
-		this.addRenderableWidget(this.downFillField);
+		addRenderableWidget(upFillField);
+		addRenderableWidget(downFillField);
 
-		this.addRenderableWidget(Button.builder(Component.literal("↑"), (button) -> {
-					this.scrollBy(-1);
-				})
-				.bounds(this.leftPos + SCROLL_X, this.topPos + SCROLL_UP_Y, SCROLL_SIZE, SCROLL_SIZE)
+		addRenderableWidget(Button.builder(Component.literal("↑"), (button) -> {
+					scrollBy(-1);
+				}).bounds(leftPos + SCROLL_X, topPos + SCROLL_UP_Y, SCROLL_SIZE, SCROLL_SIZE)
 				.build());
-		this.addRenderableWidget(Button.builder(Component.literal("↓"), (button) -> {
-					this.scrollBy(1);
-				})
-				.bounds(this.leftPos + SCROLL_X, this.topPos + SCROLL_DOWN_Y, SCROLL_SIZE, SCROLL_SIZE)
+		addRenderableWidget(Button.builder(Component.literal("↓"), (button) -> {
+					scrollBy(1);
+				}).bounds(leftPos + SCROLL_X, topPos + SCROLL_DOWN_Y, SCROLL_SIZE, SCROLL_SIZE)
 				.build());
 
-		this.buildButton = this.addRenderableWidget(
-				Button.builder(Component.translatable("gui.industrial_platform.build_plain"), (button) -> {
-							IPNetwork.sendToServer(new PlatformBuildPacket());
-						})
-						.bounds(this.leftPos + BUILD_X, this.topPos + BUILD_Y, BUILD_WIDTH, BUILD_HEIGHT)
-						.build());
+		pagePrev = addRenderableWidget(Button.builder(Component.literal("←"), (button) -> {
+					pageMaterials(-1);
+				}).bounds(leftPos + PAGE_PREV_X, topPos + PAGE_Y, PAGE_SIZE, PAGE_SIZE)
+				.build());
 
-		this.updateBuildButton();
+		pageNext = addRenderableWidget(Button.builder(Component.literal("→"), (button) -> {
+					pageMaterials(1);
+				}).bounds(leftPos + PAGE_NEXT_X, topPos + PAGE_Y, PAGE_SIZE, PAGE_SIZE)
+				.build());
+
+		buildButton = addRenderableWidget(Button.builder(Component.translatable("gui.industrial_platform.build_plain"), (button) -> {
+					IPNetwork.sendToServer(new PlatformBuildPacket());
+				}).bounds(leftPos + BUILD_X, topPos + BUILD_Y, BUILD_WIDTH, BUILD_HEIGHT)
+				.build());
+
+		updateBuildButton();
 	}
 
 	private Button createStepButton(int x, int y, String label, Button.OnPress onPress) {
 		return Button.builder(Component.literal(label), onPress)
-				.bounds(this.leftPos + x, this.topPos + y, STEP_SIZE, STEP_SIZE)
+				.bounds(leftPos + x, topPos + y, STEP_SIZE, STEP_SIZE)
 				.build();
 	}
 
 	private EditBox createFillField(int y, int value, java.util.function.Consumer<String> responder) {
-		EditBox field = new EditBox(this.font, this.leftPos + FIELD_X, y + 1, FIELD_WIDTH, FIELD_HEIGHT, Component.empty()) {
+		EditBox field = new EditBox(font, leftPos + FIELD_X, y + 1, FIELD_WIDTH, FIELD_HEIGHT, Component.empty()) {
 			@Override
 			public void setFocused(boolean focused) {
-				boolean wasFocused = this.isFocused();
+				boolean wasFocused = isFocused();
 				super.setFocused(focused);
 
 				if (wasFocused && !focused) {
@@ -168,32 +183,32 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 		});
 		field.setResponder(responder);
 
-		this.updatingWidgets = true;
+		updatingWidgets = true;
 		field.setValue(String.valueOf(value));
-		this.updatingWidgets = false;
+		updatingWidgets = false;
 
 		return field;
 	}
 
 	private void onUpFillTyped(String text) {
-		if (this.updatingWidgets) {
+		if (updatingWidgets) {
 			return;
 		}
 
-		int parsed = parseFill(text, this.menu.getUpFill());
-		if (parsed != this.menu.getUpFill()) {
-			this.sendFill(parsed, this.menu.getDownFill());
+		int parsed = parseFill(text, menu.getUpFill());
+		if (parsed != menu.getUpFill()) {
+			sendFill(parsed, menu.getDownFill());
 		}
 	}
 
 	private void onDownFillTyped(String text) {
-		if (this.updatingWidgets) {
+		if (updatingWidgets) {
 			return;
 		}
 
-		int parsed = parseFill(text, this.menu.getDownFill());
-		if (parsed != this.menu.getDownFill()) {
-			this.sendFill(this.menu.getUpFill(), parsed);
+		int parsed = parseFill(text, menu.getDownFill());
+		if (parsed != menu.getDownFill()) {
+			sendFill(menu.getUpFill(), parsed);
 		}
 	}
 
@@ -210,11 +225,11 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	}
 
 	private void setUpFill(int value) {
-		this.sendFill(PlatformDesignerMenu.clampFill(value), this.menu.getDownFill());
+		sendFill(PlatformDesignerMenu.clampFill(value), menu.getDownFill());
 	}
 
 	private void setDownFill(int value) {
-		this.sendFill(this.menu.getUpFill(), PlatformDesignerMenu.clampFill(value));
+		sendFill(menu.getUpFill(), PlatformDesignerMenu.clampFill(value));
 	}
 
 	private void sendFill(int upFill, int downFill) {
@@ -222,10 +237,10 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	}
 
 	private void normalizeFields() {
-		this.updatingWidgets = true;
-		this.upFillField.setValue(String.valueOf(this.menu.getUpFill()));
-		this.downFillField.setValue(String.valueOf(this.menu.getDownFill()));
-		this.updatingWidgets = false;
+		updatingWidgets = true;
+		upFillField.setValue(String.valueOf(menu.getUpFill()));
+		downFillField.setValue(String.valueOf(menu.getDownFill()));
+		updatingWidgets = false;
 	}
 
 	private List<ClientBlueprintData.Entry> entries() {
@@ -233,11 +248,11 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	}
 
 	private int maxScroll() {
-		return Math.max(0, this.entries().size() - LIST_ROWS);
+		return Math.max(0, entries().size() - LIST_ROWS);
 	}
 
 	private int indexOf(String id) {
-		List<ClientBlueprintData.Entry> entries = this.entries();
+		List<ClientBlueprintData.Entry> entries = entries();
 		for (int index = 0; index < entries.size(); index++) {
 			if (entries.get(index).id().equals(id)) {
 				return index;
@@ -246,41 +261,54 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 		return 0;
 	}
 
-	private void scrollBy(int delta) {
-		this.scroll = Mth.clamp(this.scroll + delta, 0, this.maxScroll());
+	private void pageMaterials(int delta) {
+		materialScroll = Mth.clamp(materialScroll + delta, 0, maxMaterialScroll());
 	}
 
-	private void select(String id) {
-		if (id.equals(this.selectedId)) {
+	private void updatePageButtons() {
+		if (pagePrev == null || pageNext == null) {
 			return;
 		}
 
-		this.selectedId = id;
+		pagePrev.active = materialScroll > 0;
+		pageNext.active = materialScroll < maxMaterialScroll();
+	}
+
+	private void scrollBy(int delta) {
+		scroll = Mth.clamp(scroll + delta, 0, maxScroll());
+	}
+
+	private void select(String id) {
+		if (id.equals(selectedId)) {
+			return;
+		}
+
+		selectedId = id;
 		ClientBlueprintData.setSelected(id);
 		IPNetwork.sendToServer(new DesignerSelectPacket(id));
-		this.updateBuildButton();
+		updateBuildButton();
 	}
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
 		if (delta != 0.0D) {
-			if (this.isOverList(mouseX, mouseY)) {
-				this.scrollBy(delta > 0.0D ? -1 : 1);
+			if (isOverList(mouseX, mouseY)) {
+				scrollBy(delta > 0.0D ? -1 : 1);
 				return true;
 			}
 
-			if (this.isOverMaterials(mouseX, mouseY) && this.maxMaterialScroll() > 0) {
-				this.materialScroll = Mth.clamp(this.materialScroll + (delta > 0.0D ? -1 : 1), 0, this.maxMaterialScroll());
+			if (isOverMaterials(mouseX, mouseY) && maxMaterialScroll() > 0) {
+				materialScroll = Mth.clamp(materialScroll + (delta > 0.0D ? -1 : 1), 0, maxMaterialScroll());
 				return true;
 			}
 
-			if (this.isOverFillControls(this.upFillField, this.upMinus, this.upPlus, mouseX, mouseY)) {
-				this.setUpFill(this.menu.getUpFill() + (delta > 0.0D ? 1 : -1));
+			if (isOverFillControls(upFillField, upMinus, upPlus, mouseX, mouseY)) {
+				setUpFill(menu.getUpFill() + (delta > 0.0D ? 1 : -1));
 				return true;
 			}
 
-			if (this.isOverFillControls(this.downFillField, this.downMinus, this.downPlus, mouseX, mouseY)) {
-				this.setDownFill(this.menu.getDownFill() + (delta > 0.0D ? 1 : -1));
+			if (isOverFillControls(downFillField, downMinus, downPlus, mouseX, mouseY)) {
+				setDownFill(menu.getDownFill() + (delta > 0.0D ? 1 : -1));
 				return true;
 			}
 		}
@@ -297,21 +325,21 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	}
 
 	private boolean isOverList(double mouseX, double mouseY) {
-		double localX = mouseX - this.leftPos;
-		double localY = mouseY - this.topPos;
+		double localX = mouseX - leftPos;
+		double localY = mouseY - topPos;
 
 		return localX >= LIST_X && localX < LIST_X + LIST_WIDTH && localY >= LIST_Y && localY < LIST_Y + LIST_ROWS * LIST_ROW_HEIGHT;
 	}
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		if (button == 0 && this.isOverList(mouseX, mouseY)) {
-			int row = (int) ((mouseY - this.topPos - LIST_Y) / LIST_ROW_HEIGHT);
-			int index = this.scroll + row;
-			List<ClientBlueprintData.Entry> entries = this.entries();
+		if (button == 0 && isOverList(mouseX, mouseY)) {
+			int row = (int) ((mouseY - topPos - LIST_Y) / LIST_ROW_HEIGHT);
+			int index = scroll + row;
+			List<ClientBlueprintData.Entry> entries = entries();
 
 			if (index >= 0 && index < entries.size()) {
-				this.select(entries.get(index).id());
+				select(entries.get(index).id());
 				return true;
 			}
 		}
@@ -323,26 +351,27 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	protected void containerTick() {
 		super.containerTick();
 
-		this.scroll = Mth.clamp(this.scroll, 0, this.maxScroll());
-		this.materialScroll = Mth.clamp(this.materialScroll, 0, this.maxMaterialScroll());
-		this.updateBuildButton();
-		this.updatePreview();
+		scroll = Mth.clamp(scroll, 0, maxScroll());
+		materialScroll = Mth.clamp(materialScroll, 0, maxMaterialScroll());
+		updatePageButtons();
+		updateBuildButton();
+		updatePreview();
 	}
 
 	private void updatePreview() {
-		ClientBlueprintData.Entry entry = ClientBlueprintData.get(this.selectedId);
+		ClientBlueprintData.Entry entry = ClientBlueprintData.get(selectedId);
 		if (entry == null) {
 			BoundaryRenderData.clearOverride();
 			return;
 		}
 
 		BoundaryRenderData.setOverride(new BoundaryRenderData.BoundaryEntry(
-				this.menu.getControllerPos(),
+				menu.getControllerPos(),
 				entry.sizeX(),
 				entry.sizeZ(),
-				this.menu.getUpFill() == 0 && this.menu.getDownFill() == 0,
-				this.menu.getUpFill(),
-				this.menu.getDownFill()
+				menu.getUpFill() == 0 && menu.getDownFill() == 0,
+				menu.getUpFill(),
+				menu.getDownFill()
 		));
 	}
 
@@ -353,40 +382,47 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	}
 
 	private void updateBuildButton() {
-		if (this.buildButton == null) {
+		if (buildButton == null) {
 			return;
 		}
 
-		boolean canBuild = this.menu.canBuild();
-		this.buildButton.active = canBuild;
+		boolean canBuild = menu.canBuild();
+		buildButton.active = canBuild;
 
-		ClientBlueprintData.Entry entry = ClientBlueprintData.get(this.selectedId);
+		ClientBlueprintData.Entry entry = ClientBlueprintData.get(selectedId);
 
 		if (canBuild && entry != null) {
-			this.buildButton.setTooltip(Tooltip.create(Component.literal(entry.id() + "  " + entry.describeSize())));
+			buildButton.setTooltip(Tooltip.create(Component.literal(entry.id() + "  " + entry.describeSize())));
 		} else {
-			this.buildButton.setTooltip(Tooltip.create(Component.translatable("gui.industrial_platform.not_enough_materials")));
+			buildButton.setTooltip(Tooltip.create(Component.translatable("gui.industrial_platform.not_enough_materials")));
 		}
 	}
 
 	@Override
 	public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
 		// 原版那种打开容器时压暗背景
-		this.renderBackground(graphics);
+		renderBackground(graphics);
 		super.render(graphics, mouseX, mouseY, partialTick);
 
-		int index = this.materialIndexAt(mouseX, mouseY);
-		if (index < 0) {
-			return;
-		}
+		renderMaterialTooltip(graphics, mouseX, mouseY);
 
-		List<Map.Entry<Item, Integer>> materials = this.materials();
-		if (index >= materials.size()) {
+		// 原版容器界面的物品 tooltip 要界面自己调, 不然鼠标放在背包物品上没有提示框
+		renderTooltip(graphics, mouseX, mouseY);
+	}
+
+	/**
+	 * 材料槽不是菜单槽位, 悬停提示要自己画
+	 */
+	private void renderMaterialTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+		List<Map.Entry<Item, Integer>> materials = materials();
+		int index = materialIndexAt(mouseX, mouseY);
+
+		if (index < 0 || index >= materials.size()) {
 			return;
 		}
 
 		Map.Entry<Item, Integer> material = materials.get(index);
-		graphics.renderTooltip(this.font, Component.translatable(
+		graphics.renderTooltip(font, Component.translatable(
 				"gui.industrial_platform.blueprint_material_tip",
 				new ItemStack(material.getKey()).getHoverName(),
 				material.getValue()
@@ -396,31 +432,31 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	@Override
 	protected void renderBg(@NotNull GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		graphics.blit(BACKGROUND, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+		graphics.blit(BACKGROUND, leftPos, topPos, 0.0F, 0.0F, imageWidth, imageHeight, TEXTURE_WIDTH, TEXTURE_HEIGHT);
 
-		this.drawBlueprintList(graphics, mouseX, mouseY);
-		this.drawMaterials(graphics);
+		drawBlueprintList(graphics, mouseX, mouseY);
+		drawMaterials(graphics);
 	}
 
 	private void drawBlueprintList(GuiGraphics graphics, int mouseX, int mouseY) {
-		List<ClientBlueprintData.Entry> entries = this.entries();
+		List<ClientBlueprintData.Entry> entries = entries();
 
 		if (entries.isEmpty()) {
 			Component hint = Component.translatable("gui.industrial_platform.blueprint_empty");
-			graphics.drawString(this.font, hint, this.leftPos + (this.imageWidth - this.font.width(hint)) / 2, this.topPos + LIST_Y + 26, COLOR_HINT, false);
+			graphics.drawString(font, hint, leftPos + (imageWidth - font.width(hint)) / 2, topPos + LIST_Y + 26, COLOR_HINT, false);
 			return;
 		}
 
 		for (int row = 0; row < LIST_ROWS; row++) {
-			int index = this.scroll + row;
+			int index = scroll + row;
 			if (index >= entries.size()) {
 				break;
 			}
 
 			ClientBlueprintData.Entry entry = entries.get(index);
-			int rowX = this.leftPos + LIST_X;
-			int rowY = this.topPos + LIST_Y + row * LIST_ROW_HEIGHT;
-			boolean selected = entry.id().equals(this.selectedId);
+			int rowX = leftPos + LIST_X;
+			int rowY = topPos + LIST_Y + row * LIST_ROW_HEIGHT;
+			boolean selected = entry.id().equals(selectedId);
 			boolean hovered = mouseX >= rowX && mouseX < rowX + LIST_WIDTH && mouseY >= rowY && mouseY < rowY + LIST_ROW_HEIGHT - 2;
 
 			if (selected) {
@@ -430,34 +466,34 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 			}
 
 			String name = entry.id();
-			int maxNameWidth = LIST_WIDTH - this.font.width(entry.describeSize()) - 16;
-			if (this.font.width(name) > maxNameWidth) {
-				name = this.font.plainSubstrByWidth(name, maxNameWidth - 6) + "...";
+			int maxNameWidth = LIST_WIDTH - font.width(entry.describeSize()) - 16;
+			if (font.width(name) > maxNameWidth) {
+				name = font.plainSubstrByWidth(name, maxNameWidth - 6) + "...";
 			}
 
-			graphics.drawString(this.font, name, rowX + 4, rowY + 6, COLOR_LABEL, false);
+			graphics.drawString(font, name, rowX + 4, rowY + 6, COLOR_LABEL, false);
 
 			String size = entry.describeSize();
-			graphics.drawString(this.font, size, rowX + LIST_WIDTH - this.font.width(size) - 4, rowY + 6, COLOR_SIZE, false);
+			graphics.drawString(font, size, rowX + LIST_WIDTH - font.width(size) - 4, rowY + 6, COLOR_SIZE, false);
 		}
 	}
 
 	private void drawMaterials(GuiGraphics graphics) {
-		List<Map.Entry<Item, Integer>> materials = this.materials();
+		List<Map.Entry<Item, Integer>> materials = materials();
 
 		for (int slot = 0; slot < MATERIAL_SLOTS; slot++) {
-			int index = this.materialScroll + slot;
+			int index = materialScroll + slot;
 			if (index >= materials.size()) {
 				break;
 			}
 
 			Map.Entry<Item, Integer> material = materials.get(index);
-			int x = this.leftPos + MATERIAL_X + slot * MATERIAL_STEP;
-			int y = this.topPos + MATERIAL_Y;
+			int x = leftPos + MATERIAL_X + slot * MATERIAL_STEP;
+			int y = topPos + MATERIAL_Y;
 
-			ItemStack stack = new ItemStack(material.getKey(), Math.min(material.getValue(), 64));
+			ItemStack stack = new ItemStack(material.getKey(), 1);
 			graphics.renderItem(stack, x, y);
-			graphics.renderItemDecorations(this.font, stack, x, y, String.valueOf(material.getValue()));
+			graphics.renderItemDecorations(font, stack, x, y, String.valueOf(material.getValue()));
 		}
 	}
 
@@ -465,7 +501,7 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	 * 选中蓝图的材料清单(顺序固定)
 	 */
 	private List<Map.Entry<Item, Integer>> materials() {
-		ClientBlueprintData.Entry entry = ClientBlueprintData.get(this.selectedId);
+		ClientBlueprintData.Entry entry = ClientBlueprintData.get(selectedId);
 		if (entry == null) {
 			return List.of();
 		}
@@ -474,15 +510,15 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	}
 
 	private int maxMaterialScroll() {
-		return Math.max(0, this.materials().size() - MATERIAL_SLOTS);
+		return Math.max(0, materials().size() - MATERIAL_SLOTS);
 	}
 
 	/**
 	 * 鼠标底下是第几个材料槽, 不在材料行上就返回 -1
 	 */
 	private int materialIndexAt(double mouseX, double mouseY) {
-		double localX = mouseX - this.leftPos;
-		double localY = mouseY - this.topPos;
+		double localX = mouseX - leftPos;
+		double localY = mouseY - topPos;
 
 		if (localY < MATERIAL_Y || localY >= MATERIAL_Y + 18) {
 			return -1;
@@ -491,8 +527,8 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 		for (int slot = 0; slot < MATERIAL_SLOTS; slot++) {
 			double slotX = MATERIAL_X + slot * MATERIAL_STEP;
 			if (localX >= slotX && localX < slotX + 18) {
-				int index = this.materialScroll + slot;
-				return index < this.materials().size() ? index : -1;
+				int index = materialScroll + slot;
+				return index < materials().size() ? index : -1;
 			}
 		}
 
@@ -500,21 +536,17 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	}
 
 	private boolean isOverMaterials(double mouseX, double mouseY) {
-		return this.materialIndexAt(mouseX, mouseY) >= 0;
+		return materialIndexAt(mouseX, mouseY) >= 0;
 	}
 
 	@Override
 	protected void renderLabels(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
-		graphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, COLOR_TITLE, false);
-		graphics.drawString(this.font, Component.translatable("gui.industrial_platform.fill_up"), LABEL_X, FILL_ROW_UP_Y + 5, COLOR_LABEL, false);
-		graphics.drawString(this.font, Component.translatable("gui.industrial_platform.fill_down"), LABEL_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT + 5, COLOR_LABEL, false);
-		graphics.drawString(this.font, Component.translatable("gui.industrial_platform.blueprint_materials"), LABEL_X, 146, COLOR_LABEL, false);
+		graphics.drawString(font, title, titleLabelX, titleLabelY, COLOR_TITLE, false);
+		graphics.drawString(font, Component.translatable("gui.industrial_platform.fill_up"), LABEL_X, FILL_ROW_UP_Y + 5, COLOR_LABEL, false);
+		graphics.drawString(font, Component.translatable("gui.industrial_platform.fill_down"), LABEL_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT + 5, COLOR_LABEL, false);
+		graphics.drawString(font, Component.translatable("gui.industrial_platform.blueprint_materials"), LABEL_X, 146, COLOR_LABEL, false);
 
-		int materialCount = this.materials().size();
-		if (materialCount > MATERIAL_SLOTS) {
-			Component pages = Component.translatable("gui.industrial_platform.blueprint_pages", this.materialScroll + 1, this.materialScroll + MATERIAL_SLOTS, materialCount);
-			graphics.drawString(this.font, pages, MATERIAL_X + MATERIAL_SLOTS * MATERIAL_STEP + 4, MATERIAL_Y + 5, COLOR_HINT, false);
-		}
-		graphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, COLOR_LABEL, false);
+
+		graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, COLOR_LABEL, false);
 	}
 }

@@ -14,12 +14,12 @@ import net.minecraftforge.fml.common.Mod;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.api.PlatformPreviewSettings;
 import dev.celestiacraft.industrialplatform.api.PlatformSettings;
-import dev.celestiacraft.industrialplatform.block.IPlatformController;
+import dev.celestiacraft.industrialplatform.common.block.IPlatformController;
 import dev.celestiacraft.industrialplatform.platform.blueprint.ClientBlueprintData;
-import dev.celestiacraft.industrialplatform.block.platform.PlatformBlock;
-import dev.celestiacraft.industrialplatform.block.pool.FluidPoolBlock;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformMode;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformProperties;
+import dev.celestiacraft.industrialplatform.common.block.platform.PlatformBlock;
+import dev.celestiacraft.industrialplatform.common.block.pool.FluidPoolBlock;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import dev.celestiacraft.industrialplatform.api.ItemMatcher;
 

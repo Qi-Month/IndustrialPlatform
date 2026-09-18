@@ -1,6 +1,8 @@
-package dev.celestiacraft.industrialplatform.menu;
+package dev.celestiacraft.industrialplatform.common.register;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
+import dev.celestiacraft.industrialplatform.common.menu.PlatformBuildMenu;
+import dev.celestiacraft.industrialplatform.common.menu.PlatformDesignerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.eventbus.api.IEventBus;

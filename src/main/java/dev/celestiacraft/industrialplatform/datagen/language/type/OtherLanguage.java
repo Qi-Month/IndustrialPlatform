@@ -12,8 +12,8 @@ public class OtherLanguage extends LanguageGenerate {
 
 		addCustomLang(
 				"tooltip.industrial_platform.industrial_platform",
-				"§aRight click with a wrench or a stick to cycle the platform type\n§aSneak + right click toggles floating\n§aRight click with a material to deploy the platform\n§aThe Fill Adjuster sets how far it fills (scroll wheel)\n§aSet enable_builder_ui = true to use the builder screen instead",
-				"§a手持扳手或木棍右键切换平台类型\n§a潜行右键切换是否悬浮\n§a手持材料右键即可展开平台\n§a填充调节器(滚轮)决定上下填充格数\n§a把 enable_builder_ui 改成 true 则改用搭建界面"
+				"§aRight click with a wrench or a stick to cycle the platform type\n§aSneak + right click toggles floating\n§aRight click with a material to deploy the platform\n§aThe Fill Adjuster sets how far it fills (scroll wheel)\n§aWith enable_builder_ui = true, right click with an empty hand to open the builder screen",
+				"§a手持扳手或木棍右键切换平台类型\n§a潜行右键切换是否悬浮\n§a手持材料右键即可展开平台\n§a填充调节器(滚轮)决定上下填充格数\n§a启用搭建界面后, 空手右键即可打开搭建界面"
 		);
 
 		addCustomLang(
@@ -24,8 +24,8 @@ public class OtherLanguage extends LanguageGenerate {
 
 		addCustomLang(
 				"tooltip.industrial_platform.platform_designer",
-				"§aRight click with a wrench or a stick to open the platform builder\n§aDesign custom platforms: size, style and the blocks to build with\n§aBlueprint files can be dropped into schematics/platform",
-				"§a手持扳手或木棍右键打开平台搭建界面\n§a自定义平台: 尺寸, 样式与用哪些方块搭建\n§a蓝图文件放进 schematics/platform 目录即可被识别"
+				"§aRight click with an empty hand to open the platform designer\n§aDesign custom platforms: size, style and the blocks to build with\n§aBlueprint files can be dropped into schematics/platform",
+				"§a空手右键即可打开平台设计界面\n§a自定义平台: 尺寸, 样式与用哪些方块搭建\n§a蓝图文件放进 schematics/platform 目录即可被识别"
 		);
 
 		addCustomLang(
@@ -107,12 +107,6 @@ public class OtherLanguage extends LanguageGenerate {
 		);
 
 		addCustomLang(
-				"gui.industrial_platform.blueprint_pages",
-				"%s-%s / %s",
-				"%s-%s / %s"
-		);
-
-		addCustomLang(
 				"gui.industrial_platform.blueprint_material_tip",
 				"%s x%s",
 				"%s ×%s"
@@ -122,18 +116,6 @@ public class OtherLanguage extends LanguageGenerate {
 				"gui.industrial_platform.blueprint_materials",
 				"Materials",
 				"材料"
-		);
-
-		addCustomLang(
-				"gui.industrial_platform.blueprint_hint",
-				"Drop structure .nbt files into schematics/platform",
-				"把结构 .nbt 文件放进 schematics/platform 目录"
-		);
-
-		addCustomLang(
-				"item.industrial_platform.fill_adjuster",
-				"Fill Adjuster",
-				"填充调节器"
 		);
 
 		addCustomLang(
@@ -150,8 +132,20 @@ public class OtherLanguage extends LanguageGenerate {
 
 		addCustomLang(
 				"tooltip.industrial_platform.fill_adjuster.usage",
-				"Scroll to adjust (sneak: fill down, Ctrl: 10 at a time). Right click a platform block to deploy it",
-				"滚轮调整数值(潜行时调向下填充, 按住 Ctrl 一次 10 格); 对准平台方块右键即可展开"
+				"Scroll wheel: adjust (sneak = fill down, Ctrl = 10 at a time)",
+				"滚轮: 站着调向上填充, 潜行调向下填充, 按住 Ctrl 一次 10 格"
+		);
+
+		addCustomLang(
+				"tooltip.industrial_platform.fill_adjuster.alt",
+				"Hold Alt while scrolling to switch hotbar slots as usual",
+				"按住 Alt 滚动即可正常切换快捷栏"
+		);
+
+		addCustomLang(
+				"tooltip.industrial_platform.fill_adjuster.deploy",
+				"Right click a platform block to deploy it",
+				"对准平台方块右键即可展开"
 		);
 
 		addCustomLang(
@@ -312,8 +306,8 @@ public class OtherLanguage extends LanguageGenerate {
 
 		addCustomLang(
 				"jei.info.industrial_platform.platform",
-				"A Wrench or a stick is required to open the platform builder\nRight click a platform block with a wrench or a stick to open the builder\nAdjust the fill height and choose the style / size in the screen\nPut a material into the slot, then press Build to deploy the platform",
-				"需要扳手或木棍才能打开搭建界面\n手持扳手或木棍右键平台方块打开搭建界面\n在界面中调整上下填充格数并选择样式与尺寸\n放入材料后点击搭建按钮即可展开平台"
+				"Right click a platform block with an empty hand to open the platform builder\nA wrench or a stick works just as well\nAdjust the fill height and choose the style / size in the screen\nPut a material into the slot, then press Build to deploy the platform",
+				"空手右键平台方块即可打开搭建界面\n手持扳手或木棍右键也一样\n在界面中调整上下填充格数并选择样式与尺寸\n放入材料后点击搭建按钮即可展开平台"
 		);
 
 		addCustomLang(

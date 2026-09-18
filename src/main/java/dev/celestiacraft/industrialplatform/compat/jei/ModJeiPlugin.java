@@ -6,7 +6,7 @@ import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
-import dev.celestiacraft.industrialplatform.block.IPBlocks;
+import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
 
 @JeiPlugin
 public class ModJeiPlugin implements IModPlugin {

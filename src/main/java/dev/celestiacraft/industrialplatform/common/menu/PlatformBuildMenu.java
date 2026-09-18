@@ -1,12 +1,13 @@
-package dev.celestiacraft.industrialplatform.menu;
+package dev.celestiacraft.industrialplatform.common.menu;
 
 import dev.celestiacraft.industrialplatform.api.IPTags;
 import dev.celestiacraft.industrialplatform.api.ItemMatcher;
 import dev.celestiacraft.industrialplatform.api.PlatformSettings;
-import dev.celestiacraft.industrialplatform.block.IPlatformController;
-import dev.celestiacraft.industrialplatform.block.platform.PlatformBlock;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformMode;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformProperties;
+import dev.celestiacraft.industrialplatform.common.block.IPlatformController;
+import dev.celestiacraft.industrialplatform.common.block.platform.PlatformBlock;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
+import dev.celestiacraft.industrialplatform.common.register.IPMenus;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
 import dev.celestiacraft.industrialplatform.network.IPNetwork;
@@ -75,28 +76,28 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 		super(IPMenus.PLATFORM_BUILD.get(), windowId);
 
 		this.platformPos = platformPos;
-		this.player = playerInventory.player;
-		this.level = this.player.level();
-		this.data = new SimpleContainerData(DATA_SIZE);
+		player = playerInventory.player;
+		level = player.level();
+		data = new SimpleContainerData(DATA_SIZE);
 
 		// 上次在这个方块上选好的设置优先, 没有就用方块状态与配置默认值
-		PlatformSettings stored = this.readStoredSettings();
+		PlatformSettings stored = readStoredSettings();
 
-		this.data.set(DATA_UP_FILL, clampFill(stored != null ? stored.upFill() : CommonConfig.TOP_FILLING_DISTANCE.get()));
-		this.data.set(DATA_DOWN_FILL, clampFill(stored != null ? stored.downFill() : CommonConfig.BOTTOM_FILLING_DISTANCE.get()));
-		this.data.set(DATA_MODE, (stored != null ? stored.mode() : readModeFromLevel()).ordinal());
+		data.set(DATA_UP_FILL, clampFill(stored != null ? stored.upFill() : CommonConfig.TOP_FILLING_DISTANCE.get()));
+		data.set(DATA_DOWN_FILL, clampFill(stored != null ? stored.downFill() : CommonConfig.BOTTOM_FILLING_DISTANCE.get()));
+		data.set(DATA_MODE, (stored != null ? stored.mode() : readModeFromLevel()).ordinal());
 
-		this.addSlot(new MaterialSlot(this.material, MATERIAL_SLOT_INDEX, MATERIAL_SLOT_X, MATERIAL_SLOT_Y));
-		this.addPlayerInventory(playerInventory);
-		this.addDataSlots(this.data);
+		addSlot(new MaterialSlot(material, MATERIAL_SLOT_INDEX, MATERIAL_SLOT_X, MATERIAL_SLOT_Y));
+		addPlayerInventory(playerInventory);
+		addDataSlots(data);
 
-		this.updateBuildState();
-		this.persist();
+		updateBuildState();
+		persist();
 	}
 
 	private PlatformSettings readStoredSettings() {
-		if (this.level instanceof ServerLevel serverLevel) {
-			return PlatformSettingsStorage.get(serverLevel).get(this.platformPos).orElse(null);
+		if (level instanceof ServerLevel serverLevel) {
+			return PlatformSettingsStorage.get(serverLevel).get(platformPos).orElse(null);
 		}
 		return null;
 	}
@@ -105,7 +106,7 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 	 * 把当前设置写回方块状态与存档, 并把上下填充格数同步给客户端, 界面外的预览要用
 	 */
 	private void persist() {
-		if (!(this.level instanceof ServerLevel serverLevel) || !(this.player instanceof ServerPlayer serverPlayer)) {
+		if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) {
 			return;
 		}
 
@@ -113,36 +114,36 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 		int upFill = getUpFill();
 		int downFill = getDownFill();
 
-		BlockState state = serverLevel.getBlockState(this.platformPos);
+		BlockState state = serverLevel.getBlockState(platformPos);
 		if (state.getBlock() instanceof PlatformBlock) {
 			BlockState updated = state
 					.setValue(PlatformBlock.PLATFORM_MODE, mode)
 					.setValue(PlatformBlock.FLOATING, upFill == 0 && downFill == 0);
 
 			if (updated != state) {
-				serverLevel.setBlock(this.platformPos, updated, 3);
+				serverLevel.setBlock(platformPos, updated, 3);
 			}
 		}
 
-		PlatformSettingsStorage.get(serverLevel).put(this.platformPos, new PlatformSettings(mode, upFill, downFill, null));
-		IPNetwork.sendToPlayer(serverPlayer, new PlatformSettingsSyncPacket(this.platformPos, mode, upFill, downFill, null));
+		PlatformSettingsStorage.get(serverLevel).put(platformPos, new PlatformSettings(mode, upFill, downFill, null));
+		IPNetwork.sendToPlayer(serverPlayer, new PlatformSettingsSyncPacket(platformPos, mode, upFill, downFill, null));
 	}
 
 	private void addPlayerInventory(Inventory playerInventory) {
 		for (int row = 0; row < 3; row++) {
 			for (int column = 0; column < 9; column++) {
-				this.addSlot(new Slot(playerInventory, column + row * 9 + 9, INVENTORY_X + column * 18, INVENTORY_ROW_Y + row * 18));
+				addSlot(new Slot(playerInventory, column + row * 9 + 9, INVENTORY_X + column * 18, INVENTORY_ROW_Y + row * 18));
 			}
 		}
 
 		for (int column = 0; column < 9; column++) {
-			this.addSlot(new Slot(playerInventory, column, INVENTORY_X + column * 18, HOTBAR_Y));
+			addSlot(new Slot(playerInventory, column, INVENTORY_X + column * 18, HOTBAR_Y));
 		}
 	}
 
 	private PlatformMode readModeFromLevel() {
-		if (this.level != null) {
-			BlockState state = this.level.getBlockState(this.platformPos);
+		if (level != null) {
+			BlockState state = level.getBlockState(platformPos);
 			if (state.getBlock() instanceof PlatformBlock) {
 				return state.getValue(PlatformProperties.PLATFORM_MODE);
 			}
@@ -151,31 +152,31 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 	}
 
 	public BlockPos getPlatformPos() {
-		return this.platformPos;
+		return platformPos;
 	}
 
 	public int getUpFill() {
-		return this.data.get(DATA_UP_FILL);
+		return data.get(DATA_UP_FILL);
 	}
 
 	public int getDownFill() {
-		return this.data.get(DATA_DOWN_FILL);
+		return data.get(DATA_DOWN_FILL);
 	}
 
 	public PlatformMode getMode() {
-		return PlatformMode.byIndex(this.data.get(DATA_MODE));
+		return PlatformMode.byIndex(data.get(DATA_MODE));
 	}
 
 	public int getCost() {
-		return this.data.get(DATA_COST);
+		return data.get(DATA_COST);
 	}
 
 	public boolean canBuild() {
-		return this.data.get(DATA_CAN_BUILD) == 1;
+		return data.get(DATA_CAN_BUILD) == 1;
 	}
 
 	public ItemStack getMaterial() {
-		return this.material.getItem(MATERIAL_SLOT_INDEX);
+		return material.getItem(MATERIAL_SLOT_INDEX);
 	}
 
 	public static int clampFill(int value) {
@@ -200,37 +201,37 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 	 * 客户端调整界面设置, 由数据包调用
 	 */
 	public void applySettings(int upFill, int downFill, int modeIndex) {
-		this.data.set(DATA_UP_FILL, clampFill(upFill));
-		this.data.set(DATA_DOWN_FILL, clampFill(downFill));
-		this.data.set(DATA_MODE, PlatformMode.byIndex(modeIndex).ordinal());
+		data.set(DATA_UP_FILL, clampFill(upFill));
+		data.set(DATA_DOWN_FILL, clampFill(downFill));
+		data.set(DATA_MODE, PlatformMode.byIndex(modeIndex).ordinal());
 
 		// 立刻落盘 + 改方块状态, 外面的区块预览马上跟着变
-		this.persist();
-		this.updateBuildState();
+		persist();
+		updateBuildState();
 	}
 
 	/**
 	 * 点击搭建按钮, 由数据包调用
 	 */
 	public void build(ServerPlayer serverPlayer) {
-		if (!(this.level instanceof ServerLevel serverLevel) || !stillValid(serverPlayer)) {
+		if (!(level instanceof ServerLevel serverLevel) || !stillValid(serverPlayer)) {
 			return;
 		}
 
-		ItemStack materialStack = this.getMaterial();
+		ItemStack materialStack = getMaterial();
 		if (materialStack.isEmpty()) {
-			this.sendMessage(serverPlayer, Component.translatable("message.industrial_platform.no_material").withStyle(ChatFormatting.RED));
+			sendMessage(serverPlayer, Component.translatable("message.industrial_platform.no_material").withStyle(ChatFormatting.RED));
 			return;
 		}
 
 		int cost = getBuildCost(getMode(), getUpFill(), getDownFill());
 		if (!serverPlayer.isCreative() && countMaterial(materialStack) < cost) {
-			this.sendMessage(serverPlayer, Component.translatable("message.industrial_platform.not_enough_material", cost).withStyle(ChatFormatting.RED));
+			sendMessage(serverPlayer, Component.translatable("message.industrial_platform.not_enough_material", cost).withStyle(ChatFormatting.RED));
 			return;
 		}
 
-		if (!PlatformBlock.buildPlatform(serverLevel, this.platformPos, getMode(), getUpFill(), getDownFill())) {
-			this.sendMessage(serverPlayer, Component.translatable("message.industrial_platform.build_failed").withStyle(ChatFormatting.RED));
+		if (!PlatformBlock.buildPlatform(serverLevel, platformPos, getMode(), getUpFill(), getDownFill())) {
+			sendMessage(serverPlayer, Component.translatable("message.industrial_platform.build_failed").withStyle(ChatFormatting.RED));
 			return;
 		}
 
@@ -238,8 +239,8 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 			consumeMaterial(serverPlayer, materialStack, cost);
 		}
 
-		this.sendMessage(serverPlayer, Component.translatable("message.industrial_platform.done").withStyle(ChatFormatting.GREEN));
-		this.updateBuildState();
+		sendMessage(serverPlayer, Component.translatable("message.industrial_platform.done").withStyle(ChatFormatting.GREEN));
+		updateBuildState();
 		serverPlayer.closeContainer();
 	}
 
@@ -253,12 +254,12 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 	private void consumeMaterial(ServerPlayer serverPlayer, ItemStack type, int amount) {
 		int remaining = amount;
 
-		ItemStack slotStack = this.material.getItem(MATERIAL_SLOT_INDEX);
+		ItemStack slotStack = material.getItem(MATERIAL_SLOT_INDEX);
 		if (ItemStack.isSameItemSameTags(slotStack, type)) {
 			int taken = Math.min(remaining, slotStack.getCount());
 			slotStack.shrink(taken);
 			remaining -= taken;
-			this.material.setChanged();
+			material.setChanged();
 		}
 
 		Inventory inventory = serverPlayer.getInventory();
@@ -276,11 +277,11 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 	}
 
 	private int countMaterial(ItemStack type) {
-		int count = ItemStack.isSameItemSameTags(this.material.getItem(MATERIAL_SLOT_INDEX), type)
-				? this.material.getItem(MATERIAL_SLOT_INDEX).getCount()
+		int count = ItemStack.isSameItemSameTags(material.getItem(MATERIAL_SLOT_INDEX), type)
+				? material.getItem(MATERIAL_SLOT_INDEX).getCount()
 				: 0;
 
-		Inventory inventory = this.player.getInventory();
+		Inventory inventory = player.getInventory();
 		for (int index = 0; index < PLAYER_INVENTORY_SIZE; index++) {
 			ItemStack stack = inventory.getItem(index);
 			if (ItemStack.isSameItemSameTags(stack, type)) {
@@ -293,16 +294,16 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 
 	private void updateBuildState() {
 		int cost = getBuildCost(getMode(), getUpFill(), getDownFill());
-		boolean canBuild = !this.getMaterial().isEmpty()
-				&& (this.player.isCreative() || countMaterial(this.getMaterial()) >= cost);
+		boolean canBuild = !getMaterial().isEmpty()
+				&& (player.isCreative() || countMaterial(getMaterial()) >= cost);
 
-		this.data.set(DATA_COST, cost);
-		this.data.set(DATA_CAN_BUILD, canBuild ? 1 : 0);
+		data.set(DATA_COST, cost);
+		data.set(DATA_CAN_BUILD, canBuild ? 1 : 0);
 	}
 
 	@Override
 	public void broadcastChanges() {
-		this.updateBuildState();
+		updateBuildState();
 		super.broadcastChanges();
 	}
 
@@ -310,23 +311,23 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 	public void removed(@NotNull Player player) {
 		super.removed(player);
 		// 关闭界面时把槽里剩下的材料还给玩家
-		clearContainer(player, this.material);
+		clearContainer(player, material);
 	}
 
 	@Override
 	public boolean stillValid(@NotNull Player player) {
-		if (this.level == null) {
+		if (level == null) {
 			return false;
 		}
-		if (player.distanceToSqr(Vec3.atCenterOf(this.platformPos)) > 64.0D) {
+		if (player.distanceToSqr(Vec3.atCenterOf(platformPos)) > 64.0D) {
 			return false;
 		}
-		return this.level.getBlockState(this.platformPos).getBlock() instanceof IPlatformController;
+		return level.getBlockState(platformPos).getBlock() instanceof IPlatformController;
 	}
 
 	@Override
 	public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
-		Slot slot = this.slots.get(index);
+		Slot slot = slots.get(index);
 		if (!slot.hasItem()) {
 			return ItemStack.EMPTY;
 		}
@@ -335,10 +336,10 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 		ItemStack copy = stack.copy();
 
 		if (index == MATERIAL_SLOT_INDEX) {
-			if (!this.moveItemStackTo(stack, MATERIAL_SLOT_INDEX + 1, this.slots.size(), true)) {
+			if (!moveItemStackTo(stack, MATERIAL_SLOT_INDEX + 1, slots.size(), true)) {
 				return ItemStack.EMPTY;
 			}
-		} else if (!this.moveItemStackTo(stack, MATERIAL_SLOT_INDEX, MATERIAL_SLOT_INDEX + 1, false)) {
+		} else if (!moveItemStackTo(stack, MATERIAL_SLOT_INDEX, MATERIAL_SLOT_INDEX + 1, false)) {
 			return ItemStack.EMPTY;
 		}
 

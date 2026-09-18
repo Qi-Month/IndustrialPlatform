@@ -1,4 +1,4 @@
-package dev.celestiacraft.industrialplatform.block.state.properties.platform;
+package dev.celestiacraft.industrialplatform.common.block.state.properties.platform;
 
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;

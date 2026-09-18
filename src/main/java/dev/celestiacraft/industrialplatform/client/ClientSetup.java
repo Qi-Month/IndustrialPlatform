@@ -3,7 +3,7 @@ package dev.celestiacraft.industrialplatform.client;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.client.screen.PlatformBuildScreen;
 import dev.celestiacraft.industrialplatform.client.screen.PlatformDesignerScreen;
-import dev.celestiacraft.industrialplatform.menu.IPMenus;
+import dev.celestiacraft.industrialplatform.common.register.IPMenus;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

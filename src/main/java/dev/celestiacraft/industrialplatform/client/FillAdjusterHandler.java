@@ -1,8 +1,8 @@
 package dev.celestiacraft.industrialplatform.client;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformProperties;
-import dev.celestiacraft.industrialplatform.item.FillAdjusterItem;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
+import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
 import dev.celestiacraft.industrialplatform.network.IPNetwork;
 import dev.celestiacraft.industrialplatform.network.packet.FillAdjustPacket;
 import net.minecraft.client.Minecraft;
@@ -27,6 +27,11 @@ public class FillAdjusterHandler {
 		LocalPlayer player = minecraft.player;
 
 		if (player == null || minecraft.screen != null) {
+			return;
+		}
+
+		// 按住 Alt 时不拦截滚轮, 正常切快捷栏
+		if (Screen.hasAltDown()) {
 			return;
 		}
 

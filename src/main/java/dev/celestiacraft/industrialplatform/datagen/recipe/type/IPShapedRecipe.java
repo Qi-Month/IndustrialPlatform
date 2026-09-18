@@ -2,7 +2,8 @@ package dev.celestiacraft.industrialplatform.datagen.recipe.type;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.api.IPTags;
-import dev.celestiacraft.industrialplatform.block.IPBlocks;
+import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
+import dev.celestiacraft.industrialplatform.common.register.IPItems;
 import dev.celestiacraft.industrialplatform.datagen.recipe.IPRecipeProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
@@ -44,5 +45,26 @@ public class IPShapedRecipe extends IPRecipeProvider {
 							.save(recipe, IndustrialPlatform.loadResource("pool"));
 				})
 				.build(consumer, IndustrialPlatform.loadResource("pool"));
+
+		ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, IPBlocks.PLATFORM_DESIGNER.get())
+				.pattern("ABA")
+				.pattern("BCB")
+				.pattern("DDD")
+				.define('A', Tags.Items.DYES)
+				.define('B', IPTags.Items.DEEPSLATE)
+				.define('C', IPBlocks.INDUSTRIAL_PLATFORM.get())
+				.define('D', IPTags.Items.STONE)
+				.unlockedBy("platform", has(IPBlocks.INDUSTRIAL_PLATFORM.get()))
+				.save(consumer, IndustrialPlatform.loadResource("platform_designer"));
+
+		ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, IPItems.FILL_ADJUSTER.get())
+				.pattern("A A")
+				.pattern("ABA")
+				.pattern(" C ")
+				.define('A', Tags.Items.INGOTS_IRON)
+				.define('B', IPTags.Items.STONE)
+				.define('C', IPTags.Items.DEEPSLATE)
+				.unlockedBy("iron_ingot", has(Tags.Items.INGOTS_IRON))
+				.save(consumer, IndustrialPlatform.loadResource("fill_adjuster"));
 	}
 }

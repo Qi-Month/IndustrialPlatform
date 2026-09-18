@@ -1,6 +1,6 @@
 package dev.celestiacraft.industrialplatform.api;
 
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformMode;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -11,18 +11,18 @@ public record PlatformSettings(PlatformMode mode, int upFill, int downFill, @Nul
 	 * 上下都不填充 => 悬浮
 	 */
 	public boolean isFloating() {
-		return this.upFill == 0 && this.downFill == 0;
+		return upFill == 0 && downFill == 0;
 	}
 
 	public boolean hasBlueprint() {
-		return this.blueprintId != null && !this.blueprintId.isEmpty();
+		return blueprintId != null && !blueprintId.isEmpty();
 	}
 
 	public PlatformSettings withBlueprint(@Nullable String id) {
-		return new PlatformSettings(this.mode, this.upFill, this.downFill, id);
+		return new PlatformSettings(mode, upFill, downFill, id);
 	}
 
 	public PlatformSettings withFill(int upFill, int downFill) {
-		return new PlatformSettings(this.mode, upFill, downFill, this.blueprintId);
+		return new PlatformSettings(mode, upFill, downFill, blueprintId);
 	}
 }

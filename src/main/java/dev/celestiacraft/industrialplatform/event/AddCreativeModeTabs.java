@@ -5,8 +5,8 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import dev.celestiacraft.industrialplatform.block.IPBlocks;
-import dev.celestiacraft.industrialplatform.item.IPItems;
+import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
+import dev.celestiacraft.industrialplatform.common.register.IPItems;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class AddCreativeModeTabs {

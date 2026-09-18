@@ -1,15 +1,14 @@
-package dev.celestiacraft.industrialplatform.block.platform;
+package dev.celestiacraft.industrialplatform.common.block.platform;
 
 import dev.celestiacraft.industrialplatform.api.IPLogic;
 import dev.celestiacraft.industrialplatform.api.IPTags;
 import dev.celestiacraft.industrialplatform.api.ItemMatcher;
-import dev.celestiacraft.industrialplatform.block.IPlatformController;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformMode;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformProperties;
+import dev.celestiacraft.industrialplatform.common.block.IPlatformController;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
-import dev.celestiacraft.industrialplatform.item.FillAdjusterItem;
-import dev.celestiacraft.industrialplatform.menu.PlatformBuildMenu;
+import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
 import dev.celestiacraft.industrialplatform.platform.PlatformGenerator;
 import dev.celestiacraft.industrialplatform.platform.PlatformLayout;
 import dev.celestiacraft.industrialplatform.platform.PlatformPalette;
@@ -24,7 +23,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -43,10 +41,10 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("ALL")
@@ -57,7 +55,7 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 
 	public PlatformBlock() {
 		super(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
-		this.registerDefaultState(this.stateDefinition.any()
+		registerDefaultState(stateDefinition.any()
 				.setValue(WATERLOGGED, false)
 				.setValue(FLOATING, false)
 				.setValue(PLATFORM_MODE, PlatformMode.INDUSTRIAL_LIGHT));
@@ -72,7 +70,7 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
 		FluidState fluidstate = context.getLevel().getFluidState(context.getClickedPos());
 
-		return this.defaultBlockState()
+		return defaultBlockState()
 				.setValue(WATERLOGGED, fluidstate.getType() == Fluids.WATER)
 				.setValue(FLOATING, false)
 				.setValue(PLATFORM_MODE, PlatformMode.INDUSTRIAL_LIGHT);
@@ -99,11 +97,28 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 	}
 
 	/**
-	 * 手持调节器右键打开搭建界面, 不再直接展开平台
+	 * 空手或手持调节器右键打开搭建界面, 不再直接展开平台
 	 */
 	@Override
 	public @NotNull InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
 		ItemStack held = player.getItemInHand(hand);
+
+		// 界面开着就打开搭建界面, 关着就是以前那套玩法
+		if (CommonConfig.ENABLE_BUILDER_UI.get()) {
+			if (!canOpenBuilder(held, hand)) {
+				return InteractionResult.PASS;
+			}
+
+			if (level.isClientSide()) {
+				return InteractionResult.SUCCESS;
+			}
+
+			if (player instanceof ServerPlayer serverPlayer) {
+				IPlatformController.openBuilder(serverPlayer, pos);
+			}
+
+			return InteractionResult.SUCCESS;
+		}
 
 		if (!handlesInteraction(held)) {
 			return InteractionResult.PASS;
@@ -113,28 +128,28 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 			return InteractionResult.SUCCESS;
 		}
 
-		// 界面开着就打开搭建界面, 关着就是以前那套玩法
-		if (CommonConfig.ENABLE_BUILDER_UI.get()) {
-			if (player instanceof ServerPlayer serverPlayer) {
-				IPlatformController.openBuilder(serverPlayer, pos);
-			}
-
-			return InteractionResult.SUCCESS;
-		}
-
 		return classicUse(state, level, pos, player, hand, held);
 	}
 
 	/**
-	 * 手里拿的东西会不会被这个交互吃掉(客户端也要用同一套判断, 不然两边动作对不上)
+	 * 空手或手持调节器都能打开搭建界面
+	 * <p>
+	 * 空手只认主手, 不然主手拿着东西时会轮到副手的空手把界面顶开
 	 */
-	private static boolean handlesInteraction(ItemStack held) {
+	private static boolean canOpenBuilder(ItemStack held, InteractionHand hand) {
 		if (ItemMatcher.matches(held, CommonConfig.ADJUSTER)) {
 			return true;
 		}
 
-		if (CommonConfig.ENABLE_BUILDER_UI.get()) {
-			return false;
+		return held.isEmpty() && hand == InteractionHand.MAIN_HAND;
+	}
+
+	/**
+	 * 老玩法里, 手里拿的东西会不会被这个交互吃掉(客户端也要用同一套判断, 不然两边动作对不上)
+	 */
+	private static boolean handlesInteraction(ItemStack held) {
+		if (ItemMatcher.matches(held, CommonConfig.ADJUSTER)) {
+			return true;
 		}
 
 		return held.getItem() instanceof FillAdjusterItem || isMaterial(held);
@@ -191,26 +206,62 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 	}
 
 	/**
-	 * 老方块(内置款式)的入口: 把模式翻译成 样式 + 尺寸 + 默认调色板
+	 * 老方块(内置款式)的入口: 直接放 data/industrial_platform/structures 里的结构文件,
+	 * 数据包放同名文件就能覆盖外观; 结构文件缺失时回退到 {@link PlatformGenerator} 程序化生成
 	 *
 	 * @param upFill   向上清理的格数, 0 表示保留上方方块
 	 * @param downFill 向下填充垫底方块的格数
 	 */
 	public static boolean buildPlatform(ServerLevel level, BlockPos controllerPos, PlatformMode mode, int upFill, int downFill) {
+		StructureTemplate template = IPLogic.getStructure(level, mode.structureId()).orElse(null);
 		PlatformStyle style = PlatformStyle.of(mode);
-		int chunks = mode.isHeavy() ? 3 : 1;
 
-		boolean built = buildPlatform(level, controllerPos, style, PlatformLayout.of(chunks, chunks), PlatformPalette.defaults(style), upFill, downFill);
+		if (template == null) {
+			int chunks = mode.chunkSize();
+			return buildPlatform(level, controllerPos, style, PlatformLayout.of(chunks, chunks), PlatformPalette.defaults(style), upFill, downFill);
+		}
 
-		// 控制器方块还有可能留在原地, 把这次搭建的模式写回去
+		int width = template.getSize().getX();
+		int depth = template.getSize().getZ();
+		int originX = originOf(controllerPos.getX(), width);
+		int originZ = originOf(controllerPos.getZ(), depth);
+		int originY = controllerPos.getY();
+
+		int up = getUpFill(upFill);
+		int down = getDownFill(downFill);
+
+		if (up > 0) {
+			int clearFrom = originY + template.getSize().getY();
+			IPLogic.fillArea(level, originX, clearFrom, originZ, originX + width - 1, clearFrom + up - 1, originZ + depth - 1);
+		}
+
+		if (down > 0) {
+			IPLogic.fillAreaConditional(level, originX, originY - down, originZ, originX + width - 1, originY - 1, originZ + depth - 1);
+		}
+
+		IPLogic.placeStructure(level, originX, originY, originZ, template);
+
+		// 控制器方块还有可能留在原地, 把这次搭建的模式与悬浮状态写回去
 		BlockState state = level.getBlockState(controllerPos);
 		if (state.getBlock() instanceof PlatformBlock) {
 			level.setBlock(controllerPos, state
 					.setValue(PLATFORM_MODE, mode)
-					.setValue(FLOATING, getUpFill(upFill) == 0 && getDownFill(downFill) == 0), 3);
+					.setValue(FLOATING, up == 0 && down == 0), 3);
 		}
 
-		return built;
+		return true;
+	}
+
+	/**
+	 * 控制器所在区块尽量落在平台中间: 向上取整的区块数决定往左/北偏几个区块
+	 * <p>
+	 * 16 格 => 不偏, 48 格 => 偏一个区块, 和老结构 NBT 年代的摆法一致
+	 */
+	private static int originOf(int coordinate, int size) {
+		int chunkSize = PlatformLayout.BLOCKS_PER_CHUNK;
+		int chunks = Math.max(1, (size + chunkSize - 1) / chunkSize);
+
+		return Math.floorDiv(coordinate, chunkSize) * chunkSize - ((chunks - 1) / 2) * chunkSize;
 	}
 
 	/**

@@ -117,46 +117,46 @@ public class PlatformBlueprint {
 	}
 
 	public String getId() {
-		return this.id;
+		return id;
 	}
 
 	public Vec3i getSize() {
-		return this.size;
+		return size;
 	}
 
 	public int sizeX() {
-		return this.size.getX();
+		return size.getX();
 	}
 
 	public int sizeY() {
-		return this.size.getY();
+		return size.getY();
 	}
 
 	public int sizeZ() {
-		return this.size.getZ();
+		return size.getZ();
 	}
 
 	public List<PlacedBlock> getBlocks() {
-		return this.blocks;
+		return blocks;
 	}
 
 	public Map<Item, Integer> getMaterials() {
-		return this.materials;
+		return materials;
 	}
 
 	public List<String> getMissingBlocks() {
-		return this.missingBlocks;
+		return missingBlocks;
 	}
 
 	public boolean hasMissingBlocks() {
-		return !this.missingBlocks.isEmpty();
+		return !missingBlocks.isEmpty();
 	}
 
 	public int getBlockCount() {
-		return this.blocks.size();
+		return blocks.size();
 	}
 
 	public String describe() {
-		return this.id + " (" + this.sizeX() + "x" + this.sizeY() + "x" + this.sizeZ() + ", " + getBlockCount() + " blocks)";
+		return id + " (" + sizeX() + "x" + sizeY() + "x" + sizeZ() + ", " + getBlockCount() + " blocks)";
 	}
 }

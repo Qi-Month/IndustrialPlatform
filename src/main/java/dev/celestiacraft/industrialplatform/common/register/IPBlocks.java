@@ -1,12 +1,12 @@
-package dev.celestiacraft.industrialplatform.block;
+package dev.celestiacraft.industrialplatform.common.register;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
-import dev.celestiacraft.industrialplatform.block.designer.PlatformDesignerBlock;
-import dev.celestiacraft.industrialplatform.block.designer.PlatformDesignerItem;
-import dev.celestiacraft.industrialplatform.block.platform.PlatformBlock;
-import dev.celestiacraft.industrialplatform.block.platform.PlatformItem;
-import dev.celestiacraft.industrialplatform.block.pool.FluidPoolBlock;
-import dev.celestiacraft.industrialplatform.block.pool.FluidPoolItem;
+import dev.celestiacraft.industrialplatform.common.block.designer.PlatformDesignerBlock;
+import dev.celestiacraft.industrialplatform.common.block.designer.PlatformDesignerItem;
+import dev.celestiacraft.industrialplatform.common.block.platform.PlatformBlock;
+import dev.celestiacraft.industrialplatform.common.block.platform.PlatformItem;
+import dev.celestiacraft.industrialplatform.common.block.pool.FluidPoolBlock;
+import dev.celestiacraft.industrialplatform.common.block.pool.FluidPoolItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.eventbus.api.IEventBus;

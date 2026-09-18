@@ -1,6 +1,7 @@
-package dev.celestiacraft.industrialplatform.item;
+package dev.celestiacraft.industrialplatform.common.register;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
+import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;

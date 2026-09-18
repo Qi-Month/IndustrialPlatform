@@ -1,4 +1,4 @@
-package dev.celestiacraft.industrialplatform.menu;
+package dev.celestiacraft.industrialplatform.common.menu;
 
 import net.minecraft.server.level.ServerPlayer;
 

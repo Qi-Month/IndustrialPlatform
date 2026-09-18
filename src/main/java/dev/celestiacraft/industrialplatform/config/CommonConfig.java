@@ -1,7 +1,7 @@
 package dev.celestiacraft.industrialplatform.config;
 
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformMode;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformProperties;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.List;
@@ -86,8 +86,8 @@ public class CommonConfig {
 		BUILDER.pop();
 
 		ENABLE_BUILDER_UI = BUILDER
-				.comment("true: right click a platform block with a wrench or a stick to open the builder screen.")
-				.comment("true (default): classic behaviour - wrench cycles the platform mode, sneak + wrench toggles floating,")
+				.comment("true: right click a platform block with an empty hand (or the adjuster item) to open the builder screen.")
+				.comment("false: classic behaviour - wrench cycles the platform mode, sneak + wrench toggles floating,")
 				.comment("and right clicking with a material deploys the platform directly.")
 				.comment("The platform designer block always keeps its own screen.")
 				.define("enable_builder_ui", true);

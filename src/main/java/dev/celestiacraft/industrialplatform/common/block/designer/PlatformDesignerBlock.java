@@ -1,14 +1,15 @@
-package dev.celestiacraft.industrialplatform.block.designer;
+package dev.celestiacraft.industrialplatform.common.block.designer;
 
 import dev.celestiacraft.industrialplatform.api.ItemMatcher;
-import dev.celestiacraft.industrialplatform.block.IPlatformController;
+import dev.celestiacraft.industrialplatform.common.block.IPlatformController;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
-import dev.celestiacraft.industrialplatform.menu.PlatformDesignerMenu;
+import dev.celestiacraft.industrialplatform.common.menu.PlatformDesignerMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -24,7 +25,7 @@ public class PlatformDesignerBlock extends Block implements IPlatformController 
 
 	@Override
 	public @NotNull InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
-		if (!ItemMatcher.matches(player.getItemInHand(hand), CommonConfig.ADJUSTER)) {
+		if (!canOpen(player.getItemInHand(hand), hand)) {
 			return InteractionResult.PASS;
 		}
 
@@ -37,5 +38,18 @@ public class PlatformDesignerBlock extends Block implements IPlatformController 
 		}
 
 		return InteractionResult.SUCCESS;
+	}
+
+	/**
+	 * 空手或手持调节器都能打开设计台
+	 * <p>
+	 * 空手只认主手, 不然主手拿着东西时会轮到副手的空手把界面顶开
+	 */
+	private static boolean canOpen(ItemStack held, InteractionHand hand) {
+		if (ItemMatcher.matches(held, CommonConfig.ADJUSTER)) {
+			return true;
+		}
+
+		return held.isEmpty() && hand == InteractionHand.MAIN_HAND;
 	}
 }

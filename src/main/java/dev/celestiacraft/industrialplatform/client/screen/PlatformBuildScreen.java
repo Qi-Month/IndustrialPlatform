@@ -1,11 +1,11 @@
 package dev.celestiacraft.industrialplatform.client.screen;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformMode;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformProperties;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
 import dev.celestiacraft.industrialplatform.client.BoundaryRenderData;
 import dev.celestiacraft.industrialplatform.client.screen.widget.ToggleButton;
-import dev.celestiacraft.industrialplatform.menu.PlatformBuildMenu;
+import dev.celestiacraft.industrialplatform.common.menu.PlatformBuildMenu;
 import dev.celestiacraft.industrialplatform.network.IPNetwork;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformBuildPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsPacket;
@@ -78,54 +78,52 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	public PlatformBuildScreen(PlatformBuildMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);
 
-		this.imageWidth = PlatformBuildMenu.PANEL_WIDTH;
-		this.imageHeight = PlatformBuildMenu.PANEL_HEIGHT;
-		this.titleLabelX = 8;
-		this.titleLabelY = 6;
-		this.inventoryLabelX = PlatformBuildMenu.INVENTORY_X;
-		this.inventoryLabelY = this.imageHeight - 94;
+		imageWidth = PlatformBuildMenu.PANEL_WIDTH;
+		imageHeight = PlatformBuildMenu.PANEL_HEIGHT;
+		titleLabelX = 8;
+		titleLabelY = 6;
+		inventoryLabelX = PlatformBuildMenu.INVENTORY_X;
+		inventoryLabelY = imageHeight - 94;
 	}
 
 	@Override
 	protected void init() {
 		super.init();
 
-		this.upFill = this.menu.getUpFill();
-		this.downFill = this.menu.getDownFill();
-		this.mode = this.menu.getMode();
-		this.modeButtons.clear();
+		upFill = menu.getUpFill();
+		downFill = menu.getDownFill();
+		mode = menu.getMode();
+		modeButtons.clear();
 
-		this.upFillField = this.createFillField(this.topPos + FILL_ROW_UP_Y, this.upFill, this::onUpFillTyped);
-		this.downFillField = this.createFillField(this.topPos + FILL_ROW_UP_Y + FILL_ROW_HEIGHT, this.downFill, this::onDownFillTyped);
+		upFillField = createFillField(topPos + FILL_ROW_UP_Y, upFill, this::onUpFillTyped);
+		downFillField = createFillField(topPos + FILL_ROW_UP_Y + FILL_ROW_HEIGHT, downFill, this::onDownFillTyped);
 
-		this.upMinus = this.addRenderableWidget(this.createStepButton(MINUS_X, FILL_ROW_UP_Y, Component.literal("-"), button -> this.setUpFill(this.upFill - 1)));
-		this.upPlus = this.addRenderableWidget(this.createStepButton(PLUS_X, FILL_ROW_UP_Y, Component.literal("+"), button -> this.setUpFill(this.upFill + 1)));
-		this.downMinus = this.addRenderableWidget(this.createStepButton(MINUS_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT, Component.literal("-"), button -> this.setDownFill(this.downFill - 1)));
-		this.downPlus = this.addRenderableWidget(this.createStepButton(PLUS_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT, Component.literal("+"), button -> this.setDownFill(this.downFill + 1)));
+		upMinus = addRenderableWidget(createStepButton(MINUS_X, FILL_ROW_UP_Y, Component.literal("-"), button -> setUpFill(upFill - 1)));
+		upPlus = addRenderableWidget(createStepButton(PLUS_X, FILL_ROW_UP_Y, Component.literal("+"), button -> setUpFill(upFill + 1)));
+		downMinus = addRenderableWidget(createStepButton(MINUS_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT, Component.literal("-"), button -> setDownFill(downFill - 1)));
+		downPlus = addRenderableWidget(createStepButton(PLUS_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT, Component.literal("+"), button -> setDownFill(downFill + 1)));
 
-		this.addRenderableWidget(this.upFillField);
-		this.addRenderableWidget(this.downFillField);
+		addRenderableWidget(upFillField);
+		addRenderableWidget(downFillField);
 
-		this.modeButtons.add(this.createModeButton(LEFT, STYLE_BUTTON_Y, "style.industrial", () -> !this.mode.isCheckerboard(), button -> this.selectMode(false, this.mode.isHeavy())));
-		this.modeButtons.add(this.createModeButton(RIGHT_BUTTON_X, STYLE_BUTTON_Y, "style.checkerboard", () -> this.mode.isCheckerboard(), button -> this.selectMode(true, this.mode.isHeavy())));
-		this.modeButtons.add(this.createModeButton(LEFT, SIZE_BUTTON_Y, "size.light", () -> !this.mode.isHeavy(), button -> this.selectMode(this.mode.isCheckerboard(), false)));
-		this.modeButtons.add(this.createModeButton(RIGHT_BUTTON_X, SIZE_BUTTON_Y, "size.heavy", () -> this.mode.isHeavy(), button -> this.selectMode(this.mode.isCheckerboard(), true)));
+		modeButtons.add(createModeButton(LEFT, STYLE_BUTTON_Y, "style.industrial", () -> !mode.isCheckerboard(), button -> selectMode(false, mode.isHeavy())));
+		modeButtons.add(createModeButton(RIGHT_BUTTON_X, STYLE_BUTTON_Y, "style.checkerboard", () -> mode.isCheckerboard(), button -> selectMode(true, mode.isHeavy())));
+		modeButtons.add(createModeButton(LEFT, SIZE_BUTTON_Y, "size.light", () -> !mode.isHeavy(), button -> selectMode(mode.isCheckerboard(), false)));
+		modeButtons.add(createModeButton(RIGHT_BUTTON_X, SIZE_BUTTON_Y, "size.heavy", () -> mode.isHeavy(), button -> selectMode(mode.isCheckerboard(), true)));
 
-		this.modeButtons.forEach(this::addRenderableWidget);
+		modeButtons.forEach(this::addRenderableWidget);
 
-		this.buildButton = this.addRenderableWidget(
-				Button.builder(Component.translatable("gui.industrial_platform.build"), (button) -> {
-							IPNetwork.sendToServer(new PlatformBuildPacket());
-						})
-						.bounds(this.leftPos + RIGHT_BUTTON_X, this.topPos + BUILD_BUTTON_Y, BUTTON_WIDTH, BUILD_BUTTON_HEIGHT)
-						.build());
+		buildButton = addRenderableWidget(Button.builder(Component.translatable("gui.industrial_platform.build"), (button) -> {
+					IPNetwork.sendToServer(new PlatformBuildPacket());
+				}).bounds(leftPos + RIGHT_BUTTON_X, topPos + BUILD_BUTTON_Y, BUTTON_WIDTH, BUILD_BUTTON_HEIGHT)
+				.build());
 
-		this.updateBuildButton();
+		updateBuildButton();
 	}
 
 	private Button createStepButton(int x, int y, Component message, Button.OnPress onPress) {
 		return Button.builder(message, onPress)
-				.bounds(this.leftPos + x, this.topPos + y, BUTTON_HEIGHT, BUTTON_HEIGHT)
+				.bounds(leftPos + x, topPos + y, BUTTON_HEIGHT, BUTTON_HEIGHT)
 				.build();
 	}
 
@@ -134,8 +132,8 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 		Component tooltip = Component.translatable("gui.industrial_platform." + langKey + ".tooltip");
 
 		return new ToggleButton(
-				this.leftPos + x,
-				this.topPos + y,
+				leftPos + x,
+				topPos + y,
 				BUTTON_WIDTH,
 				BUTTON_HEIGHT,
 				label,
@@ -146,10 +144,10 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	}
 
 	private EditBox createFillField(int y, int value, java.util.function.Consumer<String> responder) {
-		EditBox field = new EditBox(this.font, this.leftPos + FIELD_X, y + 1, FIELD_WIDTH, FIELD_HEIGHT, Component.empty()) {
+		EditBox field = new EditBox(font, leftPos + FIELD_X, y + 1, FIELD_WIDTH, FIELD_HEIGHT, Component.empty()) {
 			@Override
 			public void setFocused(boolean focused) {
-				boolean wasFocused = this.isFocused();
+				boolean wasFocused = isFocused();
 				super.setFocused(focused);
 
 				if (wasFocused && !focused) {
@@ -169,39 +167,39 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 				PlatformProperties.MAX_FILL_DISTANCE
 		)));
 
-		this.updatingWidgets = true;
+		updatingWidgets = true;
 		field.setValue(String.valueOf(value));
-		this.updatingWidgets = false;
+		updatingWidgets = false;
 
 		return field;
 	}
 
 	private void onUpFillTyped(String text) {
-		if (this.updatingWidgets) {
+		if (updatingWidgets) {
 			return;
 		}
 
-		int parsed = parseFill(text, this.upFill);
-		if (parsed == this.upFill) {
+		int parsed = parseFill(text, upFill);
+		if (parsed == upFill) {
 			return;
 		}
 
-		this.upFill = parsed;
-		this.sendSettings();
+		upFill = parsed;
+		sendSettings();
 	}
 
 	private void onDownFillTyped(String text) {
-		if (this.updatingWidgets) {
+		if (updatingWidgets) {
 			return;
 		}
 
-		int parsed = parseFill(text, this.downFill);
-		if (parsed == this.downFill) {
+		int parsed = parseFill(text, downFill);
+		if (parsed == downFill) {
 			return;
 		}
 
-		this.downFill = parsed;
-		this.sendSettings();
+		downFill = parsed;
+		sendSettings();
 	}
 
 	private static int parseFill(String text, int fallback) {
@@ -218,126 +216,123 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 
 	private void setUpFill(int value) {
 		int clamped = PlatformBuildMenu.clampFill(value);
-		boolean changed = clamped != this.upFill;
+		boolean changed = clamped != upFill;
 
-		this.upFill = clamped;
-		this.updatingWidgets = true;
-		this.upFillField.setValue(String.valueOf(clamped));
-		this.updatingWidgets = false;
+		upFill = clamped;
+		updatingWidgets = true;
+		upFillField.setValue(String.valueOf(clamped));
+		updatingWidgets = false;
 
 		if (changed) {
-			this.sendSettings();
+			sendSettings();
 		}
 	}
 
 	private void setDownFill(int value) {
 		int clamped = PlatformBuildMenu.clampFill(value);
-		boolean changed = clamped != this.downFill;
+		boolean changed = clamped != downFill;
 
-		this.downFill = clamped;
-		this.updatingWidgets = true;
-		this.downFillField.setValue(String.valueOf(clamped));
-		this.updatingWidgets = false;
+		downFill = clamped;
+		updatingWidgets = true;
+		downFillField.setValue(String.valueOf(clamped));
+		updatingWidgets = false;
 
 		if (changed) {
-			this.sendSettings();
+			sendSettings();
 		}
 	}
 
 	private void normalizeFields() {
-		this.updatingWidgets = true;
-		this.upFillField.setValue(String.valueOf(this.upFill));
-		this.downFillField.setValue(String.valueOf(this.downFill));
-		this.updatingWidgets = false;
+		updatingWidgets = true;
+		upFillField.setValue(String.valueOf(upFill));
+		downFillField.setValue(String.valueOf(downFill));
+		updatingWidgets = false;
 	}
 
 	private void selectMode(boolean checkerboard, boolean heavy) {
 		PlatformMode selected = PlatformMode.of(checkerboard, heavy);
-		if (this.mode == selected) {
+		if (mode == selected) {
 			return;
 		}
 
-		this.mode = selected;
-		this.sendSettings();
+		mode = selected;
+		sendSettings();
 	}
 
 	private void sendSettings() {
-		this.settingsChanged = true;
-		IPNetwork.sendToServer(new PlatformSettingsPacket(this.upFill, this.downFill, this.mode.ordinal()));
-		this.updateBuildButton();
+		settingsChanged = true;
+		IPNetwork.sendToServer(new PlatformSettingsPacket(upFill, downFill, mode.ordinal()));
+		updateBuildButton();
 	}
 
 	/**
 	 * 界面刚打开时数据槽还没同步过来, 这里把服务端的权威值补上
 	 */
 	private void syncFromMenu() {
-		if (this.settingsChanged) {
+		if (settingsChanged) {
 			return;
 		}
 
-		int serverUpFill = this.menu.getUpFill();
-		int serverDownFill = this.menu.getDownFill();
-		PlatformMode serverMode = this.menu.getMode();
+		int serverUpFill = menu.getUpFill();
+		int serverDownFill = menu.getDownFill();
+		PlatformMode serverMode = menu.getMode();
 
-		if (serverUpFill == this.upFill && serverDownFill == this.downFill && serverMode == this.mode) {
+		if (serverUpFill == upFill && serverDownFill == downFill && serverMode == mode) {
 			return;
 		}
 
-		this.upFill = serverUpFill;
-		this.downFill = serverDownFill;
-		this.mode = serverMode;
-		this.normalizeFields();
+		upFill = serverUpFill;
+		downFill = serverDownFill;
+		mode = serverMode;
+		normalizeFields();
 	}
 
 	private void updateBuildButton() {
-		if (this.buildButton == null) {
+		if (buildButton == null) {
 			return;
 		}
 
-		boolean canBuild = this.menu.canBuild();
-		this.buildButton.active = canBuild;
-		this.buildButton.setMessage(Component.translatable("gui.industrial_platform.build", this.menu.getCost()));
+		boolean canBuild = menu.canBuild();
+		buildButton.active = canBuild;
+		buildButton.setMessage(Component.translatable("gui.industrial_platform.build", menu.getCost()));
 
 		if (canBuild) {
-			this.buildButton.setTooltip(Tooltip.create(Component.translatable(
+			buildButton.setTooltip(Tooltip.create(Component.translatable(
 					"gui.industrial_platform.build.tooltip",
-					this.getStyleName(),
-					this.getSizeName(),
-					this.upFill,
-					this.downFill
+					getStyleName(),
+					getSizeName(),
+					upFill,
+					downFill
 			)));
 		} else {
-			this.buildButton.setTooltip(Tooltip.create(Component.translatable("gui.industrial_platform.build.missing_material")));
+			buildButton.setTooltip(Tooltip.create(Component.translatable("gui.industrial_platform.build.missing_material")));
 		}
 	}
 
 	private Component getStyleName() {
-		return Component.translatable(this.mode.isCheckerboard()
+		return Component.translatable(mode.isCheckerboard()
 				? "gui.industrial_platform.style.checkerboard"
 				: "gui.industrial_platform.style.industrial");
 	}
 
 	private Component getSizeName() {
-		return Component.translatable(this.mode.isHeavy()
+		return Component.translatable(mode.isHeavy()
 				? "gui.industrial_platform.size.heavy"
 				: "gui.industrial_platform.size.light");
 	}
 
-	/**
-	 * 在填充格数的输入框 / 加减号上滚轮可以直接调节, 按住 Shift 一次 10 格
-	 */
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
 		if (delta != 0.0D) {
 			int step = hasShiftDown() ? 10 : 1;
 
-			if (this.isOverFillControls(this.upFillField, this.upMinus, this.upPlus, mouseX, mouseY)) {
-				this.setUpFill(this.upFill + (delta > 0.0D ? step : -step));
+			if (isOverFillControls(upFillField, upMinus, upPlus, mouseX, mouseY)) {
+				setUpFill(upFill + (delta > 0.0D ? step : -step));
 				return true;
 			}
 
-			if (this.isOverFillControls(this.downFillField, this.downMinus, this.downPlus, mouseX, mouseY)) {
-				this.setDownFill(this.downFill + (delta > 0.0D ? step : -step));
+			if (isOverFillControls(downFillField, downMinus, downPlus, mouseX, mouseY)) {
+				setDownFill(downFill + (delta > 0.0D ? step : -step));
 				return true;
 			}
 		}
@@ -356,24 +351,21 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	@Override
 	protected void containerTick() {
 		super.containerTick();
-		this.syncFromMenu();
-		this.updateBuildButton();
-		this.updatePreview();
+		syncFromMenu();
+		updateBuildButton();
+		updatePreview();
 	}
 
-	/**
-	 * 把界面里的当前选择丢给外面的区块预览, 改一下模式/填充格数马上就能看到
-	 */
 	private void updatePreview() {
-		int size = this.mode.isHeavy() ? 48 : 16;
+		int size = mode.isHeavy() ? 48 : 16;
 
 		BoundaryRenderData.setOverride(new BoundaryRenderData.BoundaryEntry(
-				this.menu.getPlatformPos(),
+				menu.getPlatformPos(),
 				size,
 				size,
-				this.upFill == 0 && this.downFill == 0,
-				this.upFill,
-				this.downFill
+				upFill == 0 && downFill == 0,
+				upFill,
+				downFill
 		));
 	}
 
@@ -386,33 +378,33 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 
 	@Override
 	public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-		// 原版那种打开容器时压暗背景
-		this.renderBackground(graphics);
+		renderBackground(graphics);
 		super.render(graphics, mouseX, mouseY, partialTick);
+		renderTooltip(graphics, mouseX, mouseY);
 	}
 
 	@Override
 	protected void renderBg(@NotNull GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
 		graphics.blit(
 				BACKGROUND,
-				this.leftPos, this.topPos,
+				leftPos, topPos,
 				0.0F, 0.0F,
-				this.imageWidth, this.imageHeight,
+				imageWidth, imageHeight,
 				TEXTURE_SIZE, TEXTURE_SIZE
 		);
 	}
 
 	@Override
 	protected void renderLabels(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
-		graphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, COLOR_TITLE, false);
-		graphics.drawString(this.font, Component.translatable("gui.industrial_platform.fill_up"), LEFT, 23, COLOR_LABEL, false);
-		graphics.drawString(this.font, Component.translatable("gui.industrial_platform.fill_down"), LEFT, 47, COLOR_LABEL, false);
-		graphics.drawString(this.font, Component.translatable("gui.industrial_platform.style"), LEFT, 66, COLOR_LABEL, false);
-		graphics.drawString(this.font, Component.translatable("gui.industrial_platform.size"), LEFT, 100, COLOR_LABEL, false);
+		graphics.drawString(font, title, titleLabelX, titleLabelY, COLOR_TITLE, false);
+		graphics.drawString(font, Component.translatable("gui.industrial_platform.fill_up"), LEFT, 23, COLOR_LABEL, false);
+		graphics.drawString(font, Component.translatable("gui.industrial_platform.fill_down"), LEFT, 47, COLOR_LABEL, false);
+		graphics.drawString(font, Component.translatable("gui.industrial_platform.style"), LEFT, 66, COLOR_LABEL, false);
+		graphics.drawString(font, Component.translatable("gui.industrial_platform.size"), LEFT, 100, COLOR_LABEL, false);
 
-		boolean hasMaterial = !this.menu.getMaterial().isEmpty();
-		graphics.drawString(this.font, Component.translatable("gui.industrial_platform.material"), 34, 138, hasMaterial ? COLOR_LABEL : COLOR_DISABLED, false);
+		boolean hasMaterial = !menu.getMaterial().isEmpty();
+		graphics.drawString(font, Component.translatable("gui.industrial_platform.material"), 34, 138, hasMaterial ? COLOR_LABEL : COLOR_DISABLED, false);
 
-		graphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, COLOR_INVENTORY_LABEL, false);
+		graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, COLOR_INVENTORY_LABEL, false);
 	}
 }

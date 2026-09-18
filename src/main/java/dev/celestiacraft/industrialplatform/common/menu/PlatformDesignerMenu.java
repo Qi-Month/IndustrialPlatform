@@ -1,10 +1,11 @@
-package dev.celestiacraft.industrialplatform.menu;
+package dev.celestiacraft.industrialplatform.common.menu;
 
 import dev.celestiacraft.industrialplatform.api.PlatformSettings;
-import dev.celestiacraft.industrialplatform.block.IPlatformController;
-import dev.celestiacraft.industrialplatform.block.platform.PlatformBlock;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformMode;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformProperties;
+import dev.celestiacraft.industrialplatform.common.block.IPlatformController;
+import dev.celestiacraft.industrialplatform.common.block.platform.PlatformBlock;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
+import dev.celestiacraft.industrialplatform.common.register.IPMenus;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
 import dev.celestiacraft.industrialplatform.network.IPNetwork;
@@ -75,26 +76,26 @@ public class PlatformDesignerMenu extends AbstractContainerMenu implements IPlat
 		super(IPMenus.PLATFORM_DESIGNER.get(), windowId);
 
 		this.controllerPos = controllerPos;
-		this.player = playerInventory.player;
-		this.level = this.player.level();
-		this.data = new SimpleContainerData(DATA_SIZE);
+		player = playerInventory.player;
+		level = player.level();
+		data = new SimpleContainerData(DATA_SIZE);
 
-		PlatformSettings stored = this.readStoredSettings();
-		this.blueprintId = stored != null && stored.hasBlueprint() ? stored.blueprintId() : "";
+		PlatformSettings stored = readStoredSettings();
+		blueprintId = stored != null && stored.hasBlueprint() ? stored.blueprintId() : "";
 
-		this.data.set(DATA_UP_FILL, clampFill(stored != null ? stored.upFill() : CommonConfig.TOP_FILLING_DISTANCE.get()));
-		this.data.set(DATA_DOWN_FILL, clampFill(stored != null ? stored.downFill() : CommonConfig.BOTTOM_FILLING_DISTANCE.get()));
+		data.set(DATA_UP_FILL, clampFill(stored != null ? stored.upFill() : CommonConfig.TOP_FILLING_DISTANCE.get()));
+		data.set(DATA_DOWN_FILL, clampFill(stored != null ? stored.downFill() : CommonConfig.BOTTOM_FILLING_DISTANCE.get()));
 
-		this.addPlayerInventory(playerInventory);
-		this.addDataSlots(this.data);
+		addPlayerInventory(playerInventory);
+		addDataSlots(data);
 
-		if (this.level instanceof ServerLevel serverLevel && this.player instanceof ServerPlayer serverPlayer) {
-			this.ensureBlueprint();
-			this.persist();
-			IPNetwork.sendToPlayer(serverPlayer, this.buildListPacket());
+		if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer serverPlayer) {
+			ensureBlueprint();
+			persist();
+			IPNetwork.sendToPlayer(serverPlayer, buildListPacket());
 		}
 
-		this.updateBuildState();
+		updateBuildState();
 	}
 
 	public static void open(ServerPlayer player, BlockPos controllerPos) {
@@ -111,18 +112,18 @@ public class PlatformDesignerMenu extends AbstractContainerMenu implements IPlat
 	private void addPlayerInventory(Inventory playerInventory) {
 		for (int row = 0; row < 3; row++) {
 			for (int column = 0; column < 9; column++) {
-				this.addSlot(new Slot(playerInventory, column + row * 9 + 9, INVENTORY_X + column * 18, INVENTORY_ROW_Y + row * 18));
+				addSlot(new Slot(playerInventory, column + row * 9 + 9, INVENTORY_X + column * 18, INVENTORY_ROW_Y + row * 18));
 			}
 		}
 
 		for (int column = 0; column < 9; column++) {
-			this.addSlot(new Slot(playerInventory, column, INVENTORY_X + column * 18, HOTBAR_Y));
+			addSlot(new Slot(playerInventory, column, INVENTORY_X + column * 18, HOTBAR_Y));
 		}
 	}
 
 	private PlatformSettings readStoredSettings() {
-		if (this.level instanceof ServerLevel serverLevel) {
-			return PlatformSettingsStorage.get(serverLevel).get(this.controllerPos).orElse(null);
+		if (level instanceof ServerLevel serverLevel) {
+			return PlatformSettingsStorage.get(serverLevel).get(controllerPos).orElse(null);
 		}
 		return null;
 	}
@@ -131,20 +132,20 @@ public class PlatformDesignerMenu extends AbstractContainerMenu implements IPlat
 	 * 存档里的蓝图已经不可用(文件被删/缺方块)时退回列表里的第一份
 	 */
 	private void ensureBlueprint() {
-		if (BlueprintLibrary.get(this.blueprintId).isPresent()) {
+		if (BlueprintLibrary.get(blueprintId).isPresent()) {
 			return;
 		}
 
 		List<PlatformBlueprint> available = BlueprintLibrary.list();
-		this.blueprintId = available.isEmpty() ? "" : available.get(0).getId();
+		blueprintId = available.isEmpty() ? "" : available.get(0).getId();
 	}
 
 	public Optional<PlatformBlueprint> currentBlueprint() {
-		if (this.blueprintId.isEmpty()) {
+		if (blueprintId.isEmpty()) {
 			return Optional.empty();
 		}
 
-		return BlueprintLibrary.get(this.blueprintId);
+		return BlueprintLibrary.get(blueprintId);
 	}
 
 	public BlueprintListPacket buildListPacket() {
@@ -161,37 +162,37 @@ public class PlatformDesignerMenu extends AbstractContainerMenu implements IPlat
 			));
 		}
 
-		return new BlueprintListPacket(entries, this.blueprintId, BlueprintLibrary.unavailable());
+		return new BlueprintListPacket(entries, blueprintId, BlueprintLibrary.unavailable());
 	}
 
 	public void selectBlueprint(String id) {
-		if (!(this.level instanceof ServerLevel)) {
+		if (!(level instanceof ServerLevel)) {
 			return;
 		}
 
-		this.blueprintId = BlueprintLibrary.get(id).map(PlatformBlueprint::getId).orElse("");
-		this.persist();
-		this.updateBuildState();
+		blueprintId = BlueprintLibrary.get(id).map(PlatformBlueprint::getId).orElse("");
+		persist();
+		updateBuildState();
 	}
 
 	@Override
 	public void applySettings(int upFill, int downFill, int modeIndex) {
-		this.data.set(DATA_UP_FILL, clampFill(upFill));
-		this.data.set(DATA_DOWN_FILL, clampFill(downFill));
+		data.set(DATA_UP_FILL, clampFill(upFill));
+		data.set(DATA_DOWN_FILL, clampFill(downFill));
 
-		this.persist();
-		this.updateBuildState();
+		persist();
+		updateBuildState();
 	}
 
 	@Override
 	public void build(ServerPlayer serverPlayer) {
-		if (!(this.level instanceof ServerLevel serverLevel) || !stillValid(serverPlayer)) {
+		if (!(level instanceof ServerLevel serverLevel) || !stillValid(serverPlayer)) {
 			return;
 		}
 
-		PlatformBlueprint blueprint = this.currentBlueprint().orElse(null);
+		PlatformBlueprint blueprint = currentBlueprint().orElse(null);
 		if (blueprint == null) {
-			this.sendMessage(serverPlayer, Component.translatable("message.industrial_platform.no_blueprint").withStyle(ChatFormatting.RED));
+			sendMessage(serverPlayer, Component.translatable("message.industrial_platform.no_blueprint").withStyle(ChatFormatting.RED));
 			return;
 		}
 
@@ -199,28 +200,28 @@ public class PlatformDesignerMenu extends AbstractContainerMenu implements IPlat
 		Map<Item, Integer> needed = blueprint.getMaterials();
 
 		if (!serverPlayer.isCreative()) {
-			Map<Item, Integer> missing = MaterialScanner.missing(serverLevel, this.controllerPos, serverPlayer, needed);
+			Map<Item, Integer> missing = MaterialScanner.missing(serverLevel, controllerPos, serverPlayer, needed);
 
 			if (!missing.isEmpty()) {
-				this.sendMessage(serverPlayer, Component.translatable("message.industrial_platform.missing_materials", describe(missing)).withStyle(ChatFormatting.RED));
+				sendMessage(serverPlayer, Component.translatable("message.industrial_platform.missing_materials", describe(missing)).withStyle(ChatFormatting.RED));
 				return;
 			}
 
-			if (!MaterialScanner.consume(serverLevel, this.controllerPos, serverPlayer, needed)) {
-				this.sendMessage(serverPlayer, Component.translatable("message.industrial_platform.build_failed").withStyle(ChatFormatting.RED));
+			if (!MaterialScanner.consume(serverLevel, controllerPos, serverPlayer, needed)) {
+				sendMessage(serverPlayer, Component.translatable("message.industrial_platform.build_failed").withStyle(ChatFormatting.RED));
 				return;
 			}
 		}
 
-		if (!PlatformBlock.buildBlueprint(serverLevel, this.controllerPos, blueprint, getUpFill(), getDownFill())) {
+		if (!PlatformBlock.buildBlueprint(serverLevel, controllerPos, blueprint, getUpFill(), getDownFill())) {
 			if (!serverPlayer.isCreative()) {
-				MaterialScanner.give(serverLevel, this.controllerPos, serverPlayer, needed);
+				MaterialScanner.give(serverLevel, controllerPos, serverPlayer, needed);
 			}
-			this.sendMessage(serverPlayer, Component.translatable("message.industrial_platform.build_failed").withStyle(ChatFormatting.RED));
+			sendMessage(serverPlayer, Component.translatable("message.industrial_platform.build_failed").withStyle(ChatFormatting.RED));
 			return;
 		}
 
-		this.sendMessage(serverPlayer, Component.translatable("message.industrial_platform.done").withStyle(ChatFormatting.GREEN));
+		sendMessage(serverPlayer, Component.translatable("message.industrial_platform.done").withStyle(ChatFormatting.GREEN));
 		serverPlayer.closeContainer();
 	}
 
@@ -242,15 +243,15 @@ public class PlatformDesignerMenu extends AbstractContainerMenu implements IPlat
 	}
 
 	private void persist() {
-		if (!(this.level instanceof ServerLevel serverLevel) || !(this.player instanceof ServerPlayer serverPlayer)) {
+		if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) {
 			return;
 		}
 
-		PlatformSettings settings = new PlatformSettings(PlatformMode.INDUSTRIAL_LIGHT, getUpFill(), getDownFill(), this.blueprintId);
-		PlatformSettingsStorage.get(serverLevel).put(this.controllerPos, settings);
+		PlatformSettings settings = new PlatformSettings(PlatformMode.INDUSTRIAL_LIGHT, getUpFill(), getDownFill(), blueprintId);
+		PlatformSettingsStorage.get(serverLevel).put(controllerPos, settings);
 
 		IPNetwork.sendToPlayer(serverPlayer, new PlatformSettingsSyncPacket(
-				this.controllerPos,
+				controllerPos,
 				settings.mode(),
 				settings.upFill(),
 				settings.downFill(),
@@ -261,46 +262,46 @@ public class PlatformDesignerMenu extends AbstractContainerMenu implements IPlat
 	private void updateBuildState() {
 		boolean canBuild = false;
 
-		if (this.level instanceof ServerLevel serverLevel && this.player instanceof ServerPlayer serverPlayer) {
-			PlatformBlueprint blueprint = this.currentBlueprint().orElse(null);
+		if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer serverPlayer) {
+			PlatformBlueprint blueprint = currentBlueprint().orElse(null);
 			if (blueprint != null) {
 				// 创造模式只看有没有选蓝图
-				canBuild = serverPlayer.isCreative() || MaterialScanner.canAfford(serverLevel, this.controllerPos, serverPlayer, blueprint.getMaterials());
+				canBuild = serverPlayer.isCreative() || MaterialScanner.canAfford(serverLevel, controllerPos, serverPlayer, blueprint.getMaterials());
 			}
 		}
 
-		this.data.set(DATA_CAN_BUILD, canBuild ? 1 : 0);
+		data.set(DATA_CAN_BUILD, canBuild ? 1 : 0);
 	}
 
 	@Override
 	public void broadcastChanges() {
 		// 材料够不够不用每 tick 都算, 隔一会儿刷一次就够
-		if (++this.buildStateTimer >= BUILD_STATE_INTERVAL) {
-			this.buildStateTimer = 0;
-			this.updateBuildState();
+		if (++buildStateTimer >= BUILD_STATE_INTERVAL) {
+			buildStateTimer = 0;
+			updateBuildState();
 		}
 
 		super.broadcastChanges();
 	}
 
 	public int getUpFill() {
-		return this.data.get(DATA_UP_FILL);
+		return data.get(DATA_UP_FILL);
 	}
 
 	public int getDownFill() {
-		return this.data.get(DATA_DOWN_FILL);
+		return data.get(DATA_DOWN_FILL);
 	}
 
 	public boolean canBuild() {
-		return this.data.get(DATA_CAN_BUILD) == 1;
+		return data.get(DATA_CAN_BUILD) == 1;
 	}
 
 	public String getBlueprintId() {
-		return this.blueprintId;
+		return blueprintId;
 	}
 
 	public BlockPos getControllerPos() {
-		return this.controllerPos;
+		return controllerPos;
 	}
 
 	public static int clampFill(int value) {
@@ -314,15 +315,15 @@ public class PlatformDesignerMenu extends AbstractContainerMenu implements IPlat
 
 	@Override
 	public boolean stillValid(@NotNull Player player) {
-		if (this.level == null) {
+		if (level == null) {
 			return false;
 		}
 
-		if (player.distanceToSqr(Vec3.atCenterOf(this.controllerPos)) > 64.0D) {
+		if (player.distanceToSqr(Vec3.atCenterOf(controllerPos)) > 64.0D) {
 			return false;
 		}
 
-		return this.level.getBlockState(this.controllerPos).getBlock() instanceof IPlatformController;
+		return level.getBlockState(controllerPos).getBlock() instanceof IPlatformController;
 	}
 
 	@Override

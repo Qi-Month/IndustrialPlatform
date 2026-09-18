@@ -14,7 +14,7 @@ public class ClientBlueprintData {
 	 */
 	public record Entry(String id, int sizeX, int sizeY, int sizeZ, int blockCount, Map<Item, Integer> materials) {
 		public String describeSize() {
-			return this.sizeX + "x" + this.sizeY + "x" + this.sizeZ;
+			return sizeX + "x" + sizeY + "x" + sizeZ;
 		}
 	}
 

@@ -1,4 +1,4 @@
-package dev.celestiacraft.industrialplatform.block.pool;
+package dev.celestiacraft.industrialplatform.common.block.pool;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -26,7 +26,7 @@ import dev.celestiacraft.industrialplatform.api.IPLogic;
 public class FluidPoolBlock extends Block {
 	public FluidPoolBlock() {
 		super(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
-		this.registerDefaultState(this.stateDefinition.any());
+		registerDefaultState(stateDefinition.any());
 	}
 
 	@SubscribeEvent

@@ -21,7 +21,7 @@ public class ToggleButton extends Button {
 		this.selected = selected;
 
 		if (tooltip != null) {
-			this.setTooltip(tooltip);
+			setTooltip(tooltip);
 		}
 	}
 
@@ -29,21 +29,21 @@ public class ToggleButton extends Button {
 	protected void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
 		Minecraft minecraft = Minecraft.getInstance();
 
-		graphics.setColor(1.0F, 1.0F, 1.0F, this.alpha);
+		graphics.setColor(1.0F, 1.0F, 1.0F, alpha);
 		RenderSystem.enableBlend();
 		RenderSystem.enableDepthTest();
-		graphics.blitNineSliced(WIDGETS_LOCATION, this.getX(), this.getY(), this.getWidth(), this.getHeight(), 20, 4, 200, 20, 0, this.textureY());
+		graphics.blitNineSliced(WIDGETS_LOCATION, getX(), getY(), getWidth(), getHeight(), 20, 4, 200, 20, 0, textureY());
 		graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-		this.renderString(graphics, minecraft.font, this.getFGColor() | Mth.ceil(this.alpha * 255.0F) << 24);
+		renderString(graphics, minecraft.font, getFGColor() | Mth.ceil(alpha * 255.0F) << 24);
 	}
 
 	private int textureY() {
 		int index = 1;
 
-		if (!this.active) {
+		if (!active) {
 			index = 0;
-		} else if (this.selected.getAsBoolean() || this.isHoveredOrFocused()) {
+		} else if (selected.getAsBoolean() || isHoveredOrFocused()) {
 			index = 2;
 		}
 

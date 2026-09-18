@@ -22,15 +22,15 @@ public class BoundaryRenderData {
 	 */
 	public record BoundaryEntry(BlockPos pos, int sizeX, int sizeZ, boolean floating, int upFill, int downFill) {
 		public boolean hasFillInfo() {
-			return this.upFill >= 0 && this.downFill >= 0;
+			return upFill >= 0 && downFill >= 0;
 		}
 
 		public int chunksX() {
-			return Math.max(1, (this.sizeX + 15) / 16);
+			return Math.max(1, (sizeX + 15) / 16);
 		}
 
 		public int chunksZ() {
-			return Math.max(1, (this.sizeZ + 15) / 16);
+			return Math.max(1, (sizeZ + 15) / 16);
 		}
 	}
 

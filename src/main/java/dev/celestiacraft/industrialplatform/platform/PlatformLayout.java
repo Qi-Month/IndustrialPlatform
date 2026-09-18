@@ -35,21 +35,21 @@ public record PlatformLayout(int chunksX, int chunksZ) {
 	 * 东西方向长度(方块)
 	 */
 	public int width() {
-		return this.chunksX * BLOCKS_PER_CHUNK;
+		return chunksX * BLOCKS_PER_CHUNK;
 	}
 
 	/**
 	 * 南北方向长度(方块)
 	 */
 	public int depth() {
-		return this.chunksZ * BLOCKS_PER_CHUNK;
+		return chunksZ * BLOCKS_PER_CHUNK;
 	}
 
 	public int area() {
-		return this.width() * this.depth();
+		return width() * depth();
 	}
 
 	public String describe() {
-		return this.chunksX + "x" + this.chunksZ;
+		return chunksX + "x" + chunksZ;
 	}
 }

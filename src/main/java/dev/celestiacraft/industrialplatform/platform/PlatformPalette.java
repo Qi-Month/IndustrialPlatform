@@ -40,11 +40,11 @@ public record PlatformPalette(BlockState borderPrimary, BlockState borderSeconda
 	 */
 	public PlatformPalette withFallback(PlatformPalette fallback) {
 		return new PlatformPalette(
-				this.borderPrimary != null ? this.borderPrimary : fallback.borderPrimary(),
-				this.borderSecondary != null ? this.borderSecondary : fallback.borderSecondary(),
-				this.base != null ? this.base : fallback.base(),
-				this.checker != null ? this.checker : fallback.checker(),
-				this.lamp != null ? this.lamp : fallback.lamp()
+				borderPrimary != null ? borderPrimary : fallback.borderPrimary(),
+				borderSecondary != null ? borderSecondary : fallback.borderSecondary(),
+				base != null ? base : fallback.base(),
+				checker != null ? checker : fallback.checker(),
+				lamp != null ? lamp : fallback.lamp()
 		);
 	}
 }

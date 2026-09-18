@@ -7,10 +7,10 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import dev.celestiacraft.industrialplatform.block.IPBlocks;
+import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
-import dev.celestiacraft.industrialplatform.item.IPItems;
-import dev.celestiacraft.industrialplatform.menu.IPMenus;
+import dev.celestiacraft.industrialplatform.common.register.IPItems;
+import dev.celestiacraft.industrialplatform.common.register.IPMenus;
 import dev.celestiacraft.industrialplatform.network.IPNetwork;
 
 @Mod(IndustrialPlatform.MODID)

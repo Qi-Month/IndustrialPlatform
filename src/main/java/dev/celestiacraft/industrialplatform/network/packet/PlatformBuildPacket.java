@@ -1,6 +1,6 @@
 package dev.celestiacraft.industrialplatform.network.packet;
 
-import dev.celestiacraft.industrialplatform.menu.IPlatformBuilderMenu;
+import dev.celestiacraft.industrialplatform.common.menu.IPlatformBuilderMenu;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;

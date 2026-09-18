@@ -1,6 +1,6 @@
 package dev.celestiacraft.industrialplatform.network.packet;
 
-import dev.celestiacraft.industrialplatform.item.FillAdjusterItem;
+import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;

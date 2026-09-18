@@ -1,7 +1,7 @@
 package dev.celestiacraft.industrialplatform.data;
 
 import dev.celestiacraft.industrialplatform.api.PlatformSettings;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformMode;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -40,17 +40,17 @@ public class PlatformSettingsStorage extends SavedData {
 	}
 
 	public Optional<PlatformSettings> get(BlockPos pos) {
-		return Optional.ofNullable(this.settings.get(pos));
+		return Optional.ofNullable(settings.get(pos));
 	}
 
 	public void put(BlockPos pos, PlatformSettings value) {
-		this.settings.put(pos.immutable(), value);
-		this.setDirty();
+		settings.put(pos.immutable(), value);
+		setDirty();
 	}
 
 	public void remove(BlockPos pos) {
-		if (this.settings.remove(pos) != null) {
-			this.setDirty();
+		if (settings.remove(pos) != null) {
+			setDirty();
 		}
 	}
 
@@ -58,7 +58,7 @@ public class PlatformSettingsStorage extends SavedData {
 	public @NotNull CompoundTag save(@NotNull CompoundTag tag) {
 		ListTag list = new ListTag();
 
-		this.settings.forEach((pos, value) -> {
+		settings.forEach((pos, value) -> {
 			CompoundTag entry = new CompoundTag();
 			entry.putIntArray(POS_KEY, new int[] {pos.getX(), pos.getY(), pos.getZ()});
 			entry.putInt(MODE_KEY, value.mode().ordinal());

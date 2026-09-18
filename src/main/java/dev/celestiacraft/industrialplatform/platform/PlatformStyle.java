@@ -1,6 +1,6 @@
 package dev.celestiacraft.industrialplatform.platform;
 
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformMode;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,6 +34,6 @@ public enum PlatformStyle implements StringRepresentable {
 
 	@Override
 	public @NotNull String getSerializedName() {
-		return this.name;
+		return name;
 	}
 }

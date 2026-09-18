@@ -28,16 +28,24 @@ public class IPLogic {
 	 * 结构文件是否存在, 用于在破坏地形之前做检查
 	 */
 	public static boolean hasStructure(ServerLevel level, String structureId) {
-		return getTemplate(level, structureId).isPresent();
+		return getStructure(level, structureId).isPresent();
 	}
 
 	public static boolean placeStructure(ServerLevel level, int x, int y, int z, String structureId) {
-		Optional<StructureTemplate> template = getTemplate(level, structureId);
+		Optional<StructureTemplate> template = getStructure(level, structureId);
 		if (template.isEmpty()) {
 			return false;
 		}
 
-		template.get().placeInWorld(
+		placeStructure(level, x, y, z, template.get());
+		return true;
+	}
+
+	/**
+	 * 放一份已经读好的结构, 免得同一个结构被反复从数据包资源里读
+	 */
+	public static void placeStructure(ServerLevel level, int x, int y, int z, StructureTemplate template) {
+		template.placeInWorld(
 				level,
 				new BlockPos(x, y, z),
 				new BlockPos(x, y, z),
@@ -45,11 +53,14 @@ public class IPLogic {
 				level.random,
 				3
 		);
-
-		return true;
 	}
 
-	private static Optional<StructureTemplate> getTemplate(ServerLevel level, String structureId) {
+	/**
+	 * 读取 data/&lt;命名空间&gt;/structures/&lt;id&gt;.nbt
+	 * <p>
+	 * 数据包放同名文件就能覆盖内置的平台外观
+	 */
+	public static Optional<StructureTemplate> getStructure(ServerLevel level, String structureId) {
 		StructureTemplateManager manager = level.getStructureManager();
 		ResourceLocation structureName = IndustrialPlatform.loadResource(structureId);
 		return manager.get(structureName);

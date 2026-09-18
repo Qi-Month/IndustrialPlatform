@@ -2,7 +2,7 @@ package dev.celestiacraft.industrialplatform.network.packet;
 
 import dev.celestiacraft.industrialplatform.api.PlatformPreviewSettings;
 import dev.celestiacraft.industrialplatform.api.PlatformSettings;
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformMode;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;

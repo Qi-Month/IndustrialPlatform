@@ -1,6 +1,6 @@
-package dev.celestiacraft.industrialplatform.item;
+package dev.celestiacraft.industrialplatform.common.item;
 
-import dev.celestiacraft.industrialplatform.block.state.properties.platform.PlatformProperties;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -61,5 +61,7 @@ public class FillAdjusterItem extends Item {
 		tooltip.add(Component.translatable("tooltip.industrial_platform.fill_adjuster.up", getUpFill(stack)).withStyle(ChatFormatting.AQUA));
 		tooltip.add(Component.translatable("tooltip.industrial_platform.fill_adjuster.down", getDownFill(stack)).withStyle(ChatFormatting.AQUA));
 		tooltip.add(Component.translatable("tooltip.industrial_platform.fill_adjuster.usage").withStyle(ChatFormatting.GRAY));
+		tooltip.add(Component.translatable("tooltip.industrial_platform.fill_adjuster.alt").withStyle(ChatFormatting.GRAY));
+		tooltip.add(Component.translatable("tooltip.industrial_platform.fill_adjuster.deploy").withStyle(ChatFormatting.GRAY));
 	}
 }

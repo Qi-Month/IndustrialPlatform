@@ -4,7 +4,7 @@ import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.api.IPreviewReactive;
 import dev.celestiacraft.industrialplatform.api.ItemMatcher;
 import dev.celestiacraft.industrialplatform.api.PlatformSettings;
-import dev.celestiacraft.industrialplatform.block.IPlatformController;
+import dev.celestiacraft.industrialplatform.common.block.IPlatformController;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
 import dev.celestiacraft.industrialplatform.network.IPNetwork;

@@ -1,4 +1,4 @@
-package dev.celestiacraft.industrialplatform.block.pool;
+package dev.celestiacraft.industrialplatform.common.block.platform;
 
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -12,15 +12,15 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class FluidPoolItem extends BlockItem {
-	public FluidPoolItem(Block block) {
+public class PlatformItem extends BlockItem {
+	public PlatformItem(Block block) {
 		super(block, new Properties());
 	}
 
 	@Override
 	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
 		if (Screen.hasShiftDown()) {
-			String translated = Component.translatable("tooltip.industrial_platform.fluid_pool").getString();
+			String translated = Component.translatable("tooltip.industrial_platform.industrial_platform").getString();
 			for (String line : translated.split("\n")) {
 				tooltip.add(Component.literal(line));
 			}

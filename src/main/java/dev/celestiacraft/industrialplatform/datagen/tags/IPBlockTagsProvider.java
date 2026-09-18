@@ -2,7 +2,7 @@ package dev.celestiacraft.industrialplatform.datagen.tags;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.api.IPTags;
-import dev.celestiacraft.industrialplatform.block.IPBlocks;
+import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;

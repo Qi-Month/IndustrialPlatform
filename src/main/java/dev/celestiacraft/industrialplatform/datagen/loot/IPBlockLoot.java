@@ -1,6 +1,6 @@
 package dev.celestiacraft.industrialplatform.datagen.loot;
 
-import dev.celestiacraft.industrialplatform.block.IPBlocks;
+import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.block.Block;

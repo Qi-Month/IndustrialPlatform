@@ -1,6 +1,6 @@
-package dev.celestiacraft.industrialplatform.block;
+package dev.celestiacraft.industrialplatform.common.block;
 
-import dev.celestiacraft.industrialplatform.menu.PlatformBuildMenu;
+import dev.celestiacraft.industrialplatform.common.menu.PlatformBuildMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
