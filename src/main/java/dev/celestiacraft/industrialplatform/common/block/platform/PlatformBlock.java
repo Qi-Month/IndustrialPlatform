@@ -47,7 +47,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings("ALL")
 public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPlatformController {
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 	public static final EnumProperty<PlatformMode> PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
