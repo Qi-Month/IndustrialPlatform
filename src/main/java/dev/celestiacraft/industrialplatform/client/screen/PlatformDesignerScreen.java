@@ -420,7 +420,6 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 				menu.getControllerPos(),
 				entry.sizeX(),
 				entry.sizeZ(),
-				upFill == 0 && downFill == 0,
 				upFill,
 				downFill
 		));

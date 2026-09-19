@@ -13,7 +13,5 @@ public class PlatformProperties {
 	/**
 	 * 悬浮: 上下都不进行填充与清理
 	 */
-	public static final BooleanProperty FLOATING = BooleanProperty.create("floating");
-
 	public static final EnumProperty<PlatformMode> PLATFORM_MODE = EnumProperty.create("type", PlatformMode.class);
 }

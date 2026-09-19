@@ -1,4 +1,4 @@
-package dev.celestiacraft.industrialplatform.common.block.designer;
+package dev.celestiacraft.industrialplatform.common.block.builder;
 
 import dev.celestiacraft.industrialplatform.api.ItemMatcher;
 import dev.celestiacraft.industrialplatform.common.block.IPlatformController;
@@ -21,8 +21,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 
-public class PlatformDesignerBlock extends Block implements IPlatformController {
-	public PlatformDesignerBlock() {
+public class PlatformBuilderBlock extends Block implements IPlatformController {
+	public PlatformBuilderBlock() {
 		super(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_TILES));
 	}
 

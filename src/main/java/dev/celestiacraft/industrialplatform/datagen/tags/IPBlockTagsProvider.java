@@ -45,12 +45,12 @@ public class IPBlockTagsProvider extends BlockTagsProvider {
 
 		tag(Tags.Blocks.NEEDS_WOOD_TOOL)
 				.add(IPBlocks.INDUSTRIAL_PLATFORM.get())
-				.add(IPBlocks.PLATFORM_DESIGNER.get())
+				.add(IPBlocks.PLATFORM_BUILDER.get())
 				.add(IPBlocks.FLUID_POOL.get());
 
 		tag(BlockTags.MINEABLE_WITH_PICKAXE)
 				.add(IPBlocks.INDUSTRIAL_PLATFORM.get())
-				.add(IPBlocks.PLATFORM_DESIGNER.get())
+				.add(IPBlocks.PLATFORM_BUILDER.get())
 				.add(IPBlocks.FLUID_POOL.get());
 	}
 }

@@ -108,7 +108,6 @@ public class ClientPreviewHandler {
 
 					if (block instanceof IPlatformController) {
 						PlatformSettings settings = PlatformPreviewSettings.get(pos);
-						boolean floating;
 						int sizeX;
 						int sizeZ;
 						int upFill = -1;
@@ -118,26 +117,24 @@ public class ClientPreviewHandler {
 							int[] size = previewSize(settings, block instanceof PlatformBlock ? state : null);
 							sizeX = size[0];
 							sizeZ = size[1];
-							floating = settings.isFloating();
 							upFill = settings.upFill();
 							downFill = settings.downFill();
 						} else if (block instanceof PlatformBlock) {
 							PlatformMode mode = state.getValue(PlatformProperties.PLATFORM_MODE);
 							sizeX = mode.isHeavy() ? 48 : 16;
 							sizeZ = sizeX;
-							floating = state.getValue(PlatformProperties.FLOATING);
 						} else {
 							// 设计台没有方块状态可读, 等设置同步过来再画
 							continue;
 						}
 
 						if (isPlayerInBoundary(playerX, playerZ, pos, sizeX, sizeZ)) {
-							newEntries.add(new BoundaryRenderData.BoundaryEntry(pos.immutable(), sizeX, sizeZ, floating, upFill, downFill));
+							newEntries.add(new BoundaryRenderData.BoundaryEntry(pos.immutable(), sizeX, sizeZ, upFill, downFill));
 						}
 					} else if (block instanceof FluidPoolBlock) {
 						if (isPlayerInBoundary(playerX, playerZ, pos, 16, 16)) {
 							// 流体池往下 54 格
-							newEntries.add(new BoundaryRenderData.BoundaryEntry(pos.immutable(), 16, 16, true, 0, POOL_DEPTH));
+							newEntries.add(new BoundaryRenderData.BoundaryEntry(pos.immutable(), 16, 16, 0, POOL_DEPTH));
 						}
 					}
 				}

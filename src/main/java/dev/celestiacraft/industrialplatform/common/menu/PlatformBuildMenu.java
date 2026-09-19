@@ -117,8 +117,7 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 		BlockState state = serverLevel.getBlockState(platformPos);
 		if (state.getBlock() instanceof PlatformBlock) {
 			BlockState updated = state
-					.setValue(PlatformBlock.PLATFORM_MODE, mode)
-					.setValue(PlatformBlock.FLOATING, upFill == 0 && downFill == 0);
+					.setValue(PlatformBlock.PLATFORM_MODE, mode);
 
 			if (updated != state) {
 				serverLevel.setBlock(platformPos, updated, 3);

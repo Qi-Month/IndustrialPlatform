@@ -46,7 +46,7 @@ public class IPShapedRecipe extends IPRecipeProvider {
 				})
 				.build(consumer, IndustrialPlatform.loadResource("pool"));
 
-		ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, IPBlocks.PLATFORM_DESIGNER.get())
+		ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, IPBlocks.PLATFORM_BUILDER.get())
 				.pattern("ABA")
 				.pattern("BCB")
 				.pattern("DDD")

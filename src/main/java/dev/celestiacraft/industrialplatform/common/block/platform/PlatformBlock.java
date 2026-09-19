@@ -50,19 +50,17 @@ import org.jetbrains.annotations.NotNull;
 public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPlatformController {
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 	public static final EnumProperty<PlatformMode> PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
-	public static final BooleanProperty FLOATING = PlatformProperties.FLOATING;
 
 	public PlatformBlock() {
 		super(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
 		registerDefaultState(stateDefinition.any()
 				.setValue(WATERLOGGED, false)
-				.setValue(FLOATING, false)
 				.setValue(PLATFORM_MODE, PlatformMode.INDUSTRIAL_LIGHT));
 	}
 
 	@Override
 	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-		builder.add(PLATFORM_MODE, FLOATING, WATERLOGGED);
+		builder.add(PLATFORM_MODE, WATERLOGGED);
 	}
 
 	@Override
@@ -71,7 +69,6 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 
 		return defaultBlockState()
 				.setValue(WATERLOGGED, fluidstate.getType() == Fluids.WATER)
-				.setValue(FLOATING, false)
 				.setValue(PLATFORM_MODE, PlatformMode.INDUSTRIAL_LIGHT);
 	}
 
@@ -167,8 +164,6 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 				return InteractionResult.PASS;
 			}
 
-			// 站着切平台类型, 潜行切悬浮
-			level.setBlock(pos, player.isCrouching() ? state.cycle(FLOATING) : state.cycle(PLATFORM_MODE), 3);
 			player.swing(InteractionHand.MAIN_HAND, true);
 			return InteractionResult.SUCCESS;
 		}
@@ -244,8 +239,7 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 		BlockState state = level.getBlockState(controllerPos);
 		if (state.getBlock() instanceof PlatformBlock) {
 			level.setBlock(controllerPos, state
-					.setValue(PLATFORM_MODE, mode)
-					.setValue(FLOATING, up == 0 && down == 0), 3);
+					.setValue(PLATFORM_MODE, mode), 3);
 		}
 
 		return true;
@@ -293,11 +287,6 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 
 		PlatformGenerator.forEachDeck(style, palette, layout, (localX, localZ, state) ->
 				IPLogic.placeGenerated(level, new BlockPos(originX + localX, originY, originZ + localZ), state));
-
-		BlockState state = level.getBlockState(controllerPos);
-		if (state.getBlock() instanceof PlatformBlock) {
-			level.setBlock(controllerPos, state.setValue(FLOATING, up == 0 && down == 0), 3);
-		}
 
 		return true;
 	}

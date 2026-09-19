@@ -1,4 +1,4 @@
-package dev.celestiacraft.industrialplatform.common.block.designer;
+package dev.celestiacraft.industrialplatform.common.block.builder;
 
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -12,8 +12,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class PlatformDesignerItem extends BlockItem {
-	public PlatformDesignerItem(Block block) {
+public class PlatformBuilderItem extends BlockItem {
+	public PlatformBuilderItem(Block block) {
 		super(block, new Properties());
 	}
 

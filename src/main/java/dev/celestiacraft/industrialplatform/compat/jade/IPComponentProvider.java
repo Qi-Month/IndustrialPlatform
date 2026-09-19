@@ -20,7 +20,6 @@ public enum IPComponentProvider implements IBlockComponentProvider {
 
 		boolean isLight = state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT || state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.CHECKERBOARD_LIGHT;
 		boolean isIndustrial = state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.INDUSTRIAL_LIGHT || state.getValue(PlatformBlock.PLATFORM_MODE) == PlatformMode.INDUSTRIAL_HEAVY;
-		boolean isFloating = state.getValue(PlatformBlock.FLOATING);
 
 		if (isIndustrial) {
 			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.industrial")));
@@ -31,11 +30,6 @@ public enum IPComponentProvider implements IBlockComponentProvider {
 			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.light")));
 		} else {
 			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.heavy")));
-		}
-		if (isFloating) {
-			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.floating")));
-		} else {
-			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.filling")));
 		}
 	}
 

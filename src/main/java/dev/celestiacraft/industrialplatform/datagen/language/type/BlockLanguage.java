@@ -5,7 +5,7 @@ import dev.celestiacraft.industrialplatform.datagen.language.LanguageGenerate;
 public class BlockLanguage extends LanguageGenerate {
 	public static void addLang() {
 		addBlockLanguage("industrial_platform", "Industrial Platform", "工业平台");
-		addBlockLanguage("platform_designer", "Platform Designer", "平台设计台");
+		addBlockLanguage("platform_builder", "Platform Builder", "平台建设站");
 		addBlockLanguage("fluid_pool", "Fluid Pool", "流体池");
 	}
 }
