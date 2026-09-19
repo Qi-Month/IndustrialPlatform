@@ -25,6 +25,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 public class IPLogic {
+	public static final BlockState FILL_BLOCK = Blocks.STONE.defaultBlockState();
+
 	/**
 	 * 结构文件是否存在, 用于在破坏地形之前做检查
 	 */
@@ -149,11 +151,11 @@ public class IPLogic {
 	 */
 	private static boolean fillStone(ServerLevel level, BlockPos pos) {
 		BlockState state = level.getBlockState(pos);
-		if (isUnbreakable(level, pos, state) || state.is(Blocks.STONE)) {
+		if (isUnbreakable(level, pos, state) || state.is(FILL_BLOCK.getBlock())) {
 			return false;
 		}
 
-		level.setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
+		level.setBlockAndUpdate(pos, FILL_BLOCK);
 		return true;
 	}
 

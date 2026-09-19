@@ -15,6 +15,8 @@
 	"gui.industrial_platform.fill_up": "Заполнить вверх",
 	"gui.industrial_platform.material": "Материал",
 	"gui.industrial_platform.not_enough_materials": "Недостаточно материалов",
+	"gui.industrial_platform.preview": "Предпросмотр",
+	"gui.industrial_platform.preview.info": "%sx%s  ↑%s ↓%s",
 	"gui.industrial_platform.size": "Размер",
 	"gui.industrial_platform.size.heavy": "3x3 чанка",
 	"gui.industrial_platform.size.heavy.tooltip": "Тяжёлая платформа, покрывает 3x3 чанка",
