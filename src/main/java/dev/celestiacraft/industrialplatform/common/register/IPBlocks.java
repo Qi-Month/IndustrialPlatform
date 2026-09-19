@@ -21,9 +21,9 @@ public class IPBlocks {
 	public static final DeferredRegister<Block> BLOCKS;
 	public static final DeferredRegister<Item> ITEMS;
 
-	public static final RegistryObject<Block> INDUSTRIAL_PLATFORM;
-	public static final RegistryObject<Block> PLATFORM_DESIGNER;
-	public static final RegistryObject<Block> FLUID_POOL;
+	public static final RegistryObject<PlatformBlock> INDUSTRIAL_PLATFORM;
+	public static final RegistryObject<PlatformDesignerBlock> PLATFORM_DESIGNER;
+	public static final RegistryObject<FluidPoolBlock> FLUID_POOL;
 
 	static {
 		BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, IndustrialPlatform.MODID);

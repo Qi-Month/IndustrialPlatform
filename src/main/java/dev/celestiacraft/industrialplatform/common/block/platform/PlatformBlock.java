@@ -76,14 +76,14 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 	}
 
 	@Override
-	public FluidState getFluidState(BlockState state) {
+	public @NotNull FluidState getFluidState(BlockState state) {
 		return state.getValue(WATERLOGGED)
 				? Fluids.WATER.getSource(false)
 				: super.getFluidState(state);
 	}
 
 	@Override
-	public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+	public @NotNull BlockState updateShape(BlockState state, @NotNull Direction direction, @NotNull BlockState neighborState, @NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockPos neighborPos) {
 		if (state.getValue(WATERLOGGED)) {
 			level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
 		}
@@ -355,7 +355,7 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 	}
 
 	@Override
-	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+	public void onRemove(BlockState state, @NotNull Level level, @NotNull BlockPos pos, BlockState newState, boolean isMoving) {
 		// 控制器被结构覆盖/挖掉时, 顺手清掉它保存的搭建设置
 		if (!state.is(newState.getBlock()) && level instanceof ServerLevel serverLevel) {
 			PlatformSettingsStorage.get(serverLevel).remove(pos);
@@ -365,7 +365,7 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos pos, PathComputationType type) {
+	public boolean isPathfindable(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull PathComputationType type) {
 		return false;
 	}
 }
