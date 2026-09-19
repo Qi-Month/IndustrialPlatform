@@ -30,9 +30,9 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID, value = Dist.CLIENT)
 public class BoundaryRenderer {
 	// 预览统一用蓝色
-	private static final float PREVIEW_R = 0.4F;
-	private static final float PREVIEW_G = 0.65F;
-	private static final float PREVIEW_B = 1.0F;
+	public static final float PREVIEW_R = 0.4F;
+	public static final float PREVIEW_G = 0.65F;
+	public static final float PREVIEW_B = 1.0F;
 
 	// 区块范围外墙: 满高度 + 波浪
 	private static final float BASE_ALPHA = 0.15F;

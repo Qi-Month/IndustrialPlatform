@@ -239,6 +239,18 @@ public class OtherLanguage extends LanguageGenerate {
 		);
 
 		addCustomLang(
+				"gui.industrial_platform.preview",
+				"Preview",
+				"预览"
+		);
+
+		addCustomLang(
+				"gui.industrial_platform.preview.info",
+				"%sx%s  ↑%s ↓%s",
+				"%s×%s  ↑%s ↓%s"
+		);
+
+		addCustomLang(
 				"gui.industrial_platform.build_plain",
 				"Build",
 				"搭建"

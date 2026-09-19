@@ -15,6 +15,8 @@
 	"gui.industrial_platform.fill_up": "上填",
 	"gui.industrial_platform.material": "材料",
 	"gui.industrial_platform.not_enough_materials": "材料不足",
+	"gui.industrial_platform.preview": "預覽",
+	"gui.industrial_platform.preview.info": "%s×%s  ↑%s ↓%s",
 	"gui.industrial_platform.size": "尺寸",
 	"gui.industrial_platform.size.heavy": "三乘三區塊",
 	"gui.industrial_platform.size.heavy.tooltip": "重臺，覆三乘三區塊",

@@ -4,6 +4,7 @@ import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
 import dev.celestiacraft.industrialplatform.client.BoundaryRenderData;
+import dev.celestiacraft.industrialplatform.client.screen.widget.PlatformPreviewWidget;
 import dev.celestiacraft.industrialplatform.client.screen.widget.ToggleButton;
 import dev.celestiacraft.industrialplatform.common.menu.PlatformBuildMenu;
 import dev.celestiacraft.industrialplatform.network.IPNetwork;
@@ -14,6 +15,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -46,6 +48,12 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	private static final int BUILD_BUTTON_HEIGHT = 20;
 
 	/**
+	 * 面板左边的平台预览, 屏幕太窄放不下时不显示
+	 */
+	private static final int PREVIEW_WIDTH = 120;
+	private static final int PREVIEW_GAP = 4;
+
+	/**
 	 * 界面背景贴图, 256x256 的画布, 面板画在左上角 200x250
 	 */
 	private static final ResourceLocation BACKGROUND = IndustrialPlatform.loadResource("textures/gui/platform_build.png");
@@ -65,6 +73,8 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	private Button downMinus;
 	private Button downPlus;
 	private Button buildButton;
+	private PlatformPreviewWidget preview;
+	private List<Rect2i> extraAreas = List.of();
 
 	private int upFill;
 	private int downFill;
@@ -112,6 +122,7 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 		modeButtons.add(createModeButton(RIGHT_BUTTON_X, SIZE_BUTTON_Y, "size.heavy", () -> mode.isHeavy(), button -> selectMode(mode.isCheckerboard(), true)));
 
 		modeButtons.forEach(this::addRenderableWidget);
+		initPreview();
 
 		buildButton = addRenderableWidget(Button.builder(Component.translatable("gui.industrial_platform.build"), (button) -> {
 					IPNetwork.sendToServer(new PlatformBuildPacket());
@@ -119,6 +130,32 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 				.build());
 
 		updateBuildButton();
+	}
+
+	/**
+	 * 预览组件持有显存资源, 窗口缩放重新 init 时沿用同一个, 只挪位置
+	 */
+	private void initPreview() {
+		int x = leftPos - PREVIEW_WIDTH - PREVIEW_GAP;
+
+		if (preview == null) {
+			preview = new PlatformPreviewWidget(menu.getPlatformPos(), x, topPos, PREVIEW_WIDTH, imageHeight);
+		} else {
+			preview.setX(x);
+			preview.setY(topPos);
+		}
+
+		preview.visible = x >= 0;
+		preview.update(mode, upFill, downFill);
+		extraAreas = preview.visible ? List.of(new Rect2i(x, topPos, PREVIEW_WIDTH, imageHeight)) : List.of();
+		addRenderableWidget(preview);
+	}
+
+	/**
+	 * 面板之外被本界面占用的区域, JEI 之类的覆盖层要避开
+	 */
+	public List<Rect2i> getExtraAreas() {
+		return extraAreas;
 	}
 
 	private Button createStepButton(int x, int y, Component message, Button.OnPress onPress) {
@@ -357,6 +394,8 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	}
 
 	private void updatePreview() {
+		preview.update(mode, upFill, downFill);
+
 		int size = mode.isHeavy() ? 48 : 16;
 
 		BoundaryRenderData.setOverride(new BoundaryRenderData.BoundaryEntry(
@@ -374,6 +413,18 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 		super.removed();
 		// 关掉界面后交给方块状态 + 客户端缓存继续画
 		BoundaryRenderData.clearOverride();
+
+		if (preview != null) {
+			preview.close();
+		}
+	}
+
+	/**
+	 * 点在预览面板上不算点到界面外面, 不然手里拿着物品一点就扔出去了
+	 */
+	@Override
+	protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop, int button) {
+		return super.hasClickedOutside(mouseX, mouseY, guiLeft, guiTop, button) && !preview.isMouseOver(mouseX, mouseY);
 	}
 
 	@Override
