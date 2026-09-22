@@ -10,27 +10,32 @@ import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
 import dev.celestiacraft.industrialplatform.network.IPNetwork;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsSyncPacket;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 @Mod.EventBusSubscriber(modid = IndustrialPlatform.MODID)
 public class PreviewPlayerTickHandler {
-	// 每个玩家已经同步过的搭建设置, 只在变化时才发包
-	private static final Map<UUID, Map<BlockPos, PlatformSettings>> SYNCED = new ConcurrentHashMap<>();
+	private static final int SCAN_RADIUS = 15;
+	private static final int SCAN_INTERVAL_TICKS = 5;
+	private static final Predicate<BlockState> PREVIEW_BLOCK = state -> isPreviewBlock(state.getBlock());
+	private static final Map<UUID, PreviewState> PLAYERS = new HashMap<>();
 
 	private static boolean isPreviewTrigger(ItemStack stack) {
 		return ItemMatcher.matches(stack, CommonConfig.ADJUSTER);
@@ -38,65 +43,131 @@ public class PreviewPlayerTickHandler {
 
 	@SubscribeEvent
 	public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-		if (event.phase != TickEvent.Phase.END) {
+		if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer player)) {
 			return;
 		}
-
-		Player player = event.player;
-		Level level = player.level();
-
-		if (!(level instanceof ServerLevel serverLevel)) {
+		if (player.tickCount % SCAN_INTERVAL_TICKS != 0) {
 			return;
 		}
 		if (!isPreviewTrigger(player.getMainHandItem()) && !isPreviewTrigger(player.getOffhandItem())) {
 			return;
 		}
-		if (player.tickCount % 5 != 0) {
+
+		PreviewState preview = PLAYERS.computeIfAbsent(player.getUUID(), key -> new PreviewState());
+		scanNearby(player.serverLevel(), player, preview);
+	}
+
+	private static boolean isPreviewBlock(Block block) {
+		return block instanceof IPreviewReactive || block instanceof IPlatformController;
+	}
+
+	private static void scanNearby(ServerLevel level, ServerPlayer player, PreviewState preview) {
+		BlockPos center = player.blockPosition();
+		int minX = center.getX() - SCAN_RADIUS;
+		int maxX = center.getX() + SCAN_RADIUS;
+		int minY = Math.max(center.getY() - SCAN_RADIUS, level.getMinBuildHeight());
+		int maxY = Math.min(center.getY() + SCAN_RADIUS, level.getMaxBuildHeight() - 1);
+		int minZ = center.getZ() - SCAN_RADIUS;
+		int maxZ = center.getZ() + SCAN_RADIUS;
+		if (minY > maxY) {
 			return;
 		}
 
-		BlockPos center = player.blockPosition();
-		Map<BlockPos, PlatformSettings> synced = SYNCED.computeIfAbsent(player.getUUID(), key -> new HashMap<>());
+		int minChunkX = SectionPos.blockToSectionCoord(minX);
+		int maxChunkX = SectionPos.blockToSectionCoord(maxX);
+		int minChunkZ = SectionPos.blockToSectionCoord(minZ);
+		int maxChunkZ = SectionPos.blockToSectionCoord(maxZ);
+		int minSectionY = SectionPos.blockToSectionCoord(minY);
+		int maxSectionY = SectionPos.blockToSectionCoord(maxY);
+		int levelMinSection = level.getMinSection();
+		ServerChunkCache chunks = level.getChunkSource();
+		PlatformSettingsStorage storage = null;
+		BlockPos.MutableBlockPos pos = preview.pos;
 
-		for (BlockPos pos : getFirstAndSeconPos(center)) {
-			BlockState state = serverLevel.getBlockState(pos);
-			Block block = state.getBlock();
+		for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+			int originX = SectionPos.sectionToBlockCoord(chunkX);
+			int fromX = Math.max(0, minX - originX);
+			int toX = Math.min(SectionPos.SECTION_MAX_INDEX, maxX - originX);
+			for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+				LevelChunk chunk = chunks.getChunkNow(chunkX, chunkZ);
+				if (chunk == null) {
+					continue;
+				}
 
-			if (block instanceof IPreviewReactive reactive) {
-				reactive.onPreviewHover(serverLevel, pos, state);
-			}
+				int originZ = SectionPos.sectionToBlockCoord(chunkZ);
+				int fromZ = Math.max(0, minZ - originZ);
+				int toZ = Math.min(SectionPos.SECTION_MAX_INDEX, maxZ - originZ);
+				for (int sectionY = minSectionY; sectionY <= maxSectionY; sectionY++) {
+					LevelChunkSection section = chunk.getSection(sectionY - levelMinSection);
+					if (section.hasOnlyAir() || !section.maybeHas(PREVIEW_BLOCK)) {
+						continue;
+					}
 
-			// 把附近平台保存的搭建设置推给客户端, 这样界面外的预览也知道上下填充格数
-			if (block instanceof IPlatformController && player instanceof ServerPlayer serverPlayer) {
-				syncSettings(serverLevel, serverPlayer, pos, synced);
+					int originY = SectionPos.sectionToBlockCoord(sectionY);
+					int fromY = Math.max(0, minY - originY);
+					int toY = Math.min(SectionPos.SECTION_MAX_INDEX, maxY - originY);
+					for (int y = fromY; y <= toY; y++) {
+						int blockY = originY + y;
+						for (int z = fromZ; z <= toZ; z++) {
+							int blockZ = originZ + z;
+							for (int x = fromX; x <= toX; x++) {
+								BlockState state = section.getBlockState(x, y, z);
+								Block block = state.getBlock();
+								if (!isPreviewBlock(block)) {
+									continue;
+								}
+
+								pos.set(originX + x, blockY, blockZ);
+								if (block instanceof IPreviewReactive reactive) {
+									reactive.onPreviewHover(level, pos, state);
+								}
+								if (block instanceof IPlatformController) {
+									if (storage == null) {
+										storage = PlatformSettingsStorage.get(level);
+									}
+									syncSettings(storage, player, pos, preview.synced);
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}
 
-	private static void syncSettings(ServerLevel level, ServerPlayer player, BlockPos pos, Map<BlockPos, PlatformSettings> synced) {
-		PlatformSettings settings = PlatformSettingsStorage.get(level).get(pos).orElse(null);
-		if (settings == null) {
+	private static void syncSettings(PlatformSettingsStorage storage, ServerPlayer player, BlockPos pos, Map<BlockPos, PlatformSettings> synced) {
+		PlatformSettings settings = storage.get(pos).orElse(null);
+		if (settings == null || settings.equals(synced.get(pos))) {
 			return;
 		}
 
 		BlockPos immutable = pos.immutable();
-		if (settings.equals(synced.get(immutable))) {
-			return;
-		}
-
 		synced.put(immutable, settings);
 		IPNetwork.sendToPlayer(player, new PlatformSettingsSyncPacket(immutable, settings.mode(), settings.upFill(), settings.downFill(), settings.blueprintId()));
 	}
 
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-		SYNCED.remove(event.getEntity().getUUID());
+		PLAYERS.remove(event.getEntity().getUUID());
 	}
 
-	private static Iterable<BlockPos> getFirstAndSeconPos(BlockPos center) {
-		return BlockPos.betweenClosed(
-				center.offset(-15, -15, -15),
-				center.offset(15, 15, 15)
-		);
+	@SubscribeEvent
+	public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+		PLAYERS.remove(event.getEntity().getUUID());
+	}
+
+	@SubscribeEvent
+	public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+		PLAYERS.remove(event.getEntity().getUUID());
+	}
+
+	@SubscribeEvent
+	public static void onServerStopped(ServerStoppedEvent event) {
+		PLAYERS.clear();
+	}
+
+	private static class PreviewState {
+		private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+		private final Map<BlockPos, PlatformSettings> synced = new HashMap<>();
 	}
 }
