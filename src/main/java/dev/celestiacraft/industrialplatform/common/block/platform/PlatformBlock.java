@@ -8,6 +8,7 @@ import dev.celestiacraft.industrialplatform.common.block.state.properties.platfo
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
+import dev.celestiacraft.industrialplatform.event.PreviewPlayerTickHandler;
 import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
 import dev.celestiacraft.industrialplatform.platform.PlatformGenerator;
 import dev.celestiacraft.industrialplatform.platform.PlatformLayout;
@@ -363,6 +364,7 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 		// 控制器被结构覆盖/挖掉时, 顺手清掉它保存的搭建设置
 		if (!state.is(newState.getBlock()) && level instanceof ServerLevel serverLevel) {
 			PlatformSettingsStorage.get(serverLevel).remove(pos);
+			PreviewPlayerTickHandler.onControllerRemoved(serverLevel, pos);
 		}
 
 		super.onRemove(state, level, pos, newState, isMoving);

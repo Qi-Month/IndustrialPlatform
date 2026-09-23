@@ -2,19 +2,18 @@ package dev.celestiacraft.industrialplatform.event;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.api.IPreviewReactive;
-import dev.celestiacraft.industrialplatform.api.ItemMatcher;
 import dev.celestiacraft.industrialplatform.api.PlatformSettings;
 import dev.celestiacraft.industrialplatform.common.block.IPlatformController;
-import dev.celestiacraft.industrialplatform.config.CommonConfig;
+import dev.celestiacraft.industrialplatform.common.block.platform.PlatformBlock;
 import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
 import dev.celestiacraft.industrialplatform.network.IPNetwork;
+import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsClearPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsSyncPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -37,10 +36,6 @@ public class PreviewPlayerTickHandler {
 	private static final Predicate<BlockState> PREVIEW_BLOCK = state -> isPreviewBlock(state.getBlock());
 	private static final Map<UUID, PreviewState> PLAYERS = new HashMap<>();
 
-	private static boolean isPreviewTrigger(ItemStack stack) {
-		return ItemMatcher.matches(stack, CommonConfig.ADJUSTER);
-	}
-
 	@SubscribeEvent
 	public static void onPlayerTick(PlayerTickEvent.Post event) {
 		if (!(event.getEntity() instanceof ServerPlayer player)) {
@@ -49,7 +44,7 @@ public class PreviewPlayerTickHandler {
 		if (player.tickCount % SCAN_INTERVAL_TICKS != 0) {
 			return;
 		}
-		if (!isPreviewTrigger(player.getMainHandItem()) && !isPreviewTrigger(player.getOffhandItem())) {
+		if (!IPlatformController.isHoldingAdjuster(player)) {
 			return;
 		}
 
@@ -125,7 +120,7 @@ public class PreviewPlayerTickHandler {
 									if (storage == null) {
 										storage = PlatformSettingsStorage.get(level);
 									}
-									syncSettings(storage, player, pos, preview.synced);
+									syncSettings(storage, player, pos, state, preview.synced);
 								}
 							}
 						}
@@ -135,8 +130,11 @@ public class PreviewPlayerTickHandler {
 		}
 	}
 
-	private static void syncSettings(PlatformSettingsStorage storage, ServerPlayer player, BlockPos pos, Map<BlockPos, PlatformSettings> synced) {
+	private static void syncSettings(PlatformSettingsStorage storage, ServerPlayer player, BlockPos pos, BlockState state, Map<BlockPos, PlatformSettings> synced) {
 		PlatformSettings settings = storage.get(pos).orElse(null);
+		if (settings == null && state.getBlock() instanceof PlatformBlock) {
+			settings = PlatformSettings.defaults(state.getValue(PlatformBlock.PLATFORM_MODE));
+		}
 		if (settings == null || settings.equals(synced.get(pos))) {
 			return;
 		}
@@ -144,6 +142,11 @@ public class PreviewPlayerTickHandler {
 		BlockPos immutable = pos.immutable();
 		synced.put(immutable, settings);
 		IPNetwork.sendToPlayer(player, new PlatformSettingsSyncPacket(immutable, settings.mode(), settings.upFill(), settings.downFill(), settings.blueprintId()));
+	}
+
+	public static void onControllerRemoved(ServerLevel level, BlockPos pos) {
+		PLAYERS.values().forEach(preview -> preview.synced.remove(pos));
+		IPNetwork.sendToTracking(level, pos, new PlatformSettingsClearPacket(pos.immutable()));
 	}
 
 	@SubscribeEvent
