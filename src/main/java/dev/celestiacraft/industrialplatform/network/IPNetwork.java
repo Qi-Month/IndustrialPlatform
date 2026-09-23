@@ -5,8 +5,11 @@ import dev.celestiacraft.industrialplatform.network.packet.BlueprintListPacket;
 import dev.celestiacraft.industrialplatform.network.packet.DesignerSelectPacket;
 import dev.celestiacraft.industrialplatform.network.packet.FillAdjustPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformBuildPacket;
+import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsClearPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsSyncPacket;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.PacketDistributor;
@@ -61,6 +64,12 @@ public class IPNetwork {
 				.decoder(BlueprintListPacket::decode)
 				.consumerMainThread(BlueprintListPacket::handle)
 				.add();
+
+		CHANNEL.messageBuilder(PlatformSettingsClearPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(PlatformSettingsClearPacket::encode)
+				.decoder(PlatformSettingsClearPacket::decode)
+				.consumerMainThread(PlatformSettingsClearPacket::handle)
+				.add();
 	}
 
 	public static void sendToServer(Object packet) {
@@ -69,5 +78,9 @@ public class IPNetwork {
 
 	public static void sendToPlayer(ServerPlayer player, Object packet) {
 		CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
+	}
+
+	public static void sendToTracking(ServerLevel level, BlockPos pos, Object packet) {
+		CHANNEL.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(pos)), packet);
 	}
 }

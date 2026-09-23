@@ -3,7 +3,6 @@ package dev.celestiacraft.industrialplatform.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -20,8 +19,6 @@ import dev.celestiacraft.industrialplatform.common.block.platform.PlatformBlock;
 import dev.celestiacraft.industrialplatform.common.block.pool.FluidPoolBlock;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
-import dev.celestiacraft.industrialplatform.config.CommonConfig;
-import dev.celestiacraft.industrialplatform.api.ItemMatcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,10 +42,6 @@ public class ClientPreviewHandler {
 	});
 	private static final AtomicBoolean scanning = new AtomicBoolean(false);
 
-	private static boolean isPreviewTrigger(ItemStack stack) {
-		return ItemMatcher.matches(stack, CommonConfig.ADJUSTER);
-	}
-
 	@SubscribeEvent
 	public static void onClientTick(TickEvent.ClientTickEvent event) {
 		Minecraft mc = Minecraft.getInstance();
@@ -62,7 +55,7 @@ public class ClientPreviewHandler {
 
 		long tick = level.getGameTime();
 
-		if (!isPreviewTrigger(player.getMainHandItem()) && !isPreviewTrigger(player.getOffhandItem())) {
+		if (!IPlatformController.isHoldingAdjuster(player)) {
 			if (!BoundaryRenderData.getEntries().isEmpty()) {
 				BoundaryRenderData.clear();
 			}
@@ -108,28 +101,21 @@ public class ClientPreviewHandler {
 
 					if (block instanceof IPlatformController) {
 						PlatformSettings settings = PlatformPreviewSettings.get(pos);
-						int sizeX;
-						int sizeZ;
-						int upFill = -1;
-						int downFill = -1;
+						if (settings == null && block instanceof PlatformBlock) {
+							settings = PlatformSettings.defaults(state.getValue(PlatformProperties.PLATFORM_MODE));
+						}
 
-						if (settings != null) {
-							int[] size = previewSize(settings, block instanceof PlatformBlock ? state : null);
-							sizeX = size[0];
-							sizeZ = size[1];
-							upFill = settings.upFill();
-							downFill = settings.downFill();
-						} else if (block instanceof PlatformBlock) {
-							PlatformMode mode = state.getValue(PlatformProperties.PLATFORM_MODE);
-							sizeX = mode.isHeavy() ? 48 : 16;
-							sizeZ = sizeX;
-						} else {
+						if (settings == null) {
 							// 设计台没有方块状态可读, 等设置同步过来再画
 							continue;
 						}
 
+						int[] size = previewSize(settings, block instanceof PlatformBlock ? state : null);
+						int sizeX = size[0];
+						int sizeZ = size[1];
+
 						if (isPlayerInBoundary(playerX, playerZ, pos, sizeX, sizeZ)) {
-							newEntries.add(new BoundaryRenderData.BoundaryEntry(pos.immutable(), sizeX, sizeZ, upFill, downFill));
+							newEntries.add(new BoundaryRenderData.BoundaryEntry(pos.immutable(), sizeX, sizeZ, settings.upFill(), settings.downFill()));
 						}
 					} else if (block instanceof FluidPoolBlock) {
 						if (isPlayerInBoundary(playerX, playerZ, pos, 16, 16)) {

@@ -1,10 +1,14 @@
 package dev.celestiacraft.industrialplatform.common.block;
 
+import dev.celestiacraft.industrialplatform.api.ItemMatcher;
 import dev.celestiacraft.industrialplatform.common.menu.PlatformBuildMenu;
+import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkHooks;
 
 /**
@@ -18,5 +22,13 @@ public interface IPlatformController {
 		NetworkHooks.openScreen(serverPlayer, new SimpleMenuProvider((windowId, inventory, player) -> {
 			return new PlatformBuildMenu(windowId, inventory, platformPos);
 		}, Component.translatable("menu.industrial_platform.platform_build")), platformPos);
+	}
+
+	static boolean isAdjuster(ItemStack stack) {
+		return ItemMatcher.matches(stack, CommonConfig.ADJUSTER);
+	}
+
+	static boolean isHoldingAdjuster(Player player) {
+		return isAdjuster(player.getMainHandItem()) || isAdjuster(player.getOffhandItem());
 	}
 }

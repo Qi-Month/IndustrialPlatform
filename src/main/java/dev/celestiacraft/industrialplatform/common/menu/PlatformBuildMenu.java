@@ -82,10 +82,11 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 
 		// 上次在这个方块上选好的设置优先, 没有就用方块状态与配置默认值
 		PlatformSettings stored = readStoredSettings();
+		PlatformSettings initial = stored != null ? stored : PlatformSettings.defaults(readModeFromLevel());
 
-		data.set(DATA_UP_FILL, clampFill(stored != null ? stored.upFill() : CommonConfig.TOP_FILLING_DISTANCE.get()));
-		data.set(DATA_DOWN_FILL, clampFill(stored != null ? stored.downFill() : CommonConfig.BOTTOM_FILLING_DISTANCE.get()));
-		data.set(DATA_MODE, (stored != null ? stored.mode() : readModeFromLevel()).ordinal());
+		data.set(DATA_UP_FILL, clampFill(initial.upFill()));
+		data.set(DATA_DOWN_FILL, clampFill(initial.downFill()));
+		data.set(DATA_MODE, initial.mode().ordinal());
 
 		addSlot(new MaterialSlot(material, MATERIAL_SLOT_INDEX, MATERIAL_SLOT_X, MATERIAL_SLOT_Y));
 		addPlayerInventory(playerInventory);

@@ -34,13 +34,6 @@ public class BoundaryRenderer {
 	public static final float PREVIEW_G = 0.65F;
 	public static final float PREVIEW_B = 1.0F;
 
-	// 区块范围外墙: 满高度 + 波浪
-	private static final float BASE_ALPHA = 0.15F;
-	private static final float WAVE_AMPLITUDE = 0.35F;
-	private static final float STRIP_HEIGHT = 4.0F;
-	private static final float WAVE_SPEED = 0.3F;
-	private static final float WAVE_FREQUENCY = 0.15F;
-
 	// 填充范围线框: 原版碰撞箱那种线
 	private static final float LINE_ALPHA = 0.75F;
 	private static final float LINE_PULSE = 0.15F;
@@ -70,14 +63,13 @@ public class BoundaryRenderer {
 		Vec3 camera = event.getCamera().getPosition();
 		PoseStack poseStack = event.getPoseStack();
 
-		float waveTime = (level.getGameTime() + event.getPartialTick()) * WAVE_SPEED;
 		float lineAlpha = LINE_ALPHA + LINE_PULSE * Mth.sin((level.getGameTime() + event.getPartialTick()) * PULSE_SPEED);
 
 		poseStack.pushPose();
 		poseStack.translate(-camera.x, -camera.y, -camera.z);
 
-		// 1) 区块范围外墙 + 平台那一层
-		drawFaces(poseStack, entries, level, waveTime);
+		// 1) 平台那一层
+		drawFaces(poseStack, entries);
 
 		// 2) 填充范围的线框
 		drawOutlines(poseStack, entries, lineAlpha);
@@ -104,13 +96,10 @@ public class BoundaryRenderer {
 		return entries;
 	}
 
-	private static void drawFaces(PoseStack poseStack, List<BoundaryRenderData.BoundaryEntry> entries, Level level, float waveTime) {
+	private static void drawFaces(PoseStack poseStack, List<BoundaryRenderData.BoundaryEntry> entries) {
 		Tesselator tesselator = Tesselator.getInstance();
 		BufferBuilder builder = tesselator.getBuilder();
 		Matrix4f matrix = poseStack.last().pose();
-
-		float bottom = level.getMinBuildHeight();
-		float top = level.getMaxBuildHeight();
 
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
@@ -124,7 +113,6 @@ public class BoundaryRenderer {
 			float[] color = previewColor();
 			AABB box = boxOf(entry);
 
-			drawWalls(builder, matrix, box, color, bottom, top, waveTime);
 			drawDeck(builder, matrix, box, entry.pos().getY() + 1.0F + DECK_Y_OFFSET, color);
 		}
 
@@ -133,45 +121,6 @@ public class BoundaryRenderer {
 		RenderSystem.depthMask(true);
 		RenderSystem.enableCull();
 		RenderSystem.disableBlend();
-	}
-
-	private static void drawWalls(BufferBuilder builder, Matrix4f matrix, AABB box, float[] color, float bottom, float top, float time) {
-		float minX = (float) box.minX;
-		float minZ = (float) box.minZ;
-		float maxX = (float) box.maxX;
-		float maxZ = (float) box.maxZ;
-
-		for (float y = bottom; y < top; y += STRIP_HEIGHT) {
-			float stripTop = Math.min(y + STRIP_HEIGHT, top);
-			float midY = (y + stripTop) * 0.5F;
-
-			float wave = Mth.sin((midY * WAVE_FREQUENCY) - time);
-			float alpha = Mth.clamp(BASE_ALPHA + WAVE_AMPLITUDE * wave, 0.0F, 1.0F);
-
-			// North
-			builder.vertex(matrix, minX, y, minZ).color(color[0], color[1], color[2], alpha).endVertex();
-			builder.vertex(matrix, minX, stripTop, minZ).color(color[0], color[1], color[2], alpha).endVertex();
-			builder.vertex(matrix, maxX, stripTop, minZ).color(color[0], color[1], color[2], alpha).endVertex();
-			builder.vertex(matrix, maxX, y, minZ).color(color[0], color[1], color[2], alpha).endVertex();
-
-			// South
-			builder.vertex(matrix, maxX, y, maxZ).color(color[0], color[1], color[2], alpha).endVertex();
-			builder.vertex(matrix, maxX, stripTop, maxZ).color(color[0], color[1], color[2], alpha).endVertex();
-			builder.vertex(matrix, minX, stripTop, maxZ).color(color[0], color[1], color[2], alpha).endVertex();
-			builder.vertex(matrix, minX, y, maxZ).color(color[0], color[1], color[2], alpha).endVertex();
-
-			// West
-			builder.vertex(matrix, minX, y, maxZ).color(color[0], color[1], color[2], alpha).endVertex();
-			builder.vertex(matrix, minX, stripTop, maxZ).color(color[0], color[1], color[2], alpha).endVertex();
-			builder.vertex(matrix, minX, stripTop, minZ).color(color[0], color[1], color[2], alpha).endVertex();
-			builder.vertex(matrix, minX, y, minZ).color(color[0], color[1], color[2], alpha).endVertex();
-
-			// East
-			builder.vertex(matrix, maxX, y, minZ).color(color[0], color[1], color[2], alpha).endVertex();
-			builder.vertex(matrix, maxX, stripTop, minZ).color(color[0], color[1], color[2], alpha).endVertex();
-			builder.vertex(matrix, maxX, stripTop, maxZ).color(color[0], color[1], color[2], alpha).endVertex();
-			builder.vertex(matrix, maxX, y, maxZ).color(color[0], color[1], color[2], alpha).endVertex();
-		}
 	}
 
 	private static void drawDeck(BufferBuilder builder, Matrix4f matrix, AABB box, float deckY, float[] color) {
