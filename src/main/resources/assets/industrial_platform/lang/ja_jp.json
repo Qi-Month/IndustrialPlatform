@@ -1,7 +1,7 @@
 {
 	"block.industrial_platform.fluid_pool": "液体プール",
 	"block.industrial_platform.industrial_platform": "工業用プラットフォーム",
-	"block.industrial_platform.platform_designer": "プラットフォーム設計台",
+	"block.industrial_platform.platform_builder": "プラットフォーム設計台",
 	"config.jade.plugin_industrial_platform.common": "Industrial Platformのツールチップ",
 	"gui.industrial_platform.blueprint_empty": "設計図が見つかりません",
 	"gui.industrial_platform.blueprint_material_tip": "%s ×%s",

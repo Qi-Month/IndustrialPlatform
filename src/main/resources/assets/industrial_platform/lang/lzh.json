@@ -1,7 +1,7 @@
 {
 	"block.industrial_platform.fluid_pool": "液池",
 	"block.industrial_platform.industrial_platform": "工業臺",
-	"block.industrial_platform.platform_designer": "製臺之案",
+	"block.industrial_platform.platform_builder": "製臺之案",
 	"config.jade.plugin_industrial_platform.common": "工業臺：物之注文",
 	"gui.industrial_platform.blueprint_empty": "未得圖樣",
 	"gui.industrial_platform.blueprint_material_tip": "%s ×%s",

@@ -1,7 +1,7 @@
 {
 	"block.industrial_platform.fluid_pool": "Жидкий бассейн",
 	"block.industrial_platform.industrial_platform": "Промышленная платформа",
-	"block.industrial_platform.platform_designer": "Конструктор платформ",
+	"block.industrial_platform.platform_builder": "Конструктор платформ",
 	"config.jade.plugin_industrial_platform.common": "Промышленная платформа: подсказки",
 	"gui.industrial_platform.blueprint_empty": "Чертёж не найден",
 	"gui.industrial_platform.blueprint_material_tip": "%s ×%s",
