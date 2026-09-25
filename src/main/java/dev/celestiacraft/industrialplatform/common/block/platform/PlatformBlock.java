@@ -3,6 +3,7 @@ package dev.celestiacraft.industrialplatform.common.block.platform;
 import dev.celestiacraft.industrialplatform.api.IPLogic;
 import dev.celestiacraft.industrialplatform.api.IPTags;
 import dev.celestiacraft.industrialplatform.api.ItemMatcher;
+import dev.celestiacraft.industrialplatform.api.PlatformSettings;
 import dev.celestiacraft.industrialplatform.common.block.IPlatformController;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
@@ -152,7 +153,18 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 			return InteractionResult.PASS;
 		}
 
-		buildPlatform(serverLevel, pos, state.getValue(PLATFORM_MODE), CommonConfig.TOP_FILLING_DISTANCE.get(), CommonConfig.BOTTOM_FILLING_DISTANCE.get());
+		// 用这个方块自己保存的填充距离(调节器同步过来的 / 界面里设过的); 一次都没设过才回落到配置默认值,
+		// 不然展开出来的层数会和预览对不上
+		PlatformSettings stored = PlatformSettingsStorage.get(serverLevel).get(pos).orElse(null);
+		int upFill = stored == null ? CommonConfig.TOP_FILLING_DISTANCE.get() : stored.upFill();
+		int downFill = stored == null ? CommonConfig.BOTTOM_FILLING_DISTANCE.get() : stored.downFill();
+
+		// 第一次展开时把这次真正用到的值记下来, 之后预览/界面读到的就是真建出来的这个数
+		if (stored == null) {
+			PlatformSettingsStorage.get(serverLevel).put(pos, PlatformSettings.defaults(state.getValue(PLATFORM_MODE)).withFill(upFill, downFill));
+		}
+
+		buildPlatform(serverLevel, pos, state.getValue(PLATFORM_MODE), upFill, downFill);
 		player.displayClientMessage(Component.translatable("message.industrial_platform.done").withStyle(ChatFormatting.GREEN), true);
 		IPLogic.consumeItem(player, held, hand);
 
