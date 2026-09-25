@@ -14,7 +14,9 @@ public class CommonConfig {
 	 */
 	public static final ModConfigSpec.ConfigValue<List<? extends String>> PLATFORM_MATERIAL;
 	/**
-	 * 视为"平台调节器"的物品: 右键平台方块 / 建造站可以打开对应界面, 手持时会显示区块边界预览
+	 * 额外的"平台调节器"物品: 手持后右键平台方块切换平台类型, 并显示区块边界预览
+	 * <p>
+	 * 填充调节器(industrial_platform:fill_adjuster)已经在代码里硬绑, 不需要写进这里
 	 */
 	public static final ModConfigSpec.ConfigValue<List<? extends String>> ADJUSTER;
 
@@ -56,13 +58,14 @@ public class CommonConfig {
 				);
 
 		ADJUSTER = BUILDER
-				.comment("Items treated as a platform adjuster: right-click a platform block or the builder station to open its screen,")
+				.comment("Extra items treated as a platform adjuster: right-click a platform block to cycle its type,")
 				.comment("hold one to display the block boundary preview.")
+				.comment("The fill adjuster (industrial_platform:fill_adjuster) is built in and needs no entry here.")
 				.comment("Use #namespace:path for tags, namespace:path for item IDs.")
-				.comment("Examples: #c:tools/wrench, industrial_platform:fill_adjuster")
+				.comment("Examples: #c:tools/wrench, minecraft:stick")
 				.defineListAllowEmpty(
 						"adjuster",
-						List.of("#c:tools/wrench", "industrial_platform:fill_adjuster"),
+						List.of("#c:tools/wrench"),
 						() -> "",
 						CommonConfig::validateString
 				);
