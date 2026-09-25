@@ -5,6 +5,7 @@ import dev.celestiacraft.industrialplatform.api.IPreviewReactive;
 import dev.celestiacraft.industrialplatform.api.PlatformSettings;
 import dev.celestiacraft.industrialplatform.common.block.IPlatformController;
 import dev.celestiacraft.industrialplatform.common.block.platform.PlatformBlock;
+import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
 import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
 import dev.celestiacraft.industrialplatform.network.IPNetwork;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsClearPacket;
@@ -14,10 +15,13 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
@@ -44,12 +48,16 @@ public class PreviewPlayerTickHandler {
 		if (player.tickCount % SCAN_INTERVAL_TICKS != 0) {
 			return;
 		}
-		if (!IPlatformController.isHoldingAdjuster(player)) {
+
+		PreviewState preview = PLAYERS.computeIfAbsent(player.getUUID(), key -> new PreviewState());
+
+		if (IPlatformController.isHoldingAdjuster(player)) {
+			scanNearby(player.serverLevel(), player, preview);
 			return;
 		}
 
-		PreviewState preview = PLAYERS.computeIfAbsent(player.getUUID(), key -> new PreviewState());
-		scanNearby(player.serverLevel(), player, preview);
+		// 没拿调节器时, 只把"正看着的那个平台方块"的设置同步过去, Jade 要显示填充格数
+		syncLookedAt(player.serverLevel(), player, preview);
 	}
 
 	private static boolean isPreviewBlock(Block block) {
@@ -78,6 +86,8 @@ public class PreviewPlayerTickHandler {
 		ServerChunkCache chunks = level.getChunkSource();
 		PlatformSettingsStorage storage = null;
 		BlockPos.MutableBlockPos pos = preview.pos;
+		BlockPos nearest = null;
+		double nearestDistance = Double.MAX_VALUE;
 
 		for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
 			int originX = SectionPos.sectionToBlockCoord(chunkX);
@@ -116,6 +126,13 @@ public class PreviewPlayerTickHandler {
 								if (block instanceof IPreviewReactive reactive) {
 									reactive.onPreviewHover(level, pos, state);
 								}
+								if (block instanceof PlatformBlock) {
+									double distance = player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
+									if (distance < nearestDistance) {
+										nearestDistance = distance;
+										nearest = pos.immutable();
+									}
+								}
 								if (block instanceof IPlatformController) {
 									if (storage == null) {
 										storage = PlatformSettingsStorage.get(level);
@@ -128,6 +145,60 @@ public class PreviewPlayerTickHandler {
 				}
 			}
 		}
+		if (nearest != null && storage != null) {
+			pushHeldFills(level, player, storage, nearest, preview);
+		}
+	}
+
+	/**
+	 * 手持调节器时, 把手上那两个填充格数推给离玩家最近的那个平台方块
+	 * <p>
+	 * 只有数值真的变了才写存档, 免得每 5 tick 就把存档标脏一次
+	 */
+	private static void pushHeldFills(ServerLevel level, ServerPlayer player, PlatformSettingsStorage storage, BlockPos pos, PreviewState preview) {
+		ItemStack held = FillAdjusterItem.findHeld(player);
+		if (held.isEmpty()) {
+			return;
+		}
+
+		BlockState state = level.getBlockState(pos);
+		if (!(state.getBlock() instanceof PlatformBlock)) {
+			// 扫描到写入之间被挖掉了
+			return;
+		}
+
+		PlatformSettings current = storage.get(pos).orElse(null);
+		PlatformSettings updated = (current == null ? PlatformSettings.defaults(state.getValue(PlatformBlock.PLATFORM_MODE)) : current)
+				.withFill(FillAdjusterItem.getUpFill(held), FillAdjusterItem.getDownFill(held));
+
+		if (updated.equals(current)) {
+			return;
+		}
+
+		storage.put(pos, updated);
+
+		// 顺手把这个新值同步给客户端, 区块边界预览立刻就能跟上
+		syncSettings(storage, player, pos, state, preview.synced);
+	}
+
+	/**
+	 * 玩家看着哪个平台方块, 就把那个方块的设置同步给他(Jade 面板要用)
+	 * <p>
+	 * 射线比客户端的手长一点没关系, 顶多多同步一个方块
+	 */
+	private static void syncLookedAt(ServerLevel level, ServerPlayer player, PreviewState preview) {
+		HitResult hit = player.pick(player.getBlockReach() + 1.0D, 0.0F, false);
+		if (!(hit instanceof BlockHitResult blockHit) || blockHit.getType() != HitResult.Type.BLOCK) {
+			return;
+		}
+
+		BlockPos pos = blockHit.getBlockPos();
+		BlockState state = level.getBlockState(pos);
+		if (!(state.getBlock() instanceof PlatformBlock)) {
+			return;
+		}
+
+		syncSettings(PlatformSettingsStorage.get(level), player, pos, state, preview.synced);
 	}
 
 	private static void syncSettings(PlatformSettingsStorage storage, ServerPlayer player, BlockPos pos, BlockState state, Map<BlockPos, PlatformSettings> synced) {

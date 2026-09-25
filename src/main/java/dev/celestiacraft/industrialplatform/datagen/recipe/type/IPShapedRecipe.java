@@ -9,6 +9,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.crafting.ConditionalRecipe;
 import net.minecraftforge.common.crafting.conditions.ModLoadedCondition;
@@ -55,16 +56,14 @@ public class IPShapedRecipe extends IPRecipeProvider {
 				.define('C', IPBlocks.INDUSTRIAL_PLATFORM.get())
 				.define('D', IPTags.Items.STONE)
 				.unlockedBy("platform", has(IPBlocks.INDUSTRIAL_PLATFORM.get()))
-				.save(consumer, IndustrialPlatform.loadResource("platform_designer"));
+				.save(consumer, IndustrialPlatform.loadResource("platform_builder"));
 
 		ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, IPItems.FILL_ADJUSTER.get())
-				.pattern("A A")
-				.pattern("ABA")
-				.pattern(" C ")
-				.define('A', Tags.Items.INGOTS_IRON)
-				.define('B', IPTags.Items.STONE)
-				.define('C', IPTags.Items.DEEPSLATE)
-				.unlockedBy("iron_ingot", has(Tags.Items.INGOTS_IRON))
+				.pattern(" A")
+				.pattern("B ")
+				.define('A', IPTags.Items.STONE)
+				.define('B', Tags.Items.RODS_WOODEN)
+				.unlockedBy("stick", has(Tags.Items.RODS_WOODEN))
 				.save(consumer, IndustrialPlatform.loadResource("fill_adjuster"));
 	}
 }

@@ -18,13 +18,6 @@ public record PlatformSettings(PlatformMode mode, int upFill, int downFill, @Nul
 		);
 	}
 
-	/**
-	 * 上下都不填充 => 悬浮
-	 */
-	public boolean isFloating() {
-		return upFill == 0 && downFill == 0;
-	}
-
 	public boolean hasBlueprint() {
 		return blueprintId != null && !blueprintId.isEmpty();
 	}

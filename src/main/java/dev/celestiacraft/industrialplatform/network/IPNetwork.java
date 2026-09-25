@@ -2,7 +2,7 @@ package dev.celestiacraft.industrialplatform.network;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.network.packet.BlueprintListPacket;
-import dev.celestiacraft.industrialplatform.network.packet.DesignerSelectPacket;
+import dev.celestiacraft.industrialplatform.network.packet.BuilderSelectPacket;
 import dev.celestiacraft.industrialplatform.network.packet.FillAdjustPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformBuildPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsClearPacket;
@@ -41,10 +41,10 @@ public class IPNetwork {
 				.consumerMainThread(PlatformBuildPacket::handle)
 				.add();
 
-		CHANNEL.messageBuilder(DesignerSelectPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
-				.encoder(DesignerSelectPacket::encode)
-				.decoder(DesignerSelectPacket::decode)
-				.consumerMainThread(DesignerSelectPacket::handle)
+		CHANNEL.messageBuilder(BuilderSelectPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+				.encoder(BuilderSelectPacket::encode)
+				.decoder(BuilderSelectPacket::decode)
+				.consumerMainThread(BuilderSelectPacket::handle)
 				.add();
 
 		CHANNEL.messageBuilder(FillAdjustPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)

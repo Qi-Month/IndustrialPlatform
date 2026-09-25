@@ -1,5 +1,7 @@
 package dev.celestiacraft.industrialplatform.compat.jade;
 
+import dev.celestiacraft.industrialplatform.api.PlatformPreviewSettings;
+import dev.celestiacraft.industrialplatform.api.PlatformSettings;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,6 +33,15 @@ public enum IPComponentProvider implements IBlockComponentProvider {
 		} else {
 			tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.heavy")));
 		}
+
+		// 填充格数存在存档里, 由服务端同步过来; 还没同步到就先不显示这两行
+		PlatformSettings settings = PlatformPreviewSettings.get(block.getPosition());
+		if (settings == null) {
+			return;
+		}
+
+		tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.fill_up"), settings.upFill()));
+		tooltip.add(Component.translatable(addTranKey("tooltip.jade.%s.fill_down"), settings.downFill()));
 	}
 
 	private String addTranKey(String key) {

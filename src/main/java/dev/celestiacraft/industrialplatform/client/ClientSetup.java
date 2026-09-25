@@ -3,7 +3,7 @@ package dev.celestiacraft.industrialplatform.client;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.client.hologram.HologramOverlay;
 import dev.celestiacraft.industrialplatform.client.screen.PlatformBuildScreen;
-import dev.celestiacraft.industrialplatform.client.screen.PlatformDesignerScreen;
+import dev.celestiacraft.industrialplatform.client.screen.PlatformBuilderScreen;
 import dev.celestiacraft.industrialplatform.common.register.IPMenus;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.api.distmarker.Dist;
@@ -19,7 +19,7 @@ public class ClientSetup {
 	public static void onClientSetup(FMLClientSetupEvent event) {
 		event.enqueueWork(() -> {
 			MenuScreens.register(IPMenus.PLATFORM_BUILD.get(), PlatformBuildScreen::new);
-		MenuScreens.register(IPMenus.PLATFORM_DESIGNER.get(), PlatformDesignerScreen::new);
+		MenuScreens.register(IPMenus.PLATFORM_BUILDER.get(), PlatformBuilderScreen::new);
 		});
 	}
 

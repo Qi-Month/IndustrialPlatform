@@ -3,9 +3,9 @@ package dev.celestiacraft.industrialplatform.client.screen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.client.BoundaryRenderData;
-import dev.celestiacraft.industrialplatform.common.menu.PlatformDesignerMenu;
+import dev.celestiacraft.industrialplatform.common.menu.PlatformBuilderMenu;
 import dev.celestiacraft.industrialplatform.network.IPNetwork;
-import dev.celestiacraft.industrialplatform.network.packet.DesignerSelectPacket;
+import dev.celestiacraft.industrialplatform.network.packet.BuilderSelectPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformBuildPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsPacket;
 import dev.celestiacraft.industrialplatform.platform.blueprint.ClientBlueprintData;
@@ -27,10 +27,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 平台设计台界面: 上面是蓝图列表, 中间是上下填充, 下面是材料清单与搭建按钮
+ * 平台建造站界面: 上面是蓝图列表, 中间是上下填充, 下面是材料清单与搭建按钮
  */
-public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesignerMenu> {
-	private static final ResourceLocation BACKGROUND = IndustrialPlatform.loadResource("textures/gui/platform_designer.png");
+public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuilderMenu> {
+	private static final ResourceLocation BACKGROUND = IndustrialPlatform.loadResource("textures/gui/platform_builder.png");
 	private static final int TEXTURE_WIDTH = 256;
 	private static final int TEXTURE_HEIGHT = 340;
 
@@ -99,14 +99,14 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	 */
 	private boolean settingsChanged;
 
-	public PlatformDesignerScreen(PlatformDesignerMenu menu, Inventory inventory, Component title) {
+	public PlatformBuilderScreen(PlatformBuilderMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);
 
-		imageWidth = PlatformDesignerMenu.PANEL_WIDTH;
-		imageHeight = PlatformDesignerMenu.PANEL_HEIGHT;
+		imageWidth = PlatformBuilderMenu.PANEL_WIDTH;
+		imageHeight = PlatformBuilderMenu.PANEL_HEIGHT;
 		titleLabelX = 8;
 		titleLabelY = 6;
-		inventoryLabelX = PlatformDesignerMenu.INVENTORY_X;
+		inventoryLabelX = PlatformBuilderMenu.INVENTORY_X;
 		inventoryLabelY = imageHeight - 94;
 	}
 
@@ -175,7 +175,7 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 				super.setFocused(focused);
 
 				if (wasFocused && !focused) {
-					PlatformDesignerScreen.this.normalizeFields();
+					PlatformBuilderScreen.this.normalizeFields();
 				}
 			}
 		};
@@ -227,14 +227,14 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 		}
 
 		try {
-			return PlatformDesignerMenu.clampFill(Integer.parseInt(text.trim()));
+			return PlatformBuilderMenu.clampFill(Integer.parseInt(text.trim()));
 		} catch (NumberFormatException exception) {
 			return fallback;
 		}
 	}
 
 	private void setUpFill(int value) {
-		int clamped = PlatformDesignerMenu.clampFill(value);
+		int clamped = PlatformBuilderMenu.clampFill(value);
 		boolean changed = clamped != upFill;
 
 		upFill = clamped;
@@ -248,7 +248,7 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 	}
 
 	private void setDownFill(int value) {
-		int clamped = PlatformDesignerMenu.clampFill(value);
+		int clamped = PlatformBuilderMenu.clampFill(value);
 		boolean changed = clamped != downFill;
 
 		downFill = clamped;
@@ -335,7 +335,7 @@ public class PlatformDesignerScreen extends AbstractContainerScreen<PlatformDesi
 
 		selectedId = id;
 		ClientBlueprintData.setSelected(id);
-		IPNetwork.sendToServer(new DesignerSelectPacket(id));
+		IPNetwork.sendToServer(new BuilderSelectPacket(id));
 		updateBuildButton();
 	}
 

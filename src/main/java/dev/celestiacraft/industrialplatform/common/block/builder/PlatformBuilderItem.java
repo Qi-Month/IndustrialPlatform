@@ -20,12 +20,12 @@ public class PlatformBuilderItem extends BlockItem {
 	@Override
 	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
 		if (Screen.hasShiftDown()) {
-			String translated = Component.translatable("tooltip.industrial_platform.platform_designer").getString();
+			String translated = Component.translatable("tooltip.industrial_platform.platform_builder").getString();
 			for (String line : translated.split("\n")) {
 				tooltip.add(Component.literal(line));
 			}
 		} else {
-			tooltip.add(Component.translatable("tooltip.industrial_platform.platform_designer.off"));
+			tooltip.add(Component.translatable("tooltip.industrial_platform.platform_builder.off"));
 		}
 	}
 }

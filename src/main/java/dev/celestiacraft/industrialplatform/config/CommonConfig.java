@@ -25,11 +25,6 @@ public class CommonConfig {
 	public static final ForgeConfigSpec.IntValue BOTTOM_FILLING_DISTANCE;
 
 	/**
-	 * true: 手持调节器右键平台方块打开搭建界面
-	 * false(默认): 老行为, 调节器右键切模式, 潜行右键切悬浮, 手持材料右键直接展开
-	 */
-	public static final ForgeConfigSpec.BooleanValue ENABLE_BUILDER_UI;
-	/**
 	 * 清理地形(上方顶成空气)时被顶掉的方块掉不掉落, 默认不掉
 	 */
 	public static final ForgeConfigSpec.BooleanValue CLEANUP_DROPS;
@@ -60,12 +55,13 @@ public class CommonConfig {
 				);
 
 		ADJUSTER = BUILDER
-				.comment("Items that open the platform builder screen when right-clicking a platform block.")
+				.comment("Items treated as a platform adjuster: right-click a platform block or the builder station to open its screen,")
+				.comment("hold one to display the block boundary preview.")
 				.comment("Use #namespace:path for tags, namespace:path for item IDs.")
-				.comment("Examples: #forge:tools/wrench, minecraft:stick")
+				.comment("Examples: #forge:tools/wrench, industrial_platform:fill_adjuster")
 				.defineListAllowEmpty(
 						"adjuster",
-						List.of("#forge:tools/wrench", "minecraft:stick"),
+						List.of("#forge:tools/wrench", "industrial_platform:fill_adjuster"),
 						CommonConfig::validateString
 				);
 
@@ -84,13 +80,6 @@ public class CommonConfig {
 				.defineInRange("bottom_filling_distance", 5, PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
 
 		BUILDER.pop();
-
-		ENABLE_BUILDER_UI = BUILDER
-				.comment("true: right click a platform block with an empty hand (or the adjuster item) to open the builder screen.")
-				.comment("false: classic behaviour - wrench cycles the platform mode, sneak + wrench toggles floating,")
-				.comment("and right clicking with a material deploys the platform directly.")
-				.comment("The platform designer block always keeps its own screen.")
-				.define("enable_builder_ui", true);
 
 		CLEANUP_DROPS = BUILDER
 				.comment("true: blocks removed by the platform's fill-up area drop as items.")
