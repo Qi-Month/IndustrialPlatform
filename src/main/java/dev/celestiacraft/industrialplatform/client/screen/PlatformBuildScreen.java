@@ -393,7 +393,6 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 				menu.getPlatformPos(),
 				size,
 				size,
-				upFill == 0 && downFill == 0,
 				upFill,
 				downFill
 		));

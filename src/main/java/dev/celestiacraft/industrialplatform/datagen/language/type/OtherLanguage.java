@@ -12,20 +12,20 @@ public class OtherLanguage extends LanguageGenerate {
 
 		addCustomLang(
 				"tooltip.industrial_platform.industrial_platform",
-				"§aRight click with a wrench or a stick to cycle the platform type\n§aSneak + right click toggles floating\n§aRight click with a material to deploy the platform\n§aThe Fill Adjuster sets how far it fills (scroll wheel)\n§aWith enable_builder_ui = true, right click with an empty hand to open the builder screen",
-				"§a手持扳手或木棍右键切换平台类型\n§a潜行右键切换是否悬浮\n§a手持材料右键即可展开平台\n§a填充调节器(滚轮)决定上下填充格数\n§a启用搭建界面后, 空手右键即可打开搭建界面"
+				"§aStanding right click with a wrench or a fill adjuster cycles the platform type\n§aRight click with a material deploys the platform\n§aSneak + right click with an empty hand opens the builder screen\n§aThe Fill Adjuster sets how far it fills (sneak + scroll wheel)",
+				"§a站立时手持扳手或填充调节器右键切换平台类型\n§a手持材料右键即可展开平台\n§a潜行+空手右键即可打开搭建界面\n§a填充调节器(潜行+滚轮)决定上下填充格数"
 		);
 
 		addCustomLang(
-				"tooltip.industrial_platform.platform_designer.off",
+				"tooltip.industrial_platform.platform_builder.off",
 				"§eHold Shift for details",
 				"§e按住Shift查看详情"
 		);
 
 		addCustomLang(
-				"tooltip.industrial_platform.platform_designer",
-				"§aRight click with an empty hand to open the platform designer\n§aDesign custom platforms: size, style and the blocks to build with\n§aBlueprint files can be dropped into schematics/platform",
-				"§a空手右键即可打开平台设计界面\n§a自定义平台: 尺寸, 样式与用哪些方块搭建\n§a蓝图文件放进 schematics/platform 目录即可被识别"
+				"tooltip.industrial_platform.platform_builder",
+				"§aRight click to open the Platform Building Station\n§aDesign custom platforms: size, style and the blocks to build with\n§aBlueprint files can be dropped into schematics/platform",
+				"§a右键即可打开平台建造站\n§a自定义平台: 尺寸, 样式与用哪些方块搭建\n§a蓝图文件放进 schematics/platform 目录即可被识别"
 		);
 
 		addCustomLang(
@@ -83,9 +83,9 @@ public class OtherLanguage extends LanguageGenerate {
 		);
 
 		addCustomLang(
-				"menu.industrial_platform.platform_designer",
-				"Platform Designer",
-				"平台设计台"
+				"menu.industrial_platform.platform_builder",
+				"Platform Building Station",
+				"平台建造站"
 		);
 
 		addCustomLang(
@@ -131,27 +131,39 @@ public class OtherLanguage extends LanguageGenerate {
 		);
 
 		addCustomLang(
+				"tooltip.industrial_platform.fill_adjuster.target",
+				"Adjusting: %s",
+				"当前调节: %s"
+		);
+
+		addCustomLang(
+				"tooltip.industrial_platform.fill_adjuster.switch",
+				"Sneak + right click: switch between fill up / fill down",
+				"潜行右键: 切换向上填充 / 向下填充"
+		);
+
+		addCustomLang(
 				"tooltip.industrial_platform.fill_adjuster.usage",
-				"Scroll wheel: adjust (sneak = fill down, Ctrl = 10 at a time)",
-				"滚轮: 站着调向上填充, 潜行调向下填充, 按住 Ctrl 一次 10 格"
+				"Sneak + scroll: adjust the selected value (Ctrl = 10 at a time)",
+				"潜行滚轮: 调节当前选中的数值 (按住 Ctrl 一次 10 格)"
 		);
 
 		addCustomLang(
 				"tooltip.industrial_platform.fill_adjuster.alt",
-				"Hold Alt while scrolling to switch hotbar slots as usual",
-				"按住 Alt 滚动即可正常切换快捷栏"
+				"Hold Alt while sneaking to switch hotbar slots instead",
+				"潜行时按住 Alt 滚动则改为切换快捷栏"
 		);
 
 		addCustomLang(
 				"tooltip.industrial_platform.fill_adjuster.deploy",
-				"Right click a platform block to deploy it",
-				"对准平台方块右键即可展开"
+				"Standing right click a platform block cycles the platform type",
+				"站立时右键平台方块切换平台类型"
 		);
 
 		addCustomLang(
 				"message.industrial_platform.fill_values",
-				"Fill up: %s / Fill down: %s",
-				"向上填充: %s / 向下填充: %s"
+				"Adjusting %s: %s",
+				"当前调节 %s: %s 格"
 		);
 
 		addCustomLang(
@@ -287,6 +299,18 @@ public class OtherLanguage extends LanguageGenerate {
 		);
 
 		addCustomLang(
+				"tooltip.jade.industrial_platform.fill_up",
+				"Fill up: %s",
+				"向上填充: %s 格"
+		);
+
+		addCustomLang(
+				"tooltip.jade.industrial_platform.fill_down",
+				"Fill down: %s",
+				"向下填充: %s 格"
+		);
+
+		addCustomLang(
 				"tooltip.jade.industrial_platform.checkerboard",
 				"Platform type: Checkerboard",
 				"平台类型: 棋盘格平台"
@@ -318,14 +342,14 @@ public class OtherLanguage extends LanguageGenerate {
 
 		addCustomLang(
 				"jei.info.industrial_platform.platform",
-				"Right click a platform block with an empty hand to open the platform builder\nA wrench or a stick works just as well\nAdjust the fill height and choose the style / size in the screen\nPut a material into the slot, then press Build to deploy the platform",
-				"空手右键平台方块即可打开搭建界面\n手持扳手或木棍右键也一样\n在界面中调整上下填充格数并选择样式与尺寸\n放入材料后点击搭建按钮即可展开平台"
+				"Sneak + right click a platform block with an empty hand to open the platform builder\nHold a wrench or the fill adjuster to display the block boundary preview\nAdjust the fill height and choose the style / size in the screen\nPut a material into the slot, then press Build to deploy the platform",
+				"潜行+空手右键平台方块即可打开搭建界面\n手持扳手或填充调节器可显示区块边界预览\n在界面中调整上下填充格数并选择样式与尺寸\n放入材料后点击搭建按钮即可展开平台"
 		);
 
 		addCustomLang(
 				"jei.info.industrial_platform.fluid_pool",
-				"Right click with any stone to deploy the infinite pool\nStand besides the block with a wrench or a stick in hand to display preview\nFluid Pools will not remove blocks above\nThe pool is over 10,000 blocks, which supports infinite fluid in Create",
-				"以任意石头右键展开流体池\n手持调节器靠近流体池方块以显示展开预览\n流体池不会清除上方方块\n展开的流体池容量超过1万格, 足够支持机械动力的无限流体"
+				"Right click with any stone to deploy the infinite pool\nStand besides the block with a wrench or the fill adjuster in hand to display preview\nFluid Pools will not remove blocks above\nThe pool is over 10,000 blocks, which supports infinite fluid in Create",
+				"以任意石头右键展开流体池\n手持填充调节器靠近流体池方块以显示展开预览\n流体池不会清除上方方块\n展开的流体池容量超过1万格, 足够支持机械动力的无限流体"
 		);
 	}
 }

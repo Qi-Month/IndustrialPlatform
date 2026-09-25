@@ -1,8 +1,8 @@
 package dev.celestiacraft.industrialplatform.common.register;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
-import dev.celestiacraft.industrialplatform.common.block.designer.PlatformDesignerBlock;
-import dev.celestiacraft.industrialplatform.common.block.designer.PlatformDesignerItem;
+import dev.celestiacraft.industrialplatform.common.block.builder.PlatformBuilderBlock;
+import dev.celestiacraft.industrialplatform.common.block.builder.PlatformBuilderItem;
 import dev.celestiacraft.industrialplatform.common.block.platform.PlatformBlock;
 import dev.celestiacraft.industrialplatform.common.block.platform.PlatformItem;
 import dev.celestiacraft.industrialplatform.common.block.pool.FluidPoolBlock;
@@ -21,7 +21,7 @@ public class IPBlocks {
 	public static final DeferredRegister.Items ITEMS;
 
 	public static final DeferredBlock<Block> INDUSTRIAL_PLATFORM;
-	public static final DeferredBlock<Block> PLATFORM_DESIGNER;
+	public static final DeferredBlock<Block> PLATFORM_BUILDER;
 	public static final DeferredBlock<Block> FLUID_POOL;
 
 	static {
@@ -30,7 +30,7 @@ public class IPBlocks {
 
 		INDUSTRIAL_PLATFORM = registerBlock("industrial_platform", PlatformBlock::new, PlatformItem::new);
 
-		PLATFORM_DESIGNER = registerBlock("platform_designer", PlatformDesignerBlock::new, PlatformDesignerItem::new);
+		PLATFORM_BUILDER = registerBlock("platform_builder", PlatformBuilderBlock::new, PlatformBuilderItem::new);
 
 		FLUID_POOL = registerBlock("fluid_pool", FluidPoolBlock::new, FluidPoolItem::new);
 	}

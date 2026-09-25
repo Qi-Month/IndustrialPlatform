@@ -5,6 +5,7 @@ import dev.celestiacraft.industrialplatform.common.block.IPlatformController;
 import dev.celestiacraft.industrialplatform.common.block.platform.PlatformBlock;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
+import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
 import dev.celestiacraft.industrialplatform.common.register.IPMenus;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
@@ -41,9 +42,9 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * 平台设计台: 打开后就是蓝图列表, 选一份就能照着搭
+ * 平台建造站: 打开后就是蓝图列表, 选一份就能照着搭
  */
-public class PlatformDesignerMenu extends AbstractContainerMenu implements IPlatformBuilderMenu {
+public class PlatformBuilderMenu extends AbstractContainerMenu implements IPlatformBuilderMenu {
 	public static final int PANEL_WIDTH = 240;
 	public static final int PANEL_HEIGHT = 290;
 	public static final int INVENTORY_X = 39;
@@ -67,12 +68,12 @@ public class PlatformDesignerMenu extends AbstractContainerMenu implements IPlat
 	private String blueprintId = "";
 	private int buildStateTimer;
 
-	public PlatformDesignerMenu(int windowId, Inventory playerInventory, FriendlyByteBuf extraData) {
+	public PlatformBuilderMenu(int windowId, Inventory playerInventory, FriendlyByteBuf extraData) {
 		this(windowId, playerInventory, extraData.readBlockPos());
 	}
 
-	public PlatformDesignerMenu(int windowId, Inventory playerInventory, BlockPos controllerPos) {
-		super(IPMenus.PLATFORM_DESIGNER.get(), windowId);
+	public PlatformBuilderMenu(int windowId, Inventory playerInventory, BlockPos controllerPos) {
+		super(IPMenus.PLATFORM_BUILDER.get(), windowId);
 
 		this.controllerPos = controllerPos;
 		player = playerInventory.player;
@@ -99,8 +100,8 @@ public class PlatformDesignerMenu extends AbstractContainerMenu implements IPlat
 
 	public static void open(ServerPlayer player, BlockPos controllerPos) {
 		player.openMenu(new SimpleMenuProvider(
-				(windowId, inventory, p) -> new PlatformDesignerMenu(windowId, inventory, controllerPos),
-				Component.translatable("menu.industrial_platform.platform_designer")
+				(windowId, inventory, p) -> new PlatformBuilderMenu(windowId, inventory, controllerPos),
+				Component.translatable("menu.industrial_platform.platform_builder")
 		), buffer -> buffer.writeBlockPos(controllerPos));
 	}
 
@@ -306,6 +307,8 @@ public class PlatformDesignerMenu extends AbstractContainerMenu implements IPlat
 	@Override
 	public void removed(@NotNull Player player) {
 		super.removed(player);
+		// 关闭界面时把界面里的上下填充格数同步给快捷栏里的每一个调节器(外加副手那只)
+		FillAdjusterItem.applyToHotbar(player, getUpFill(), getDownFill());
 	}
 
 	@Override

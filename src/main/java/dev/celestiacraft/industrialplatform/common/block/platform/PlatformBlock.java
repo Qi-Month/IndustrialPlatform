@@ -9,7 +9,6 @@ import dev.celestiacraft.industrialplatform.common.block.state.properties.platfo
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
 import dev.celestiacraft.industrialplatform.event.PreviewPlayerTickHandler;
-import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
 import dev.celestiacraft.industrialplatform.platform.PlatformGenerator;
 import dev.celestiacraft.industrialplatform.platform.PlatformLayout;
 import dev.celestiacraft.industrialplatform.platform.PlatformPalette;
@@ -99,11 +98,15 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 	}
 
 	/**
-	 * 空手右键: 界面开着就直接打开搭建界面
+	 * 空手右键平台方块:
+	 * <ul>
+	 *     <li>潜行 + 空手: 打开搭建界面</li>
+	 *     <li>站立: 什么也不做, 交还原版</li>
+	 * </ul>
 	 */
 	@Override
 	protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
-		if (!CommonConfig.ENABLE_BUILDER_UI.get()) {
+		if (!player.isShiftKeyDown()) {
 			return InteractionResult.PASS;
 		}
 
@@ -111,20 +114,38 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 	}
 
 	/**
-	 * 手持调节器右键打开搭建界面; 界面关着时就是以前那套玩法
+	 * 手持物品右键平台方块:
+	 * <ul>
+	 *     <li>潜行: 交还给物品自己(潜行右键归调节器切换调节目标)</li>
+	 *     <li>站立 + 手持调节器(扳手 / 填充调节器): 切换平台类型</li>
+	 *     <li>站立 + 手持材料: 直接展开一次平台</li>
+	 * </ul>
 	 */
 	@Override
 	protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack held, @NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
-		if (CommonConfig.ENABLE_BUILDER_UI.get()) {
-			if (!ItemMatcher.matches(held, CommonConfig.ADJUSTER)) {
-				return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		// 只认主手, 不然主手拿着东西时会轮到副手把动作顶走
+		if (hand != InteractionHand.MAIN_HAND) {
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		}
+
+		if (player.isShiftKeyDown()) {
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		}
+
+		// 站立 + 调节器: 切换平台类型(原版那套按枚举声明顺序循环)
+		if (ItemMatcher.matches(held, CommonConfig.ADJUSTER)) {
+			if (level.isClientSide()) {
+				return ItemInteractionResult.SUCCESS;
 			}
 
-			openBuilder(level, pos, player);
+			level.setBlock(pos, state.cycle(PLATFORM_MODE), 3);
+			player.swing(InteractionHand.MAIN_HAND, true);
+
 			return ItemInteractionResult.SUCCESS;
 		}
 
-		if (!handlesInteraction(held)) {
+		// 手持材料: 直接展开
+		if (!isMaterial(held)) {
 			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		}
 
@@ -132,7 +153,15 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 			return ItemInteractionResult.SUCCESS;
 		}
 
-		classicUse(state, level, pos, player, hand, held);
+		if (!(level instanceof ServerLevel serverLevel)) {
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		}
+
+		buildPlatform(serverLevel, pos, state.getValue(PLATFORM_MODE), CommonConfig.TOP_FILLING_DISTANCE.get(), CommonConfig.BOTTOM_FILLING_DISTANCE.get());
+
+		player.displayClientMessage(Component.translatable("message.industrial_platform.done").withStyle(ChatFormatting.GREEN), true);
+		IPLogic.consumeItem(player, held, hand);
+
 		return ItemInteractionResult.SUCCESS;
 	}
 
@@ -148,65 +177,8 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 		return InteractionResult.SUCCESS;
 	}
 
-	/**
-	 * 老玩法里, 手里拿的东西会不会被这个交互吃掉(客户端也要用同一套判断, 不然两边动作对不上)
-	 */
-	private static boolean handlesInteraction(ItemStack held) {
-		if (ItemMatcher.matches(held, CommonConfig.ADJUSTER)) {
-			return true;
-		}
-
-		return held.getItem() instanceof FillAdjusterItem || isMaterial(held);
-	}
-
 	public static boolean isMaterial(ItemStack stack) {
 		return ItemMatcher.matches(stack, CommonConfig.PLATFORM_MATERIAL) || stack.is(IPTags.Items.PLATFORM_MATERIAL);
-	}
-
-	/**
-	 * 界面关掉时的老玩法: 调节器切模式/悬浮, 材料或填充调节器右键直接展开
-	 */
-	private static InteractionResult classicUse(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack held) {
-		if (ItemMatcher.matches(held, CommonConfig.ADJUSTER)) {
-			if (hand != InteractionHand.MAIN_HAND) {
-				return InteractionResult.PASS;
-			}
-
-			// 站着切平台类型, 潜行切悬浮
-			level.setBlock(pos, player.isCrouching() ? state.cycle(FLOATING) : state.cycle(PLATFORM_MODE), 3);
-			player.swing(InteractionHand.MAIN_HAND, true);
-			return InteractionResult.SUCCESS;
-		}
-
-		int upFill;
-		int downFill;
-		boolean consume = false;
-
-		if (held.getItem() instanceof FillAdjusterItem) {
-			upFill = FillAdjusterItem.getUpFill(held);
-			downFill = FillAdjusterItem.getDownFill(held);
-		} else if (hand == InteractionHand.MAIN_HAND && isMaterial(held)) {
-			upFill = CommonConfig.TOP_FILLING_DISTANCE.get();
-			downFill = CommonConfig.BOTTOM_FILLING_DISTANCE.get();
-			consume = true;
-		} else {
-			return InteractionResult.PASS;
-		}
-
-		if (!(level instanceof ServerLevel serverLevel)) {
-			return InteractionResult.SUCCESS;
-		}
-
-		PlatformMode mode = state.getValue(PLATFORM_MODE);
-		buildPlatform(serverLevel, pos, mode, upFill, downFill);
-
-		player.displayClientMessage(Component.translatable("message.industrial_platform.done").withStyle(ChatFormatting.GREEN), true);
-
-		if (consume) {
-			IPLogic.consumeItem(player, held, hand);
-		}
-
-		return InteractionResult.SUCCESS;
 	}
 
 	/**

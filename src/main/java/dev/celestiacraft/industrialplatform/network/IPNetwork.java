@@ -2,7 +2,7 @@ package dev.celestiacraft.industrialplatform.network;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.network.packet.BlueprintListPacket;
-import dev.celestiacraft.industrialplatform.network.packet.DesignerSelectPacket;
+import dev.celestiacraft.industrialplatform.network.packet.BuilderSelectPacket;
 import dev.celestiacraft.industrialplatform.network.packet.FillAdjustPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformBuildPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsClearPacket;
@@ -28,7 +28,7 @@ public class IPNetwork {
 
 		registrar.playToServer(PlatformSettingsPacket.TYPE, PlatformSettingsPacket.STREAM_CODEC, PlatformSettingsPacket::handle);
 		registrar.playToServer(PlatformBuildPacket.TYPE, PlatformBuildPacket.STREAM_CODEC, PlatformBuildPacket::handle);
-		registrar.playToServer(DesignerSelectPacket.TYPE, DesignerSelectPacket.STREAM_CODEC, DesignerSelectPacket::handle);
+		registrar.playToServer(BuilderSelectPacket.TYPE, BuilderSelectPacket.STREAM_CODEC, BuilderSelectPacket::handle);
 		registrar.playToServer(FillAdjustPacket.TYPE, FillAdjustPacket.STREAM_CODEC, FillAdjustPacket::handle);
 
 		registrar.playToClient(PlatformSettingsSyncPacket.TYPE, PlatformSettingsSyncPacket.STREAM_CODEC, PlatformSettingsSyncPacket::handle);

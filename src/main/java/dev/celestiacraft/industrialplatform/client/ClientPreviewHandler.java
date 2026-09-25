@@ -115,12 +115,12 @@ public class ClientPreviewHandler {
 						int sizeZ = size[1];
 
 						if (isPlayerInBoundary(playerX, playerZ, pos, sizeX, sizeZ)) {
-							newEntries.add(new BoundaryRenderData.BoundaryEntry(pos.immutable(), sizeX, sizeZ, settings.isFloating(), settings.upFill(), settings.downFill()));
+							newEntries.add(new BoundaryRenderData.BoundaryEntry(pos.immutable(), sizeX, sizeZ, settings.upFill(), settings.downFill()));
 						}
 					} else if (block instanceof FluidPoolBlock) {
 						if (isPlayerInBoundary(playerX, playerZ, pos, 16, 16)) {
 							// 流体池往下 54 格
-							newEntries.add(new BoundaryRenderData.BoundaryEntry(pos.immutable(), 16, 16, true, 0, POOL_DEPTH));
+							newEntries.add(new BoundaryRenderData.BoundaryEntry(pos.immutable(), 16, 16, 0, POOL_DEPTH));
 						}
 					}
 				}

@@ -1,4 +1,4 @@
-package dev.celestiacraft.industrialplatform.common.block.designer;
+package dev.celestiacraft.industrialplatform.common.block.builder;
 
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -11,21 +11,21 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class PlatformDesignerItem extends BlockItem {
-	public PlatformDesignerItem(Block block) {
+public class PlatformBuilderItem extends BlockItem {
+	public PlatformBuilderItem(Block block) {
 		super(block, new Item.Properties());
 	}
 
 	@Override
 	public void appendHoverText(@NotNull ItemStack stack, Item.@NotNull TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
 		if (Screen.hasShiftDown()) {
-			String translated = Component.translatable("tooltip.industrial_platform.platform_designer").getString();
+			String translated = Component.translatable("tooltip.industrial_platform.platform_builder").getString();
 
 			for (String line : translated.split("\n")) {
 				tooltip.add(Component.literal(line));
 			}
 		} else {
-			tooltip.add(Component.translatable("tooltip.industrial_platform.platform_designer.off"));
+			tooltip.add(Component.translatable("tooltip.industrial_platform.platform_builder.off"));
 		}
 	}
 }

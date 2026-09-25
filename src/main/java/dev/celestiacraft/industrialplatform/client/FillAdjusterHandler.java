@@ -1,23 +1,24 @@
 package dev.celestiacraft.industrialplatform.client;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
-import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
 import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
 import dev.celestiacraft.industrialplatform.network.IPNetwork;
 import dev.celestiacraft.industrialplatform.network.packet.FillAdjustPacket;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.InputEvent;
 
 /**
- * 手持填充调节器时, 鼠标滚轮改填充格数
+ * 手持填充调节器且潜行时, 鼠标滚轮改当前选中那一项的填充格数
+ * <p>
+ * 站立时这里完全不拦截, 滚轮照原版切快捷栏
  */
 @EventBusSubscriber(modid = IndustrialPlatform.MODID, value = Dist.CLIENT)
 public class FillAdjusterHandler {
@@ -35,6 +36,11 @@ public class FillAdjusterHandler {
 			return;
 		}
 
+		// 站立时滚轮保持原版逻辑(切快捷栏), 只有潜行才轮到调节器
+		if (!player.isShiftKeyDown()) {
+			return;
+		}
+
 		ItemStack stack = player.getMainHandItem();
 		if (!(stack.getItem() instanceof FillAdjusterItem)) {
 			return;
@@ -46,22 +52,13 @@ public class FillAdjusterHandler {
 		}
 
 		int step = (Screen.hasControlDown() ? 10 : 1) * (delta > 0.0D ? 1 : -1);
-		boolean adjustingDown = player.isShiftKeyDown();
-
-		int upFill = FillAdjusterItem.getUpFill(stack);
-		int downFill = FillAdjusterItem.getDownFill(stack);
-
-		if (adjustingDown) {
-			downFill = Mth.clamp(downFill + step, PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
-		} else {
-			upFill = Mth.clamp(upFill + step, PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
-		}
+		FillAdjusterItem.Target target = FillAdjusterItem.getTarget(stack);
+		int value = FillAdjusterItem.adjust(stack, target, step);
 
 		// 客户端先改一份, 提示立刻能看到; 服务端那份由数据包写
-		FillAdjusterItem.setFills(stack, upFill, downFill);
-		IPNetwork.sendToServer(new FillAdjustPacket(upFill, downFill));
+		IPNetwork.sendToServer(new FillAdjustPacket(FillAdjusterItem.getUpFill(stack), FillAdjusterItem.getDownFill(stack)));
 
-		player.displayClientMessage(Component.translatable("message.industrial_platform.fill_values", upFill, downFill), true);
+		player.displayClientMessage(Component.translatable("message.industrial_platform.fill_values", target.displayName(), value).withStyle(ChatFormatting.AQUA), true);
 
 		event.setCanceled(true);
 	}

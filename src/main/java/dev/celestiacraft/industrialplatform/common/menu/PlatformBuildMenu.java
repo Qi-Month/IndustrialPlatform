@@ -7,6 +7,7 @@ import dev.celestiacraft.industrialplatform.common.block.IPlatformController;
 import dev.celestiacraft.industrialplatform.common.block.platform.PlatformBlock;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
+import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
 import dev.celestiacraft.industrialplatform.common.register.IPMenus;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
@@ -313,6 +314,8 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 		super.removed(player);
 		// 关闭界面时把槽里剩下的材料还给玩家
 		clearContainer(player, material);
+		// 同时把界面里的上下填充格数同步给快捷栏里的每一个调节器(外加副手那只)
+		FillAdjusterItem.applyToHotbar(player, getUpFill(), getDownFill());
 	}
 
 	@Override
