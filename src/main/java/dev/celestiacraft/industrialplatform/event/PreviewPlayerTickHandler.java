@@ -187,7 +187,7 @@ public class PreviewPlayerTickHandler {
 	 * 射线比客户端的手长一点没关系, 顶多多同步一个方块
 	 */
 	private static void syncLookedAt(ServerLevel level, ServerPlayer player, PreviewState preview) {
-		HitResult hit = player.pick(player.getBlockReach() + 1.0D, 0.0F, false);
+		HitResult hit = player.pick(player.blockInteractionRange() + 1.0D, 0.0F, false);
 		if (!(hit instanceof BlockHitResult blockHit) || blockHit.getType() != HitResult.Type.BLOCK) {
 			return;
 		}
