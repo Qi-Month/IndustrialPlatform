@@ -55,13 +55,14 @@ public class CommonConfig {
 				);
 
 		ADJUSTER = BUILDER
-				.comment("Items treated as a platform adjuster: right-click a platform block or the builder station to open its screen,")
-				.comment("hold one to display the block boundary preview.")
+				.comment("Extra items treated as a platform adjuster: standing right click a platform block to cycle")
+				.comment("its type, and holding one displays the block boundary preview.")
+				.comment("The Fill Adjuster item is always treated as one and does not need to be listed here.")
 				.comment("Use #namespace:path for tags, namespace:path for item IDs.")
-				.comment("Examples: #forge:tools/wrench, industrial_platform:fill_adjuster")
+				.comment("Examples: #forge:tools/wrench")
 				.defineListAllowEmpty(
 						"adjuster",
-						List.of("#forge:tools/wrench", "industrial_platform:fill_adjuster"),
+						List.of("#forge:tools/wrench"),
 						CommonConfig::validateString
 				);
 

@@ -129,7 +129,7 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 		}
 
 		// 站立 + 调节器: 切换平台类型(原版那套按枚举声明顺序循环)
-		if (ItemMatcher.matches(held, CommonConfig.ADJUSTER)) {
+		if (IPlatformController.isAdjuster(held)) {
 			if (level.isClientSide()) {
 				return InteractionResult.SUCCESS;
 			}

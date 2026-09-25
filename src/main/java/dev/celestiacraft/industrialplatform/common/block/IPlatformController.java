@@ -1,6 +1,7 @@
 package dev.celestiacraft.industrialplatform.common.block;
 
 import dev.celestiacraft.industrialplatform.api.ItemMatcher;
+import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
 import dev.celestiacraft.industrialplatform.common.menu.PlatformBuildMenu;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import net.minecraft.core.BlockPos;
@@ -24,8 +25,12 @@ public interface IPlatformController {
 		}, Component.translatable("menu.industrial_platform.platform_build")), platformPos);
 	}
 
+	/**
+	 * 是不是"调节物品": 填充调节器在代码里硬绑定, 不用写进配置;
+	 * 其它物品(扳手之类)仍然由 adjuster 配置决定
+	 */
 	static boolean isAdjuster(ItemStack stack) {
-		return ItemMatcher.matches(stack, CommonConfig.ADJUSTER);
+		return stack.getItem() instanceof FillAdjusterItem || ItemMatcher.matches(stack, CommonConfig.ADJUSTER);
 	}
 
 	static boolean isHoldingAdjuster(Player player) {
