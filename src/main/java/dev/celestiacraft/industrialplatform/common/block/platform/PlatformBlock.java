@@ -3,6 +3,7 @@ package dev.celestiacraft.industrialplatform.common.block.platform;
 import dev.celestiacraft.industrialplatform.api.IPLogic;
 import dev.celestiacraft.industrialplatform.api.IPTags;
 import dev.celestiacraft.industrialplatform.api.ItemMatcher;
+import dev.celestiacraft.industrialplatform.api.PlatformSettings;
 import dev.celestiacraft.industrialplatform.common.block.IPlatformController;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
@@ -157,7 +158,11 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		}
 
-		buildPlatform(serverLevel, pos, state.getValue(PLATFORM_MODE), CommonConfig.TOP_FILLING_DISTANCE.get(), CommonConfig.BOTTOM_FILLING_DISTANCE.get());
+		PlatformMode mode = state.getValue(PLATFORM_MODE);
+		// 填充格数取这个方块存下来的设置(调节器 / 搭建界面写进去的那份), 跟边界预览用的是同一份数据
+		PlatformSettings settings = PlatformSettingsStorage.get(serverLevel).get(pos).orElseGet(() -> PlatformSettings.defaults(mode));
+
+		buildPlatform(serverLevel, pos, mode, settings.upFill(), settings.downFill());
 
 		player.displayClientMessage(Component.translatable("message.industrial_platform.done").withStyle(ChatFormatting.GREEN), true);
 		IPLogic.consumeItem(player, held, hand);
