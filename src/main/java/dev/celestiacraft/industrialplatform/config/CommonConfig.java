@@ -26,11 +26,6 @@ public class CommonConfig {
 	public static final ModConfigSpec.IntValue TOP_FILLING_DISTANCE;
 	public static final ModConfigSpec.IntValue BOTTOM_FILLING_DISTANCE;
 
-	/**
-	 * 清理地形(上方顶成空气)时被顶掉的方块掉不掉落, 默认不掉
-	 */
-	public static final ModConfigSpec.BooleanValue CLEANUP_DROPS;
-
 	public static final ModConfigSpec.IntValue MIN_PLATFORM_CHUNKS;
 	public static final ModConfigSpec.IntValue MAX_PLATFORM_CHUNKS;
 
@@ -85,11 +80,6 @@ public class CommonConfig {
 				.defineInRange("bottom_filling_distance", 5, PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
 
 		BUILDER.pop();
-
-		CLEANUP_DROPS = BUILDER
-				.comment("true: blocks removed by the platform's fill-up area drop as items.")
-				.comment("false (default): they are simply removed.")
-				.define("cleanup_drops", false);
 
 		BUILDER.comment("Platform footprint limits, measured in chunks per side.").push("platform");
 

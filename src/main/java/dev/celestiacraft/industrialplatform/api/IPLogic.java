@@ -172,10 +172,6 @@ public class IPLogic {
 	 * 被顶掉的方块掉不掉落, 默认不掉(配置里可开)
 	 */
 	private static boolean shouldDrop(BlockState state) {
-		if (!CommonConfig.CLEANUP_DROPS.get()) {
-			return false;
-		}
-
 		ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
 		return !IndustrialPlatform.loadResource("industrial_platform").equals(blockId)
 				&& !IndustrialPlatform.loadResource("fluid_pool").equals(blockId)

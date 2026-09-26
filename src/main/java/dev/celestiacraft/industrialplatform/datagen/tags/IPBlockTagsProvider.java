@@ -33,9 +33,11 @@ public class IPBlockTagsProvider extends BlockTagsProvider {
 				.add(Blocks.GRASS_BLOCK)
 				.add(Blocks.GRAVEL)
 				.add(Blocks.END_STONE)
+				.add(Blocks.DEEPSLATE_TILES)
 				.addTag(Tags.Blocks.SANDS)
 				.addTag(Tags.Blocks.SANDSTONE_BLOCKS)
 				.addTag(Tags.Blocks.NETHERRACKS)
+				.addTag(IPTags.Blocks.CONCRETE)
 				.addOptionalTag(Tags.Blocks.ORES)
 				.addOptionalTag(Tags.Blocks.STONES)
 				.addOptionalTag(Tags.Blocks.COBBLESTONES)
@@ -50,5 +52,23 @@ public class IPBlockTagsProvider extends BlockTagsProvider {
 				.add(IPBlocks.INDUSTRIAL_PLATFORM.get())
 				.add(IPBlocks.PLATFORM_BUILDER.get())
 				.add(IPBlocks.FLUID_POOL.get());
+
+		tag(IPTags.Blocks.CONCRETE)
+				.add(Blocks.BLACK_CONCRETE)
+				.add(Blocks.GRAY_CONCRETE)
+				.add(Blocks.LIGHT_GRAY_CONCRETE)
+				.add(Blocks.WHITE_CONCRETE)
+				.add(Blocks.PINK_CONCRETE)
+				.add(Blocks.RED_CONCRETE)
+				.add(Blocks.ORANGE_CONCRETE)
+				.add(Blocks.YELLOW_CONCRETE)
+				.add(Blocks.GREEN_CONCRETE)
+				.add(Blocks.CYAN_CONCRETE)
+				.add(Blocks.LIME_CONCRETE)
+				.add(Blocks.BLUE_CONCRETE)
+				.add(Blocks.LIGHT_BLUE_CONCRETE)
+				.add(Blocks.PURPLE_CONCRETE)
+				.add(Blocks.MAGENTA_CONCRETE)
+				.add(Blocks.BROWN_CONCRETE);
 	}
 }
