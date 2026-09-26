@@ -18,10 +18,10 @@ public class IPTags {
 				STONE,
 				WRENCH,
 				DEEPSLATE,
-				/**
-				 * 可以用于搭建平台的材料, 搭建界面的槽位接受这个物品标签
-				 */
-				PLATFORM_MATERIAL;
+		/**
+		 * 可以用于搭建平台的材料, 搭建界面的槽位接受这个物品标签
+		 */
+		PLATFORM_MATERIAL;
 
 		static {
 			STONE = createTag("forge", "stone");
@@ -38,11 +38,13 @@ public class IPTags {
 
 		public static TagKey<Block>
 				NO_DROP_BLOCKS,
-				DEEPSLATE;
+				DEEPSLATE,
+				CONCRETE;
 
 		static {
 			NO_DROP_BLOCKS = createTag(IndustrialPlatform.MODID, "no_drop_blocks");
 			DEEPSLATE = createTag("forge", "deepslate");
+			CONCRETE = createTag(IndustrialPlatform.MODID, "concretes");
 		}
 	}
 }
