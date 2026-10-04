@@ -24,11 +24,6 @@ public class CommonConfig {
 	public static final ForgeConfigSpec.IntValue TOP_FILLING_DISTANCE;
 	public static final ForgeConfigSpec.IntValue BOTTOM_FILLING_DISTANCE;
 
-	/**
-	 * 清理地形(上方顶成空气)时被顶掉的方块掉不掉落, 默认不掉
-	 */
-	public static final ForgeConfigSpec.BooleanValue CLEANUP_DROPS;
-
 	public static final ForgeConfigSpec.IntValue MIN_PLATFORM_CHUNKS;
 	public static final ForgeConfigSpec.IntValue MAX_PLATFORM_CHUNKS;
 
@@ -71,21 +66,16 @@ public class CommonConfig {
 				.comment("The player can still change it in the screen, range: " + PlatformProperties.MIN_FILL_DISTANCE + " ~ " + PlatformProperties.MAX_FILL_DISTANCE)
 				.comment("type: int")
 				.comment("default: 5")
-				.defineInRange("top_filling_distance", 5, PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
+				.defineInRange("default_top_filling_distance", 5, PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
 
 		BOTTOM_FILLING_DISTANCE = BUILDER
 				.comment("Default value of the fill-down field shown in the platform builder screen.")
 				.comment("The player can still change it in the screen, range: " + PlatformProperties.MIN_FILL_DISTANCE + " ~ " + PlatformProperties.MAX_FILL_DISTANCE)
 				.comment("type: int")
 				.comment("default: 5")
-				.defineInRange("bottom_filling_distance", 5, PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
+				.defineInRange("default_bottom_filling_distance", 5, PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
 
 		BUILDER.pop();
-
-		CLEANUP_DROPS = BUILDER
-				.comment("true: blocks removed by the platform's fill-up area drop as items.")
-				.comment("false (default): they are simply removed.")
-				.define("cleanup_drops", false);
 
 		BUILDER.comment("Platform footprint limits, measured in chunks per side.").push("platform");
 
