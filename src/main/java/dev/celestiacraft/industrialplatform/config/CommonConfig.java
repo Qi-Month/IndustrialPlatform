@@ -14,7 +14,9 @@ public class CommonConfig {
 	 */
 	public static final ModConfigSpec.ConfigValue<List<? extends String>> PLATFORM_MATERIAL;
 	/**
-	 * 手持后右键平台方块可以打开搭建界面的物品(空手也可以)
+	 * 额外的"平台调节器"物品: 手持后右键平台方块切换平台类型, 并显示区块边界预览
+	 * <p>
+	 * 填充调节器(industrial_platform:fill_adjuster)已经在代码里硬绑, 不需要写进这里
 	 */
 	public static final ModConfigSpec.ConfigValue<List<? extends String>> ADJUSTER;
 
@@ -23,16 +25,6 @@ public class CommonConfig {
 	 */
 	public static final ModConfigSpec.IntValue TOP_FILLING_DISTANCE;
 	public static final ModConfigSpec.IntValue BOTTOM_FILLING_DISTANCE;
-
-	/**
-	 * true: 空手或手持调节器右键平台方块打开搭建界面
-	 * false: 老行为, 调节器右键切模式, 潜行右键切悬浮, 手持材料右键直接展开
-	 */
-	public static final ModConfigSpec.BooleanValue ENABLE_BUILDER_UI;
-	/**
-	 * 清理地形(上方顶成空气)时被顶掉的方块掉不掉落, 默认不掉
-	 */
-	public static final ModConfigSpec.BooleanValue CLEANUP_DROPS;
 
 	public static final ModConfigSpec.IntValue MIN_PLATFORM_CHUNKS;
 	public static final ModConfigSpec.IntValue MAX_PLATFORM_CHUNKS;
@@ -61,13 +53,14 @@ public class CommonConfig {
 				);
 
 		ADJUSTER = BUILDER
-				.comment("Items that open the platform builder screen when right-clicking a platform block.")
-				.comment("An empty hand works as well.")
+				.comment("Extra items treated as a platform adjuster: right-click a platform block to cycle its type,")
+				.comment("hold one to display the block boundary preview.")
+				.comment("The fill adjuster (industrial_platform:fill_adjuster) is built in and needs no entry here.")
 				.comment("Use #namespace:path for tags, namespace:path for item IDs.")
 				.comment("Examples: #c:tools/wrench, minecraft:stick")
 				.defineListAllowEmpty(
 						"adjuster",
-						List.of("#c:tools/wrench", "minecraft:stick"),
+						List.of("#c:tools/wrench"),
 						() -> "",
 						CommonConfig::validateString
 				);
@@ -87,18 +80,6 @@ public class CommonConfig {
 				.defineInRange("bottom_filling_distance", 5, PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
 
 		BUILDER.pop();
-
-		ENABLE_BUILDER_UI = BUILDER
-				.comment("true: right click a platform block with an empty hand (or the adjuster item) to open the builder screen.")
-				.comment("false: classic behaviour - wrench cycles the platform mode, sneak + wrench toggles floating,")
-				.comment("and right clicking with a material deploys the platform directly.")
-				.comment("The platform designer block always keeps its own screen.")
-				.define("enable_builder_ui", true);
-
-		CLEANUP_DROPS = BUILDER
-				.comment("true: blocks removed by the platform's fill-up area drop as items.")
-				.comment("false (default): they are simply removed.")
-				.define("cleanup_drops", false);
 
 		BUILDER.comment("Platform footprint limits, measured in chunks per side.").push("platform");
 

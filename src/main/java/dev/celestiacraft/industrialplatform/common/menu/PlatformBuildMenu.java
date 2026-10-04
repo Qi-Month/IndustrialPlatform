@@ -7,6 +7,7 @@ import dev.celestiacraft.industrialplatform.common.block.IPlatformController;
 import dev.celestiacraft.industrialplatform.common.block.platform.PlatformBlock;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
+import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
 import dev.celestiacraft.industrialplatform.common.register.IPMenus;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
@@ -82,10 +83,11 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 
 		// 上次在这个方块上选好的设置优先, 没有就用方块状态与配置默认值
 		PlatformSettings stored = readStoredSettings();
+		PlatformSettings initial = stored != null ? stored : PlatformSettings.defaults(readModeFromLevel());
 
-		data.set(DATA_UP_FILL, clampFill(stored != null ? stored.upFill() : CommonConfig.TOP_FILLING_DISTANCE.get()));
-		data.set(DATA_DOWN_FILL, clampFill(stored != null ? stored.downFill() : CommonConfig.BOTTOM_FILLING_DISTANCE.get()));
-		data.set(DATA_MODE, (stored != null ? stored.mode() : readModeFromLevel()).ordinal());
+		data.set(DATA_UP_FILL, clampFill(initial.upFill()));
+		data.set(DATA_DOWN_FILL, clampFill(initial.downFill()));
+		data.set(DATA_MODE, initial.mode().ordinal());
 
 		addSlot(new MaterialSlot(material, MATERIAL_SLOT_INDEX, MATERIAL_SLOT_X, MATERIAL_SLOT_Y));
 		addPlayerInventory(playerInventory);
@@ -312,6 +314,8 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 		super.removed(player);
 		// 关闭界面时把槽里剩下的材料还给玩家
 		clearContainer(player, material);
+		// 同时把界面里的上下填充格数同步给快捷栏里的每一个调节器(外加副手那只)
+		FillAdjusterItem.applyToHotbar(player, getUpFill(), getDownFill());
 	}
 
 	@Override

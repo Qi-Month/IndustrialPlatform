@@ -6,7 +6,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public interface IPreviewReactive {
 	/**
-	 * 当玩家手持 wrench 靠近时调用
+	 * 当玩家手持调节器(wrench / 填充调节器)或 平台触发方块 靠近时调用
 	 *
 	 * @param level
 	 * @param pos

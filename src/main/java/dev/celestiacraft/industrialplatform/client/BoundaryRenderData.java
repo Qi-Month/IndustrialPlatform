@@ -21,7 +21,7 @@ public class BoundaryRenderData {
 	 * @param upFill   向上填充格数, -1 表示未知(只有方块状态信息)
 	 * @param downFill 向下填充格数, -1 表示未知
 	 */
-	public record BoundaryEntry(BlockPos pos, int sizeX, int sizeZ, boolean floating, int upFill, int downFill) {
+	public record BoundaryEntry(BlockPos pos, int sizeX, int sizeZ, int upFill, int downFill) {
 		public boolean hasFillInfo() {
 			return upFill >= 0 && downFill >= 0;
 		}

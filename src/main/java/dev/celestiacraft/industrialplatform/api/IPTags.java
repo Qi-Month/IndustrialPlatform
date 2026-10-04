@@ -35,11 +35,13 @@ public class IPTags {
 
 		public static TagKey<Block>
 				NO_DROP_BLOCKS,
-				DEEPSLATE;
+				DEEPSLATE,
+				CONCRETE;
 
 		static {
 			NO_DROP_BLOCKS = createTag(IndustrialPlatform.MODID, "no_drop_blocks");
 			DEEPSLATE = createTag("c", "deepslate");
+			CONCRETE = createTag(IndustrialPlatform.MODID, "concretes");
 		}
 	}
 }
