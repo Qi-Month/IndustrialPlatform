@@ -5,12 +5,16 @@ import dev.celestiacraft.industrialplatform.api.IPTags;
 import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
+import net.minecraft.data.tags.TagAppender;
+import net.minecraft.references.BlockItemIds;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class IPBlockTagsProvider extends BlockTagsProvider {
@@ -21,54 +25,25 @@ public class IPBlockTagsProvider extends BlockTagsProvider {
 	@Override
 	protected void addTags(HolderLookup.@NotNull Provider provider) {
 		tag(IPTags.Blocks.NO_DROP_BLOCKS)
-				.add(Blocks.STONE)
-				.add(Blocks.GRANITE)
-				.add(Blocks.DIORITE)
-				.add(Blocks.ANDESITE)
-				.add(Blocks.COBBLESTONE)
-				.add(Blocks.COBBLED_DEEPSLATE)
-				.add(Blocks.TUFF)
-				.add(Blocks.CALCITE)
-				.add(Blocks.DIRT)
-				.add(Blocks.GRASS_BLOCK)
-				.add(Blocks.GRAVEL)
-				.add(Blocks.END_STONE)
-				.add(Blocks.DEEPSLATE_TILES)
-				.addTag(Tags.Blocks.SANDS)
-				.addTag(Tags.Blocks.SANDSTONE_BLOCKS)
-				.addTag(Tags.Blocks.NETHERRACKS)
+				.addAll(List.of(BlockItemIds.STONE.block(), BlockItemIds.GRANITE.block(), BlockItemIds.DIORITE.block(),
+						BlockItemIds.ANDESITE.block(), BlockItemIds.COBBLESTONE.block(), BlockItemIds.COBBLED_DEEPSLATE.block(),
+						BlockItemIds.TUFF.block(), BlockItemIds.CALCITE.block(), BlockItemIds.DIRT.block(), BlockItemIds.GRASS_BLOCK.block(),
+						BlockItemIds.GRAVEL.block(), BlockItemIds.END_STONE.block(), BlockItemIds.DEEPSLATE_TILES.block()))
+				.addTag(Tags.BlockItems.SANDS.block())
+				.addTag(Tags.BlockItems.SANDSTONE_BLOCKS.block())
+				.addTag(Tags.BlockItems.NETHERRACKS.block())
 				.addTag(IPTags.Blocks.CONCRETE)
-				.addOptionalTag(Tags.Blocks.ORES)
-				.addOptionalTag(Tags.Blocks.STONES)
-				.addOptionalTag(Tags.Blocks.COBBLESTONES)
+				.addOptionalTag(Tags.BlockItems.ORES.block())
+				.addOptionalTag(Tags.BlockItems.STONES.block())
+				.addOptionalTag(Tags.BlockItems.COBBLESTONES.block())
 				.addOptionalTag(IPTags.Blocks.DEEPSLATE);
 
-		tag(Tags.Blocks.NEEDS_WOOD_TOOL)
-				.add(IPBlocks.INDUSTRIAL_PLATFORM.get())
-				.add(IPBlocks.PLATFORM_BUILDER.get())
-				.add(IPBlocks.FLUID_POOL.get());
+		List<ResourceKey<Block>> controllers = List.of(IPBlocks.INDUSTRIAL_PLATFORM.key(),
+				IPBlocks.PLATFORM_BUILDER.key(), IPBlocks.FLUID_POOL.key());
+		tag(Tags.Blocks.NEEDS_WOOD_TOOL).addAll(controllers);
+		tag(BlockTags.MINEABLE_WITH_PICKAXE).addAll(controllers);
 
-		tag(BlockTags.MINEABLE_WITH_PICKAXE)
-				.add(IPBlocks.INDUSTRIAL_PLATFORM.get())
-				.add(IPBlocks.PLATFORM_BUILDER.get())
-				.add(IPBlocks.FLUID_POOL.get());
-
-		tag(IPTags.Blocks.CONCRETE)
-				.add(Blocks.BLACK_CONCRETE)
-				.add(Blocks.GRAY_CONCRETE)
-				.add(Blocks.LIGHT_GRAY_CONCRETE)
-				.add(Blocks.WHITE_CONCRETE)
-				.add(Blocks.PINK_CONCRETE)
-				.add(Blocks.RED_CONCRETE)
-				.add(Blocks.ORANGE_CONCRETE)
-				.add(Blocks.YELLOW_CONCRETE)
-				.add(Blocks.GREEN_CONCRETE)
-				.add(Blocks.CYAN_CONCRETE)
-				.add(Blocks.LIME_CONCRETE)
-				.add(Blocks.BLUE_CONCRETE)
-				.add(Blocks.LIGHT_BLUE_CONCRETE)
-				.add(Blocks.PURPLE_CONCRETE)
-				.add(Blocks.MAGENTA_CONCRETE)
-				.add(Blocks.BROWN_CONCRETE);
+		TagAppender<Block> concrete = tag(IPTags.Blocks.CONCRETE);
+		BlockItemIds.CONCRETE.forEach(id -> concrete.add(id.block()));
 	}
 }

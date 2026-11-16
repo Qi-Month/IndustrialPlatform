@@ -1,5 +1,6 @@
 package dev.celestiacraft.industrialplatform.api;
 
+import com.mojang.serialization.MapCodec;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
 import dev.celestiacraft.industrialplatform.platform.PoolDrops;
@@ -13,6 +14,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
@@ -21,7 +23,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
+import net.minecraft.world.level.levelgen.structure.templatesystem.NopProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import org.jetbrains.annotations.NotNull;
@@ -75,7 +77,7 @@ public class IPLogic {
 	 * 数据包放同名文件就能覆盖内置的平台外观
 	 */
 	public static Optional<StructureTemplate> getStructure(ServerLevel level, String structureId) {
-		StructureTemplateManager manager = level.getStructureManager();
+		StructureTemplateManager manager = level.getStructureTemplateManager();
 		Identifier structureName = IndustrialPlatform.loadResource(structureId);
 		return manager.get(structureName);
 	}
@@ -113,7 +115,7 @@ public class IPLogic {
 	}
 
 	public static void consumeItem(Player player, ItemStack stack, InteractionHand hand) {
-		player.swing(hand);
+		player.swing(hand, SwingAnimation.DEFAULT, false);
 
 		if (!player.isCreative()) {
 			stack.shrink(1);
@@ -209,7 +211,7 @@ public class IPLogic {
 		}
 	}
 
-	private static class PoolPlaceProcessor extends StructureProcessor {
+	private static class PoolPlaceProcessor implements StructureProcessor {
 		private final ServerLevel level;
 		private final PoolDrops drops;
 
@@ -232,12 +234,12 @@ public class IPLogic {
 		}
 
 		@Override
-		protected StructureProcessorType<?> getType() {
-			return StructureProcessorType.NOP;
+		public MapCodec<? extends StructureProcessor> codec() {
+			return NopProcessor.MAP_CODEC;
 		}
 	}
 
-	private static class DropBeforePlaceProcessor extends StructureProcessor {
+	private static class DropBeforePlaceProcessor implements StructureProcessor {
 		private final ServerLevel level;
 
 		private DropBeforePlaceProcessor(ServerLevel level) {
@@ -277,8 +279,8 @@ public class IPLogic {
 		}
 
 		@Override
-		protected @NotNull StructureProcessorType<?> getType() {
-			return StructureProcessorType.NOP;
+		public @NotNull MapCodec<? extends StructureProcessor> codec() {
+			return NopProcessor.MAP_CODEC;
 		}
 	}
 }

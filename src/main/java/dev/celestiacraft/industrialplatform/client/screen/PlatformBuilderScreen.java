@@ -1,7 +1,10 @@
 package dev.celestiacraft.industrialplatform.client.screen;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.client.BoundaryRenderData;
+import dev.celestiacraft.industrialplatform.client.ScrollInput;
+import dev.celestiacraft.industrialplatform.client.screen.widget.NumericEditBox;
 import dev.celestiacraft.industrialplatform.client.network.IPClientNetwork;
 import dev.celestiacraft.industrialplatform.common.menu.PlatformBuilderMenu;
 import dev.celestiacraft.industrialplatform.network.packet.BuilderSelectPacket;
@@ -80,6 +83,7 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 	private static final int COLOR_SELECTED = 0x806A9BE0;
 	private static final int COLOR_HOVER = 0x30FFFFFF;
 
+	private final ScrollInput scrollInput = new ScrollInput();
 	private EditBox upFillField;
 	private EditBox downFillField;
 	private Button upMinus;
@@ -119,6 +123,7 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 
 		blueprintEntries = List.of();
 		buildButtonAvailability = null;
+		scrollInput.reset();
 		selectedId = ClientBlueprintData.getSelected();
 		if (selectedId.isEmpty()) {
 			selectedId = menu.getBlueprintId();
@@ -173,7 +178,7 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 	}
 
 	private EditBox createFillField(int y, int value, Consumer<String> responder) {
-		EditBox field = new EditBox(font, leftPos + FIELD_X, y + 1, FIELD_WIDTH, FIELD_HEIGHT, Component.empty()) {
+		EditBox field = new NumericEditBox(font, leftPos + FIELD_X, y + 1, FIELD_WIDTH, FIELD_HEIGHT, Component.empty()) {
 			@Override
 			public void setFocused(boolean focused) {
 				boolean wasFocused = isFocused();
@@ -186,7 +191,6 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 		};
 
 		field.setMaxLength(2);
-		field.setFilter(text -> text.isEmpty() || text.chars().allMatch(Character::isDigit));
 		field.setResponder(responder);
 
 		updatingWidgets = true;
@@ -333,8 +337,8 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 		return 0;
 	}
 
-	private void pageMaterials(int delta) {
-		materialScroll = Mth.clamp(materialScroll + delta, 0, maxMaterialScroll());
+	private void pageMaterials(long delta) {
+		materialScroll = Math.clamp((long) materialScroll + delta, 0, maxMaterialScroll());
 	}
 
 	private void updatePageButtons() {
@@ -346,8 +350,8 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 		pageNext.active = materialScroll < maxMaterialScroll();
 	}
 
-	private void scrollBy(int delta) {
-		scroll = Mth.clamp(scroll + delta, 0, maxScroll());
+	private void scrollBy(long delta) {
+		scroll = Math.clamp((long) scroll + delta, 0, maxScroll());
 	}
 
 	private void select(String id) {
@@ -363,38 +367,34 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-		if (scrollY != 0.0D) {
-			if (isOverList(mouseX, mouseY)) {
-				scrollBy(scrollY > 0.0D ? -1 : 1);
-				return true;
-			}
-
-			if (isOverMaterials(mouseX, mouseY) && maxMaterialScroll() > 0) {
-				materialScroll = Mth.clamp(materialScroll + (scrollY > 0.0D ? -1 : 1), 0, maxMaterialScroll());
-				return true;
-			}
-
-			if (isOverFillControls(upFillField, upMinus, upPlus, mouseX, mouseY)) {
-				setUpFill(upFill + (scrollY > 0.0D ? 1 : -1));
-				return true;
-			}
-
-			if (isOverFillControls(downFillField, downMinus, downPlus, mouseX, mouseY)) {
-				setDownFill(downFill + (scrollY > 0.0D ? 1 : -1));
-				return true;
+		if (scrollY == 0.0D) {
+			return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+		}
+		ScrollInput.Area area;
+		if (isOverList(mouseX, mouseY)) {
+			area = ScrollInput.Area.BLUEPRINTS;
+		} else if (isOverMaterials(mouseX, mouseY) && maxMaterialScroll() > 0) {
+			area = ScrollInput.Area.MATERIALS;
+		} else if (ScrollInput.isOverControls(upFillField, upMinus, upPlus, mouseX, mouseY)) {
+			area = ScrollInput.Area.UP_FILL;
+		} else if (ScrollInput.isOverControls(downFillField, downMinus, downPlus, mouseX, mouseY)) {
+			area = ScrollInput.Area.DOWN_FILL;
+		} else {
+			scrollInput.reset();
+			return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+		}
+		int delta = scrollInput.scroll(area, scrollY);
+		if (delta != 0) {
+			switch (area) {
+				case BLUEPRINTS -> scrollBy(-(long) delta);
+				case MATERIALS -> pageMaterials(-(long) delta);
+				case UP_FILL -> setUpFill(upFill + ScrollInput.fillStep(delta, 1));
+				case DOWN_FILL -> setDownFill(downFill + ScrollInput.fillStep(delta, 1));
 			}
 		}
-
-		return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+		return true;
 	}
 
-	private boolean isOverFillControls(EditBox field, Button minus, Button plus, double mouseX, double mouseY) {
-		if (field == null || minus == null || plus == null) {
-			return false;
-		}
-
-		return field.isMouseOver(mouseX, mouseY) || minus.isMouseOver(mouseX, mouseY) || plus.isMouseOver(mouseX, mouseY);
-	}
 
 	private boolean isOverList(double mouseX, double mouseY) {
 		double localX = mouseX - leftPos;
@@ -405,7 +405,7 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-		if (event.button() == 0 && isOverList(event.x(), event.y())) {
+		if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && isOverList(event.x(), event.y())) {
 			int row = (int) ((event.y() - topPos - LIST_Y) / LIST_ROW_HEIGHT);
 			int index = scroll + row;
 			List<ClientBlueprintData.Entry> entries = entries();
@@ -448,6 +448,7 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 	@Override
 	public void removed() {
 		super.removed();
+		scrollInput.reset();
 		BoundaryRenderData.clearOverride();
 	}
 

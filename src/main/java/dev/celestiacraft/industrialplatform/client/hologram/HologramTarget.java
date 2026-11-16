@@ -60,7 +60,7 @@ public class HologramTarget {
 	}
 
 	private static BlockPos findTarget(Minecraft minecraft) {
-		if (minecraft.screen != null || minecraft.player == null || minecraft.level == null) {
+		if (minecraft.gui.screen() != null || minecraft.player == null || minecraft.level == null) {
 			return null;
 		}
 

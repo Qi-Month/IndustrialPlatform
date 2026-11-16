@@ -12,7 +12,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -149,10 +149,6 @@ public class PlatformPreviewRenderer implements AutoCloseable {
 		private final Vector3f position = new Vector3f();
 		private final Vector3f normal = new Vector3f();
 
-		public PictureRenderer(MultiBufferSource.BufferSource buffers) {
-			super(buffers);
-		}
-
 		@Override
 		public Class<State> getRenderStateClass() {
 			return State.class;
@@ -169,22 +165,23 @@ public class PlatformPreviewRenderer implements AutoCloseable {
 		}
 
 		@Override
-		protected void renderToTexture(State state, PoseStack pose) {
+		protected void renderToTexture(State state, PoseStack pose, SubmitNodeCollector collector) {
 			pose.scale(1.0F, -1.0F, 1.0F);
-			pose.mulPose(PITCH_ROTATION);
-			pose.mulPose(yawRotation.rotationY(state.yaw() * Mth.DEG_TO_RAD));
+			pose.rotate(PITCH_ROTATION);
+			pose.rotate(yawRotation.rotationY(state.yaw() * Mth.DEG_TO_RAD));
 			pose.translate(-state.sizeX() * 0.5F, -state.centerY(), -state.sizeZ() * 0.5F);
-			PlatformPreviewModel.draw(state.layers(), pose.last(), bufferSource, position, normal);
-			drawClearBox(state, pose.last());
-		}
-
-		private void drawClearBox(State state, PoseStack.Pose pose) {
+			PlatformPreviewModel.submit(state.layers(), pose, collector, position, normal);
 			if (state.upFill() <= 0) {
 				return;
 			}
 			float minY = state.sizeY() + CLEAR_Y_OFFSET;
 			float maxY = state.sizeY() + state.upFill();
-			VertexConsumer faces = bufferSource.getBuffer(HologramRenderTypes.FACES);
+			collector.submitCustomGeometry(pose, HologramRenderTypes.FACES, (renderPose, consumer) -> drawClearFaces(state, renderPose, consumer, minY, maxY));
+			collector.submitCustomGeometry(pose, HologramRenderTypes.BOUNDARY_LINES,
+					(renderPose, consumer) -> HologramRenderTypes.box(renderPose, consumer, 0.0F, minY, 0.0F, state.sizeX(), maxY, state.sizeZ(), OUTLINE_COLOR, 1.0F));
+		}
+
+		private static void drawClearFaces(State state, PoseStack.Pose pose, VertexConsumer faces, float minY, float maxY) {
 			for (int corner = 0; corner < 4; corner++) {
 				int next = (corner + 1) & 3;
 				float x = corner == 1 || corner == 2 ? state.sizeX() : 0.0F;
@@ -200,10 +197,6 @@ public class PlatformPreviewRenderer implements AutoCloseable {
 			HologramRenderTypes.vertex(pose.pose(), faces, state.sizeX(), maxY, 0.0F, CLEAR_COLOR);
 			HologramRenderTypes.vertex(pose.pose(), faces, state.sizeX(), maxY, state.sizeZ(), CLEAR_COLOR);
 			HologramRenderTypes.vertex(pose.pose(), faces, 0.0F, maxY, state.sizeZ(), CLEAR_COLOR);
-			bufferSource.endBatch(HologramRenderTypes.FACES);
-			VertexConsumer lines = bufferSource.getBuffer(HologramRenderTypes.BOUNDARY_LINES);
-			HologramRenderTypes.box(pose, lines, 0.0F, minY, 0.0F, state.sizeX(), maxY, state.sizeZ(), OUTLINE_COLOR, 1.0F);
-			bufferSource.endBatch(HologramRenderTypes.BOUNDARY_LINES);
 		}
 	}
 

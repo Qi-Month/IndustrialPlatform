@@ -27,6 +27,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -147,7 +148,7 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 				PlatformSettings stored = PlatformSettingsStorage.get(serverLevel).resolve(pos, state.getValue(PLATFORM_MODE));
 				applySettings(serverLevel, pos, next, stored.upFill(), stored.downFill(), stored.blueprintId());
 			}
-			player.swing(InteractionHand.MAIN_HAND, true);
+			player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
 
 			return InteractionResult.SUCCESS;
 		}

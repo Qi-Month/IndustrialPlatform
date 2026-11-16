@@ -26,7 +26,7 @@ public class FillAdjusterHandler {
 		Minecraft minecraft = Minecraft.getInstance();
 		LocalPlayer player = minecraft.player;
 
-		if (player == null || minecraft.screen != null) {
+		if (player == null || minecraft.gui.screen() != null) {
 			return;
 		}
 
@@ -45,12 +45,12 @@ public class FillAdjusterHandler {
 			return;
 		}
 
-		double delta = event.getScrollDeltaY();
-		if (delta == 0.0D) {
+		int delta = event.getAccumulatedScrollY();
+		if (delta == 0) {
 			return;
 		}
 
-		int step = (minecraft.hasControlDown() ? 10 : 1) * (delta > 0.0D ? 1 : -1);
+		int step = ScrollInput.fillStep(delta, minecraft.hasControlDown() ? 10 : 1);
 		FillAdjusterItem.Target target = FillAdjusterItem.getTarget(stack);
 		int value = FillAdjusterItem.adjust(stack, target, step);
 

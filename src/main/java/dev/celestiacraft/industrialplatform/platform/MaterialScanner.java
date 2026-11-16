@@ -60,7 +60,7 @@ public class MaterialScanner {
 		BlockPos min = controllerPos.offset(-CONTAINER_RADIUS, -CONTAINER_DOWN, -CONTAINER_RADIUS);
 		BlockPos max = controllerPos.offset(CONTAINER_RADIUS, CONTAINER_UP, CONTAINER_RADIUS);
 		for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
-			if (pos.equals(controllerPos) || visited.contains(pos) || !level.hasChunkAt(pos)) {
+			if (pos.equals(controllerPos) || visited.contains(pos) || !level.isLoaded(pos)) {
 				continue;
 			}
 			BlockEntity blockEntity = level.getBlockEntity(pos);
@@ -70,7 +70,7 @@ public class MaterialScanner {
 			BlockState state = blockEntity.getBlockState();
 			BlockPos otherChestPos = state.getBlock() instanceof ChestBlock && state.getValue(ChestBlock.TYPE) != ChestType.SINGLE
 					? pos.relative(ChestBlock.getConnectedDirection(state)) : null;
-			if (otherChestPos != null && !level.hasChunkAt(otherChestPos)) {
+			if (otherChestPos != null && !level.isLoaded(otherChestPos)) {
 				continue;
 			}
 			ResourceHandler<ItemResource> handler = level.getCapability(Capabilities.Item.BLOCK, pos, null);

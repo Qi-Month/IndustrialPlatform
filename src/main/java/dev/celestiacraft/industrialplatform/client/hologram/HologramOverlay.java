@@ -1,6 +1,6 @@
 package dev.celestiacraft.industrialplatform.client.hologram;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.api.PlatformSettings;
@@ -55,7 +55,7 @@ public class HologramOverlay {
 
 	public static void render(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
 		HologramWorldRenderer.Frame frame = HologramWorldRenderer.getFrame();
-		if (frame == null || Minecraft.getInstance().screen != null) {
+		if (frame == null || Minecraft.getInstance().gui.screen() != null) {
 			return;
 		}
 

@@ -6,13 +6,13 @@ import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.api.PlatformSettings;
 import dev.celestiacraft.industrialplatform.mixin.client.GameRendererAccessor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.state.level.LevelRenderState;
+import net.minecraft.client.renderer.state.level.PlayerRenderState;
 import net.minecraft.client.renderer.state.OptionsRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.context.ContextKey;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -52,19 +52,18 @@ public class HologramWorldRenderer {
 		if (!HologramTarget.isLockedOn(pos)) {
 			return;
 		}
-		float partialTick = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
+		LevelRenderState level = event.getLevelRenderState();
+		float partialTick = level.worldPartialTicks;
 		float spread = 0.02F + 0.35F * (1.0F - HologramTarget.getProgress(partialTick));
-		float alpha = 0.85F + 0.15F * Mth.sin((event.getLevelRenderState().gameTime + partialTick) * 0.25F);
+		float alpha = 0.85F + 0.15F * Mth.sin((level.gameTime + partialTick) * 0.25F);
 		AABB bounds = HologramTarget.getBounds();
-		Vec3 camera = event.getLevelRenderState().cameraRenderState.pos;
+		Vec3 camera = level.cameraRenderState.pos;
 		Brackets brackets = new Brackets((float) (pos.getX() + bounds.minX - camera.x) - spread,
 				(float) (pos.getY() + bounds.minY - camera.y) - spread, (float) (pos.getZ() + bounds.minZ - camera.z) - spread,
 				(float) (pos.getX() + bounds.maxX - camera.x) + spread, (float) (pos.getY() + bounds.maxY - camera.y) + spread,
 				(float) (pos.getZ() + bounds.maxZ - camera.z) + spread, HologramColors.withAlpha(HologramColors.ACCENT, alpha), HologramRenderTypes.lineWidth() * 2.0F);
-		event.addCustomRenderer((state, buffers, pose, translucentPass, levelState) -> {
-			if (state.isTranslucent() == translucentPass) {
-				drawBrackets(pose.last(), buffers.getBuffer(HologramRenderTypes.BRACKET_LINES), brackets);
-			}
+		event.addCustomRenderer((outline, collector, pose, renderState) -> {
+			collector.submitCustomGeometry(pose, HologramRenderTypes.BRACKET_LINES, (renderPose, consumer) -> drawBrackets(renderPose, consumer, brackets));
 			return true;
 		});
 	}
@@ -90,15 +89,15 @@ public class HologramWorldRenderer {
 	public static void onExtractLevel(ExtractLevelRenderStateEvent event) {
 		frame = null;
 		BlockPos pos = HologramTarget.getPos();
-		Minecraft minecraft = Minecraft.getInstance();
-		LocalPlayer player = minecraft.player;
-		if (pos == null || player == null) {
+		LevelRenderState level = event.getRenderState();
+		PlayerRenderState player = level.playerRenderState;
+		if (pos == null || !player.hasPlayer) {
 			return;
 		}
-		CameraRenderState camera = event.getRenderState().cameraRenderState;
-		OptionsRenderState options = minecraft.gameRenderer.getGameRenderState().optionsRenderState;
-		GameRendererAccessor renderer = (GameRendererAccessor) minecraft.gameRenderer;
-		float partialTick = event.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+		CameraRenderState camera = level.cameraRenderState;
+		OptionsRenderState options = event.getOptionsRenderState();
+		GameRendererAccessor renderer = (GameRendererAccessor) Minecraft.getInstance().gameRenderer;
+		float partialTick = level.worldPartialTicks;
 		projection.set(camera.projectionMatrix);
 		bobStack.pushPose();
 		renderer.industrialPlatform$bobHurt(camera, bobStack);
@@ -107,13 +106,11 @@ public class HologramWorldRenderer {
 		}
 		projection.mul(bobStack.last().pose());
 		bobStack.popPose();
-		float portalIntensity = Mth.lerp(partialTick, player.oPortalEffectIntensity, player.portalEffectIntensity);
-		float nauseaIntensity = player.getEffectBlendFactor(MobEffects.NAUSEA, partialTick);
-		float intensity = Math.max(portalIntensity, nauseaIntensity) * (options.screenEffectScale * options.screenEffectScale);
+		float intensity = Math.max(player.portalEffectIntensity, player.nauseaEffectIntensity) * (options.screenEffectScale * options.screenEffectScale);
 		if (intensity > 0.0F) {
 			float skew = 5.0F / (intensity * intensity + 5.0F) - intensity * 0.04F;
 			skew *= skew;
-			float angle = (renderer.industrialPlatform$spinningEffectTime() + partialTick * renderer.industrialPlatform$spinningEffectSpeed()) * Mth.DEG_TO_RAD;
+			float angle = player.spinningEffectAngle * Mth.DEG_TO_RAD;
 			projection.rotate(angle, spinningAxis).scale(1.0F / skew, 1.0F, 1.0F).rotate(-angle, spinningAxis);
 		}
 		AABB bounds = HologramTarget.getBounds();
@@ -124,7 +121,7 @@ public class HologramWorldRenderer {
 			return;
 		}
 		frame = new Frame(pos, HologramTarget.getSettings(), HologramTarget.getProgress(partialTick), anchor.x / anchor.w, anchor.y / anchor.w);
-		event.getRenderState().setRenderData(FRAME, frame);
+		level.setRenderData(FRAME, frame);
 	}
 
 	public static Frame getFrame() {

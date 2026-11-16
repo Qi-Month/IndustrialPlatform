@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "industrial_platform:platform_builder"
+        "recipes": "industrial_platform:platform_builder"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

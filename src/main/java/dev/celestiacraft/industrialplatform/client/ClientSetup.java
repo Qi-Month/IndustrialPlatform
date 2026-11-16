@@ -33,6 +33,9 @@ public class ClientSetup {
 	@SubscribeEvent
 	public static void onRegisterPipelines(RegisterRenderPipelinesEvent event) {
 		event.registerPipeline(HologramRenderTypes.FACES_PIPELINE);
+		event.registerPipeline(HologramRenderTypes.BOUNDARY_PIPELINE);
+		event.registerPipeline(HologramRenderTypes.BRACKET_PIPELINE);
+		event.registerOitPipelineSet(HologramRenderTypes.LINES_OIT_PIPELINES);
 	}
 
 	@SubscribeEvent

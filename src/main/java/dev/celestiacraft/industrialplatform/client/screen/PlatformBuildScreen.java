@@ -2,7 +2,9 @@ package dev.celestiacraft.industrialplatform.client.screen;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.client.BoundaryRenderData;
+import dev.celestiacraft.industrialplatform.client.ScrollInput;
 import dev.celestiacraft.industrialplatform.client.network.IPClientNetwork;
+import dev.celestiacraft.industrialplatform.client.screen.widget.NumericEditBox;
 import dev.celestiacraft.industrialplatform.client.screen.widget.PlatformPreviewWidget;
 import dev.celestiacraft.industrialplatform.client.screen.widget.ToggleButton;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
@@ -63,6 +65,7 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	private static final int COLOR_DISABLED = 0xFF808080;
 	private static final int COLOR_INVENTORY_LABEL = 0xFF404040;
 
+	private final ScrollInput scrollInput = new ScrollInput();
 	private final List<ToggleButton> modeButtons = new ArrayList<>();
 
 	private EditBox upFillField;
@@ -101,6 +104,7 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 		mode = menu.getMode();
 		modeButtons.clear();
 		buildButtonState = null;
+		scrollInput.reset();
 
 		upFillField = createFillField(topPos + FILL_ROW_UP_Y, upFill, this::onUpFillTyped);
 		downFillField = createFillField(topPos + FILL_ROW_UP_Y + FILL_ROW_HEIGHT, downFill, this::onDownFillTyped);
@@ -172,7 +176,7 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	}
 
 	private EditBox createFillField(int y, int value, Consumer<String> responder) {
-		EditBox field = new EditBox(font, leftPos + FIELD_X, y + 1, FIELD_WIDTH, FIELD_HEIGHT, Component.empty()) {
+		EditBox field = new NumericEditBox(font, leftPos + FIELD_X, y + 1, FIELD_WIDTH, FIELD_HEIGHT, Component.empty()) {
 			@Override
 			public void setFocused(boolean focused) {
 				boolean wasFocused = isFocused();
@@ -185,7 +189,6 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 		};
 
 		field.setMaxLength(2);
-		field.setFilter(text -> text.isEmpty() || text.chars().allMatch(Character::isDigit));
 		field.setResponder(responder);
 		field.setTooltip(Tooltip.create(Component.translatable(
 				"gui.industrial_platform.fill_range",
@@ -358,30 +361,29 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-		if (scrollY != 0.0D) {
-			int step = minecraft.hasShiftDown() ? 10 : 1;
-
-			if (isOverFillControls(upFillField, upMinus, upPlus, mouseX, mouseY)) {
-				setUpFill(upFill + (scrollY > 0.0D ? step : -step));
-				return true;
-			}
-
-			if (isOverFillControls(downFillField, downMinus, downPlus, mouseX, mouseY)) {
-				setDownFill(downFill + (scrollY > 0.0D ? step : -step));
-				return true;
+		if (scrollY == 0.0D) {
+			return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+		}
+		ScrollInput.Area area;
+		if (ScrollInput.isOverControls(upFillField, upMinus, upPlus, mouseX, mouseY)) {
+			area = ScrollInput.Area.UP_FILL;
+		} else if (ScrollInput.isOverControls(downFillField, downMinus, downPlus, mouseX, mouseY)) {
+			area = ScrollInput.Area.DOWN_FILL;
+		} else {
+			scrollInput.reset();
+			return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+		}
+		int delta = ScrollInput.fillStep(scrollInput.scroll(area, scrollY), minecraft.hasShiftDown() ? 10 : 1);
+		if (delta != 0) {
+			if (area == ScrollInput.Area.UP_FILL) {
+				setUpFill(upFill + delta);
+			} else {
+				setDownFill(downFill + delta);
 			}
 		}
-
-		return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+		return true;
 	}
 
-	private boolean isOverFillControls(EditBox field, Button minus, Button plus, double mouseX, double mouseY) {
-		if (field == null || minus == null || plus == null) {
-			return false;
-		}
-
-		return field.isMouseOver(mouseX, mouseY) || minus.isMouseOver(mouseX, mouseY) || plus.isMouseOver(mouseX, mouseY);
-	}
 
 	@Override
 	protected void containerTick() {
@@ -405,6 +407,7 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	@Override
 	public void removed() {
 		super.removed();
+		scrollInput.reset();
 		// 关掉界面后交给方块状态 + 客户端缓存继续画
 		BoundaryRenderData.clearOverride();
 

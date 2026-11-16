@@ -9,7 +9,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "industrial_platform:pool2"
+        "recipes": "industrial_platform:pool2"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

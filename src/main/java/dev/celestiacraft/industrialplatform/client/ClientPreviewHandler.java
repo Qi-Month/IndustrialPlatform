@@ -69,7 +69,7 @@ public class ClientPreviewHandler {
 		}
 		if (minecraft.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK) {
 			BlockPos pos = hit.getBlockPos();
-			if (level.hasChunkAt(pos) && SCAN_TARGET.test(level.getBlockState(pos))) {
+			if (level.isLoaded(pos) && SCAN_TARGET.test(level.getBlockState(pos))) {
 				remember(pos);
 			}
 		}
@@ -103,7 +103,7 @@ public class ClientPreviewHandler {
 			Preview preview = iterator.next();
 			BlockPos pos = preview.pos;
 			if (Math.abs((long) pos.getX() - center.getX()) > SCAN_RADIUS_XZ
-					|| Math.abs((long) pos.getZ() - center.getZ()) > SCAN_RADIUS_XZ || !level.hasChunkAt(pos)) {
+					|| Math.abs((long) pos.getZ() - center.getZ()) > SCAN_RADIUS_XZ || !level.isLoaded(pos)) {
 				iterator.remove();
 				continue;
 			}

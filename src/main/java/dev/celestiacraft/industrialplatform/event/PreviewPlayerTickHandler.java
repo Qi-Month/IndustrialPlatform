@@ -67,7 +67,7 @@ public class PreviewPlayerTickHandler {
 		ServerLevel level = player.level();
 		PreviewState preview = PLAYERS.computeIfAbsent(player.getUUID(), key -> new PreviewState());
 		if (!preview.hasFreshScan(level, player.position(), level.getGameTime())
-				|| preview.nearest != null && (!level.hasChunkAt(preview.nearest)
+				|| preview.nearest != null && (!level.isLoaded(preview.nearest)
 						|| !(level.getBlockState(preview.nearest).getBlock() instanceof PlatformBlock))) {
 			scanNearby(level, player, preview);
 			return;

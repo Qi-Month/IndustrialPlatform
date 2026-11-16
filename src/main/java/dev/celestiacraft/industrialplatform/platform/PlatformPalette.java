@@ -17,8 +17,8 @@ public record PlatformPalette(BlockState borderPrimary, BlockState borderSeconda
 	 * 与内置平台一致: 黄/黑混凝土条纹边框, 深板岩瓦或雪块+白混凝土棋盘, 海晶灯
 	 */
 	public static PlatformPalette defaults(PlatformStyle style) {
-		BlockState borderPrimary = Blocks.YELLOW_CONCRETE.defaultBlockState();
-		BlockState borderSecondary = Blocks.BLACK_CONCRETE.defaultBlockState();
+		BlockState borderPrimary = Blocks.CONCRETE.yellow().defaultBlockState();
+		BlockState borderSecondary = Blocks.CONCRETE.black().defaultBlockState();
 		BlockState lamp = Blocks.SEA_LANTERN.defaultBlockState();
 
 		if (style == PlatformStyle.CHECKERBOARD) {
@@ -26,7 +26,7 @@ public record PlatformPalette(BlockState borderPrimary, BlockState borderSeconda
 					borderPrimary,
 					borderSecondary,
 					Blocks.SNOW_BLOCK.defaultBlockState(),
-					Blocks.WHITE_CONCRETE.defaultBlockState(),
+					Blocks.CONCRETE.white().defaultBlockState(),
 					lamp
 			);
 		}

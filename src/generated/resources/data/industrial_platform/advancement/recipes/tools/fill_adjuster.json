@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "industrial_platform:fill_adjuster"
+        "recipes": "industrial_platform:fill_adjuster"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

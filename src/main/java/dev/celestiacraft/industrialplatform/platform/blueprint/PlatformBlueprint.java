@@ -62,8 +62,8 @@ public class PlatformBlueprint {
 		List<String> missing = new ArrayList<>();
 		ListTag paletteTag = readPalette(tag);
 		for (Tag element : paletteTag) {
-			CompoundTag entry = requireCompound(element, "palette");
-			String name = entry.getStringOr("Name", "");
+			CompoundTag entry = normalizeBlockState(requireCompound(element, "palette"));
+			String name = entry.getStringOr("id", "");
 			Identifier blockId = Identifier.tryParse(name);
 			if (blockId == null) {
 				throw new IllegalArgumentException("Invalid palette block identifier: " + name);
@@ -98,6 +98,21 @@ public class PlatformBlueprint {
 		}
 
 		return new PlatformBlueprint(id, size, blocks, materials, missing);
+	}
+
+	private static CompoundTag normalizeBlockState(CompoundTag entry) {
+		if (entry.contains("id")) {
+			return entry;
+		}
+		CompoundTag state = entry.copy();
+		state.putString("id", state.getStringOr("Name", ""));
+		state.remove("Name");
+		Tag properties = state.get("Properties");
+		if (properties != null) {
+			state.put("properties", properties);
+			state.remove("Properties");
+		}
+		return state;
 	}
 
 	private static ListTag readPalette(CompoundTag tag) {

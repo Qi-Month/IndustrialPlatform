@@ -4,10 +4,10 @@ import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.api.IPTags;
 import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
 import dev.celestiacraft.industrialplatform.common.register.IPItems;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeCategory;
-import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.crafting.Recipe;
@@ -15,8 +15,8 @@ import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.conditions.ModLoadedCondition;
 
 public class IPShapedRecipe extends RecipeProvider {
-	public IPShapedRecipe(HolderLookup.Provider registries, RecipeOutput output) {
-		super(registries, output);
+	public IPShapedRecipe(BootstrapContext<Recipe<?>> recipes, BootstrapContext<Advancement> advancements) {
+		super(recipes, advancements, IndustrialPlatform.MODID);
 	}
 
 	@Override
@@ -26,9 +26,9 @@ public class IPShapedRecipe extends RecipeProvider {
 				.pattern("CCC")
 				.pattern("CCC")
 				.define('A', Tags.Items.DYES)
-				.define('B', Tags.Items.STONES)
+				.define('B', Tags.BlockItems.STONES.item())
 				.define('C', IPTags.Items.DEEPSLATE)
-				.unlockedBy("stone", has(Tags.Items.STONES))
+				.unlockedBy("stone", has(Tags.BlockItems.STONES.item()))
 				.save(output, recipeKey("platform"));
 
 		shaped(RecipeCategory.TOOLS, IPBlocks.FLUID_POOL.get())
@@ -37,8 +37,8 @@ public class IPShapedRecipe extends RecipeProvider {
 				.pattern("BCB")
 				.define('A', Tags.Items.DYES)
 				.define('B', IPTags.Items.DEEPSLATE)
-				.define('C', Tags.Items.STONES)
-				.unlockedBy("stone", has(Tags.Items.STONES))
+				.define('C', Tags.BlockItems.STONES.item())
+				.unlockedBy("stone", has(Tags.BlockItems.STONES.item()))
 				.save(output.withConditions(new ModLoadedCondition("create")), recipeKey("pool2"));
 
 		shaped(RecipeCategory.DECORATIONS, IPBlocks.PLATFORM_BUILDER.get())
@@ -48,7 +48,7 @@ public class IPShapedRecipe extends RecipeProvider {
 				.define('A', Tags.Items.DYES)
 				.define('B', IPTags.Items.DEEPSLATE)
 				.define('C', IPBlocks.INDUSTRIAL_PLATFORM.get())
-				.define('D', Tags.Items.STONES)
+				.define('D', Tags.BlockItems.STONES.item())
 				.unlockedBy("platform", has(IPBlocks.INDUSTRIAL_PLATFORM.get()))
 				.save(output, recipeKey("platform_builder"));
 

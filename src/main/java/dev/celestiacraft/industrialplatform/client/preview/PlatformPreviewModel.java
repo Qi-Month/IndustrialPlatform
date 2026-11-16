@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.builders.UVPair;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
@@ -97,20 +97,22 @@ public class PlatformPreviewModel implements AutoCloseable {
 		return layers.isEmpty();
 	}
 
-	public static void draw(List<Layer> layers, PoseStack.Pose pose, MultiBufferSource.BufferSource buffers, Vector3f position, Vector3f normal) {
+	public static void submit(List<Layer> layers, PoseStack pose, SubmitNodeCollector collector, Vector3f position, Vector3f normal) {
 		for (Layer layer : layers) {
-			VertexConsumer consumer = buffers.getBuffer(layer.renderType());
-			for (Quad quad : layer.quads()) {
-				float[] vertices = quad.vertices();
-				for (int vertex = 0; vertex < 4; vertex++) {
-					int offset = vertex * 8;
-					pose.pose().transformPosition(vertices[offset], vertices[offset + 1], vertices[offset + 2], position);
-					pose.transformNormal(vertices[offset + 5], vertices[offset + 6], vertices[offset + 7], normal);
-					consumer.addVertex(position.x, position.y, position.z, quad.colors()[vertex], vertices[offset + 3], vertices[offset + 4],
-							quad.overlay(), quad.lights()[vertex], normal.x, normal.y, normal.z);
-				}
+			collector.submitCustomGeometry(pose, layer.renderType(), (renderPose, consumer) -> draw(layer.quads(), renderPose, consumer, position, normal));
+		}
+	}
+
+	private static void draw(List<Quad> quads, PoseStack.Pose pose, VertexConsumer consumer, Vector3f position, Vector3f normal) {
+		for (Quad quad : quads) {
+			float[] vertices = quad.vertices();
+			for (int vertex = 0; vertex < 4; vertex++) {
+				int offset = vertex * 8;
+				pose.pose().transformPosition(vertices[offset], vertices[offset + 1], vertices[offset + 2], position);
+				pose.transformNormal(vertices[offset + 5], vertices[offset + 6], vertices[offset + 7], normal);
+				consumer.addVertex(position.x, position.y, position.z, quad.colors()[vertex], vertices[offset + 3], vertices[offset + 4],
+						quad.overlay(), quad.lights()[vertex], normal.x, normal.y, normal.z);
 			}
-			buffers.endBatch(layer.renderType());
 		}
 	}
 

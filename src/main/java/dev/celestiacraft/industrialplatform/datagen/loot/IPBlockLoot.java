@@ -1,7 +1,7 @@
 package dev.celestiacraft.industrialplatform.datagen.loot;
 
 import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.block.Block;
@@ -12,8 +12,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class IPBlockLoot extends BlockLootSubProvider {
-	public IPBlockLoot(HolderLookup.Provider registries) {
-		super(Set.of(), FeatureFlags.REGISTRY.allFlags(), registries);
+	public IPBlockLoot(LootTableSubProvider.Context context) {
+		super(Set.of(), FeatureFlags.REGISTRY.allFlags(), context);
 	}
 
 	@Override

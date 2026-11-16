@@ -24,7 +24,7 @@ public class IndustrialPlatform {
 	}
 
 	public IndustrialPlatform(IEventBus bus, ModContainer container) {
-		container.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC, "nebula/" + MODID + "/common.toml");
+		container.registerConfig(ModConfig.Type.LOCAL, CommonConfig.SPEC, "nebula/" + MODID + "/common.toml");
 
 		bus.addListener(IPNetwork::register);
 
