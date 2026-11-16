@@ -14,8 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.CompletableFuture;
 
 public class IPBlockTagsProvider extends BlockTagsProvider {
-	public IPBlockTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> provider, net.neoforged.neoforge.common.data.ExistingFileHelper helper) {
-		super(output, provider, IndustrialPlatform.MODID, helper);
+	public IPBlockTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> provider) {
+		super(output, provider, IndustrialPlatform.MODID);
 	}
 
 	@Override

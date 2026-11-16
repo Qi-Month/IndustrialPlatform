@@ -10,6 +10,8 @@ import dev.celestiacraft.industrialplatform.common.block.state.properties.platfo
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
 import dev.celestiacraft.industrialplatform.event.PreviewPlayerTickHandler;
+import dev.celestiacraft.industrialplatform.network.IPNetwork;
+import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsSyncPacket;
 import dev.celestiacraft.industrialplatform.platform.PlatformGenerator;
 import dev.celestiacraft.industrialplatform.platform.PlatformLayout;
 import dev.celestiacraft.industrialplatform.platform.PlatformPalette;
@@ -24,15 +26,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -48,6 +50,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("ALL")
 public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPlatformController {
@@ -55,8 +58,8 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 	public static final EnumProperty<PlatformMode> PLATFORM_MODE = PlatformProperties.PLATFORM_MODE;
 	public static final BooleanProperty FLOATING = PlatformProperties.FLOATING;
 
-	public PlatformBlock() {
-		super(BlockBehaviour.Properties.ofFullCopy(Blocks.DEEPSLATE_BRICKS).noOcclusion());
+	public PlatformBlock(BlockBehaviour.Properties properties) {
+		super(properties);
 		registerDefaultState(stateDefinition.any()
 				.setValue(WATERLOGGED, false)
 				.setValue(FLOATING, false)
@@ -86,16 +89,16 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 	}
 
 	@Override
-	public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+	public BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
 		if (state.getValue(WATERLOGGED)) {
-			level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+			ticks.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
 		}
-		return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
+		return super.updateShape(state, level, ticks, pos, direction, neighborPos, neighborState, random);
 	}
 
 	@Override
 	public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-		return Block.box(0, 0, 0, 16, 12, 16);
+		return IPlatformController.SHAPE;
 	}
 
 	/**
@@ -123,51 +126,55 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 	 * </ul>
 	 */
 	@Override
-	protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack held, @NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
+	protected @NotNull InteractionResult useItemOn(@NotNull ItemStack held, @NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
 		// 只认主手, 不然主手拿着东西时会轮到副手把动作顶走
 		if (hand != InteractionHand.MAIN_HAND) {
-			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+			return InteractionResult.TRY_WITH_EMPTY_HAND;
 		}
 
 		if (player.isShiftKeyDown()) {
-			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+			return InteractionResult.TRY_WITH_EMPTY_HAND;
 		}
 
 		// 站立 + 调节器: 切换平台类型(原版那套按枚举声明顺序循环)
 		if (IPlatformController.isAdjuster(held)) {
 			if (level.isClientSide()) {
-				return ItemInteractionResult.SUCCESS;
+				return InteractionResult.SUCCESS;
 			}
 
-			level.setBlock(pos, state.cycle(PLATFORM_MODE), 3);
+			if (level instanceof ServerLevel serverLevel) {
+				PlatformMode next = state.cycle(PLATFORM_MODE).getValue(PLATFORM_MODE);
+				PlatformSettings stored = PlatformSettingsStorage.get(serverLevel).resolve(pos, state.getValue(PLATFORM_MODE));
+				applySettings(serverLevel, pos, next, stored.upFill(), stored.downFill(), stored.blueprintId());
+			}
 			player.swing(InteractionHand.MAIN_HAND, true);
 
-			return ItemInteractionResult.SUCCESS;
+			return InteractionResult.SUCCESS;
 		}
 
 		// 手持材料: 直接展开
 		if (!isMaterial(held)) {
-			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+			return InteractionResult.TRY_WITH_EMPTY_HAND;
 		}
 
 		if (level.isClientSide()) {
-			return ItemInteractionResult.SUCCESS;
+			return InteractionResult.SUCCESS;
 		}
 
 		if (!(level instanceof ServerLevel serverLevel)) {
-			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+			return InteractionResult.TRY_WITH_EMPTY_HAND;
 		}
 
 		PlatformMode mode = state.getValue(PLATFORM_MODE);
 		// 填充格数取这个方块存下来的设置(调节器 / 搭建界面写进去的那份), 跟边界预览用的是同一份数据
-		PlatformSettings settings = PlatformSettingsStorage.get(serverLevel).get(pos).orElseGet(() -> PlatformSettings.defaults(mode));
+		PlatformSettings settings = PlatformSettingsStorage.get(serverLevel).resolve(pos, mode);
 
 		buildPlatform(serverLevel, pos, mode, settings.upFill(), settings.downFill());
 
-		player.displayClientMessage(Component.translatable("message.industrial_platform.done").withStyle(ChatFormatting.GREEN), true);
+		player.sendOverlayMessage(Component.translatable("message.industrial_platform.done").withStyle(ChatFormatting.GREEN));
 		IPLogic.consumeItem(player, held, hand);
 
-		return ItemInteractionResult.SUCCESS;
+		return InteractionResult.SUCCESS;
 	}
 
 	private static InteractionResult openBuilder(Level level, BlockPos pos, Player player) {
@@ -184,6 +191,33 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 
 	public static boolean isMaterial(ItemStack stack) {
 		return ItemMatcher.matches(stack, CommonConfig.PLATFORM_MATERIAL) || stack.is(IPTags.Items.PLATFORM_MATERIAL);
+	}
+
+	/**
+	 * 服务端唯一的设置写入入口: 写存档 + 改方块状态 + 同步所有观察者。
+	 * 只有存档数据确实变化时才广播, 避免反复刷包。
+	 */
+	public static PlatformSettings applySettings(ServerLevel level, BlockPos pos, PlatformMode mode, int upFill, int downFill, @Nullable String blueprintId) {
+		int up = getUpFill(upFill);
+		int down = getDownFill(downFill);
+		PlatformSettings settings = new PlatformSettings(mode, up, down, blueprintId);
+		BlockPos immutable = pos.immutable();
+
+		BlockState state = level.getBlockState(immutable);
+		if (state.getBlock() instanceof PlatformBlock) {
+			BlockState updated = state
+					.setValue(PLATFORM_MODE, mode)
+					.setValue(FLOATING, up == 0 && down == 0);
+			if (updated != state) {
+				level.setBlock(immutable, updated, 3);
+			}
+		}
+
+		if (PlatformSettingsStorage.get(level).put(immutable, settings)) {
+			IPNetwork.sendToTracking(level, immutable, new PlatformSettingsSyncPacket(immutable, mode, up, down, blueprintId));
+		}
+
+		return settings;
 	}
 
 	/**
@@ -337,14 +371,13 @@ public class PlatformBlock extends Block implements SimpleWaterloggedBlock, IPla
 	}
 
 	@Override
-	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-		// 控制器被结构覆盖/挖掉时, 顺手清掉它保存的搭建设置
-		if (!state.is(newState.getBlock()) && level instanceof ServerLevel serverLevel) {
-			PlatformSettingsStorage.get(serverLevel).remove(pos);
-			PreviewPlayerTickHandler.onControllerRemoved(serverLevel, pos);
+	public void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean isMoving) {
+		if (!state.is(level.getBlockState(pos).getBlock())) {
+			PlatformSettingsStorage.get(level).remove(pos);
+			PreviewPlayerTickHandler.onControllerRemoved(level, pos);
 		}
 
-		super.onRemove(state, level, pos, newState, isMoving);
+		super.affectNeighborsAfterRemoval(state, level, pos, isMoving);
 	}
 
 	@Override

@@ -9,18 +9,18 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * 填充调节器: 站立时什么也不接管, 任何操作都保持原版逻辑
@@ -36,8 +36,8 @@ public class FillAdjusterItem extends Item {
 	private static final String DOWN_KEY = "DownFill";
 	private static final String TARGET_KEY = "FillTarget";
 
-	public FillAdjusterItem() {
-		super(new Item.Properties().stacksTo(1));
+	public FillAdjusterItem(Item.Properties properties) {
+		super(properties.stacksTo(1));
 	}
 
 	/**
@@ -84,7 +84,7 @@ public class FillAdjusterItem extends Item {
 			return Mth.clamp(CommonConfig.TOP_FILLING_DISTANCE.get(), PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
 		}
 
-		return Mth.clamp(tag.getInt(UP_KEY), PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
+		return Mth.clamp(tag.getIntOr(UP_KEY, 0), PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
 	}
 
 	public static int getDownFill(ItemStack stack) {
@@ -93,7 +93,7 @@ public class FillAdjusterItem extends Item {
 			return Mth.clamp(CommonConfig.BOTTOM_FILLING_DISTANCE.get(), PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
 		}
 
-		return Mth.clamp(tag.getInt(DOWN_KEY), PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
+		return Mth.clamp(tag.getIntOr(DOWN_KEY, 0), PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
 	}
 
 	public static void setFills(ItemStack stack, int upFill, int downFill) {
@@ -174,7 +174,7 @@ public class FillAdjusterItem extends Item {
 			return Target.UP;
 		}
 
-		return Target.byIndex(tag.getInt(TARGET_KEY));
+		return Target.byIndex(tag.getIntOr(TARGET_KEY, 0));
 	}
 
 	public static void setTarget(ItemStack stack, Target target) {
@@ -225,14 +225,14 @@ public class FillAdjusterItem extends Item {
 	 * 对空气右键: 只有潜行才归调节器管, 站立时交还原版
 	 */
 	@Override
-	public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
+	public @NotNull InteractionResult use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 
 		if (!player.isShiftKeyDown() || !toggleTarget(level, player, stack)) {
-			return InteractionResultHolder.pass(stack);
+			return InteractionResult.PASS;
 		}
 
-		return InteractionResultHolder.success(stack);
+		return InteractionResult.SUCCESS.heldItemTransformedTo(stack);
 	}
 
 	/**
@@ -263,27 +263,27 @@ public class FillAdjusterItem extends Item {
 
 		// 提示只在服务端发, 免得两边各显示一次
 		if (!level.isClientSide()) {
-			player.displayClientMessage(Component.translatable(
+			player.sendOverlayMessage(Component.translatable(
 					"message.industrial_platform.fill_values",
 					target.displayName(),
 					getSelectedFill(stack, target)
-			).withStyle(ChatFormatting.AQUA), true);
+			).withStyle(ChatFormatting.AQUA));
 		}
 
 		return true;
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, Item.@NotNull TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+	public void appendHoverText(@NotNull ItemStack stack, Item.@NotNull TooltipContext context, @NotNull TooltipDisplay display, @NotNull Consumer<Component> tooltip, @NotNull TooltipFlag flag) {
 		Target target = getTarget(stack);
 
-		tooltip.add(Component.translatable("tooltip.industrial_platform.fill_adjuster.up", getUpFill(stack))
+		tooltip.accept(Component.translatable("tooltip.industrial_platform.fill_adjuster.up", getUpFill(stack))
 				.withStyle(target == Target.UP ? ChatFormatting.AQUA : ChatFormatting.GRAY));
-		tooltip.add(Component.translatable("tooltip.industrial_platform.fill_adjuster.down", getDownFill(stack))
+		tooltip.accept(Component.translatable("tooltip.industrial_platform.fill_adjuster.down", getDownFill(stack))
 				.withStyle(target == Target.DOWN ? ChatFormatting.AQUA : ChatFormatting.GRAY));
-		tooltip.add(Component.translatable("tooltip.industrial_platform.fill_adjuster.target", target.displayName()).withStyle(ChatFormatting.YELLOW));
-		tooltip.add(Component.translatable("tooltip.industrial_platform.fill_adjuster.switch").withStyle(ChatFormatting.GRAY));
-		tooltip.add(Component.translatable("tooltip.industrial_platform.fill_adjuster.usage").withStyle(ChatFormatting.GRAY));
-		tooltip.add(Component.translatable("tooltip.industrial_platform.fill_adjuster.deploy").withStyle(ChatFormatting.GRAY));
+		tooltip.accept(Component.translatable("tooltip.industrial_platform.fill_adjuster.target", target.displayName()).withStyle(ChatFormatting.YELLOW));
+		tooltip.accept(Component.translatable("tooltip.industrial_platform.fill_adjuster.switch").withStyle(ChatFormatting.GRAY));
+		tooltip.accept(Component.translatable("tooltip.industrial_platform.fill_adjuster.usage").withStyle(ChatFormatting.GRAY));
+		tooltip.accept(Component.translatable("tooltip.industrial_platform.fill_adjuster.deploy").withStyle(ChatFormatting.GRAY));
 	}
 }

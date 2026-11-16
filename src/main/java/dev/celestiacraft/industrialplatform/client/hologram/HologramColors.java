@@ -1,7 +1,7 @@
 package dev.celestiacraft.industrialplatform.client.hologram;
 
 import dev.celestiacraft.industrialplatform.client.BoundaryRenderer;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 
 public class HologramColors {
@@ -12,11 +12,11 @@ public class HologramColors {
 	public static final int SHADE = 0x06101C;
 
 	public static int withAlpha(int rgb, float alpha) {
-		return FastColor.ARGB32.color(channel(alpha), FastColor.ARGB32.red(rgb), FastColor.ARGB32.green(rgb), FastColor.ARGB32.blue(rgb));
+		return ARGB.color(channel(alpha), ARGB.red(rgb), ARGB.green(rgb), ARGB.blue(rgb));
 	}
 
-	private static int rgb(float red, float green, float blue) {
-		return FastColor.ARGB32.color(0, channel(red), channel(green), channel(blue));
+	public static int rgb(float red, float green, float blue) {
+		return ARGB.color(0, channel(red), channel(green), channel(blue));
 	}
 
 	private static int channel(float value) {

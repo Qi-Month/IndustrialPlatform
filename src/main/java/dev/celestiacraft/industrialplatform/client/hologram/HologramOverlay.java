@@ -1,29 +1,30 @@
 package dev.celestiacraft.industrialplatform.client.hologram;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.api.PlatformSettings;
 import dev.celestiacraft.industrialplatform.client.preview.PlatformPreviewRenderer;
 import dev.celestiacraft.industrialplatform.client.preview.PreviewPanelStyle;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL11;
+import org.joml.Matrix3x2f;
 
 @EventBusSubscriber(modid = IndustrialPlatform.MODID, value = Dist.CLIENT)
 public class HologramOverlay {
-	public static final ResourceLocation ID = IndustrialPlatform.loadResource("platform_hologram");
+	public static final Identifier ID = IndustrialPlatform.loadResource("platform_hologram");
 
 	private static final int PANEL_WIDTH = 120;
 	private static final int PANEL_HEIGHT = 150;
@@ -52,21 +53,21 @@ public class HologramOverlay {
 
 	private static boolean panelOnRight = true;
 
-	public static void render(GuiGraphics graphics, DeltaTracker deltaTracker) {
-		BlockPos pos = HologramTarget.getPos();
-		if (pos == null || Minecraft.getInstance().screen != null || !HologramWorldRenderer.isAnchorVisible()) {
+	public static void render(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
+		HologramWorldRenderer.Frame frame = HologramWorldRenderer.getFrame();
+		if (frame == null || Minecraft.getInstance().screen != null) {
 			return;
 		}
 
-		float progress = HologramTarget.getProgress(deltaTracker.getGameTimeDeltaPartialTick(false));
+		float progress = frame.progress();
 		if (progress <= 0.0F) {
 			return;
 		}
 
 		int screenWidth = graphics.guiWidth();
 		int screenHeight = graphics.guiHeight();
-		float anchorX = HologramWorldRenderer.getAnchorX(screenWidth);
-		float anchorY = HologramWorldRenderer.getAnchorY(screenHeight);
+		float anchorX = frame.screenX(screenWidth);
+		float anchorY = frame.screenY(screenHeight);
 		int reach = LEADER_RISE + LEADER_RUN;
 		int footprint = reach + PANEL_WIDTH + SCREEN_MARGIN;
 		boolean fitsRight = anchorX + footprint <= screenWidth;
@@ -78,38 +79,59 @@ public class HologramOverlay {
 		int panelLeft = Mth.clamp(
 				panelOnRight ? Mth.floor(anchorX) + reach : Mth.floor(anchorX) - reach - PANEL_WIDTH,
 				SCREEN_MARGIN,
-				screenWidth - SCREEN_MARGIN - PANEL_WIDTH
+				Math.max(SCREEN_MARGIN, screenWidth - SCREEN_MARGIN - PANEL_WIDTH)
 		);
 		int panelTop = Mth.clamp(
 				Mth.floor(anchorY) - LEADER_RISE - PANEL_HEIGHT / 2,
 				SCREEN_MARGIN,
-				screenHeight - SCREEN_MARGIN - PANEL_HEIGHT
+				Math.max(SCREEN_MARGIN, screenHeight - SCREEN_MARGIN - PANEL_HEIGHT)
 		);
 		float lineY = Mth.clamp(anchorY - LEADER_RISE, panelTop + JOIN_INSET, panelTop + PANEL_HEIGHT - JOIN_INSET);
 		float joinX = panelOnRight ? panelLeft : panelLeft + PANEL_WIDTH;
 		float rise = Math.abs(anchorY - lineY);
 		float elbowX = panelOnRight ? Math.min(anchorX + rise, joinX) : Math.max(anchorX - rise, joinX);
 
-		graphics.flush();
-		clearDepth();
-
 		drawLeader(graphics, anchorX, anchorY, elbowX, lineY, joinX, Mth.clamp(progress / LEADER_PHASE, 0.0F, 1.0F));
 
 		float panelProgress = (progress - LEADER_PHASE) / (1.0F - LEADER_PHASE);
 		if (panelProgress > 0.0F) {
-			PlatformSettings settings = HologramTarget.getSettings();
-			PREVIEW.update(pos, settings.mode(), settings.upFill(), settings.downFill());
+			PlatformSettings settings = frame.settings();
+			PREVIEW.update(frame.pos(), settings.mode(), settings.upFill(), settings.downFill());
 			drawPanel(graphics, panelLeft, panelTop, lineY, panelProgress);
 		}
-
-		graphics.flush();
-		clearDepth();
 	}
 
-	private static void drawLeader(GuiGraphics graphics, float anchorX, float anchorY, float elbowX, float lineY, float joinX, float progress) {
-		VertexConsumer consumer = graphics.bufferSource().getBuffer(RenderType.guiOverlay());
-		Matrix4f matrix = graphics.pose().last().pose();
+	private static void drawLeader(GuiGraphicsExtractor graphics, float anchorX, float anchorY, float elbowX, float lineY, float joinX, float progress) {
+		Matrix3x2f matrix = new Matrix3x2f(graphics.pose());
+		int left = Mth.floor(Math.min(anchorX, Math.min(elbowX, joinX)) - ANCHOR_GLOW_RADIUS);
+		int top = Mth.floor(Math.min(anchorY, lineY) - ANCHOR_GLOW_RADIUS);
+		int right = Mth.ceil(Math.max(anchorX, Math.max(elbowX, joinX)) + ANCHOR_GLOW_RADIUS);
+		int bottom = Mth.ceil(Math.max(anchorY, lineY) + ANCHOR_GLOW_RADIUS);
+		ScreenRectangle scissor = graphics.peekScissorStack();
+		ScreenRectangle bounds = new ScreenRectangle(left, top, right - left, bottom - top).transformMaxBounds(matrix);
+		graphics.submitGuiElementRenderState(new LeaderState(matrix, anchorX, anchorY, elbowX, lineY, joinX, progress, scissor,
+				scissor == null ? bounds : scissor.intersection(bounds)));
+	}
 
+	private record LeaderState(Matrix3x2f pose, float anchorX, float anchorY, float elbowX, float lineY, float joinX, float progress,
+			ScreenRectangle scissorArea, ScreenRectangle bounds) implements GuiElementRenderState {
+		@Override
+		public RenderPipeline pipeline() {
+			return RenderPipelines.GUI;
+		}
+
+		@Override
+		public TextureSetup textureSetup() {
+			return TextureSetup.noTexture();
+		}
+
+		@Override
+		public void buildVertices(VertexConsumer consumer) {
+			buildLeader(consumer, pose, anchorX, anchorY, elbowX, lineY, joinX, progress);
+		}
+	}
+
+	private static void buildLeader(VertexConsumer consumer, Matrix3x2f matrix, float anchorX, float anchorY, float elbowX, float lineY, float joinX, float progress) {
 		float diagonal = Mth.sqrt(Mth.square(elbowX - anchorX) + Mth.square(lineY - anchorY));
 		float run = Math.abs(joinX - elbowX);
 		float drawn = (diagonal + run) * progress;
@@ -130,42 +152,35 @@ public class HologramOverlay {
 		}
 	}
 
-	private static void drawPanel(GuiGraphics graphics, int left, int top, float lineY, float progress) {
+	private static void drawPanel(GuiGraphicsExtractor graphics, int left, int top, float lineY, float progress) {
 		int right = left + PANEL_WIDTH;
 		int bottom = top + PANEL_HEIGHT;
 		int clipTop = Mth.floor(Mth.lerp(progress, lineY, top));
 		int clipBottom = Mth.ceil(Mth.lerp(progress, lineY, bottom));
 
-		graphics.flush();
 		graphics.enableScissor(left, clipTop, right, clipBottom);
 		PREVIEW.render(graphics, left, top);
 		drawSweep(graphics, left, top, right);
-		graphics.flush();
 		graphics.disableScissor();
-
-		if (progress < 1.0F) {
-			graphics.fill(RenderType.guiOverlay(), left, clipTop, right, clipTop + 1, CORE_COLOR);
-			graphics.fill(RenderType.guiOverlay(), left, clipBottom - 1, right, clipBottom, CORE_COLOR);
-		}
 	}
 
-	private static void drawSweep(GuiGraphics graphics, int left, int top, int right) {
+	private static void drawSweep(GuiGraphicsExtractor graphics, int left, int top, int right) {
 		float phase = (Util.getMillis() % SWEEP_PERIOD_MS) / (float) SWEEP_PERIOD_MS;
 		int sweepBottom = top + Mth.floor(phase * (PANEL_HEIGHT + SWEEP_HEIGHT));
-		graphics.fillGradient(RenderType.guiOverlay(), left, sweepBottom - SWEEP_HEIGHT, right, sweepBottom, SWEEP_FADE, SWEEP_COLOR, 0);
+		graphics.fillGradient(left, sweepBottom - SWEEP_HEIGHT, right, sweepBottom, SWEEP_FADE, SWEEP_COLOR);
 	}
 
-	private static void drawGlowLine(VertexConsumer consumer, Matrix4f matrix, float fromX, float fromY, float toX, float toY) {
+	private static void drawGlowLine(VertexConsumer consumer, Matrix3x2f matrix, float fromX, float fromY, float toX, float toY) {
 		drawLine(consumer, matrix, fromX, fromY, toX, toY, GLOW_WIDTH, GLOW_COLOR);
 		drawLine(consumer, matrix, fromX, fromY, toX, toY, CORE_WIDTH, CORE_COLOR);
 	}
 
-	private static void drawGlowPath(VertexConsumer consumer, Matrix4f matrix, float startX, float startY, float elbowX, float elbowY, float endX, float endY) {
+	private static void drawGlowPath(VertexConsumer consumer, Matrix3x2f matrix, float startX, float startY, float elbowX, float elbowY, float endX, float endY) {
 		drawPath(consumer, matrix, startX, startY, elbowX, elbowY, endX, endY, GLOW_WIDTH, GLOW_COLOR);
 		drawPath(consumer, matrix, startX, startY, elbowX, elbowY, endX, endY, CORE_WIDTH, CORE_COLOR);
 	}
 
-	private static void drawPath(VertexConsumer consumer, Matrix4f matrix, float startX, float startY, float elbowX, float elbowY, float endX, float endY, float width, int color) {
+	private static void drawPath(VertexConsumer consumer, Matrix3x2f matrix, float startX, float startY, float elbowX, float elbowY, float endX, float endY, float width, int color) {
 		float firstLength = Mth.sqrt(Mth.square(elbowX - startX) + Mth.square(elbowY - startY));
 		float secondLength = Mth.sqrt(Mth.square(endX - elbowX) + Mth.square(endY - elbowY));
 		if (firstLength <= 0.0F || secondLength <= 0.0F) {
@@ -200,7 +215,7 @@ public class HologramOverlay {
 				color);
 	}
 
-	private static void drawLine(VertexConsumer consumer, Matrix4f matrix, float fromX, float fromY, float toX, float toY, float width, int color) {
+	private static void drawLine(VertexConsumer consumer, Matrix3x2f matrix, float fromX, float fromY, float toX, float toY, float width, int color) {
 		float dx = toX - fromX;
 		float dy = toY - fromY;
 		float length = Mth.sqrt(dx * dx + dy * dy);
@@ -218,19 +233,24 @@ public class HologramOverlay {
 				color);
 	}
 
-	private static void drawDiamond(VertexConsumer consumer, Matrix4f matrix, float x, float y, float radius, int color) {
+	private static void drawDiamond(VertexConsumer consumer, Matrix3x2f matrix, float x, float y, float radius, int color) {
 		drawQuad(consumer, matrix, x, y - radius, x - radius, y, x, y + radius, x + radius, y, color);
 	}
 
-	private static void drawQuad(VertexConsumer consumer, Matrix4f matrix, float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3, int color) {
-		consumer.addVertex(matrix, x0, y0, 0.0F).setColor(color);
-		consumer.addVertex(matrix, x1, y1, 0.0F).setColor(color);
-		consumer.addVertex(matrix, x2, y2, 0.0F).setColor(color);
-		consumer.addVertex(matrix, x3, y3, 0.0F).setColor(color);
+	private static void drawQuad(VertexConsumer consumer, Matrix3x2f matrix, float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3, int color) {
+		vertex(consumer, matrix, x0, y0, color);
+		vertex(consumer, matrix, x1, y1, color);
+		vertex(consumer, matrix, x2, y2, color);
+		vertex(consumer, matrix, x3, y3, color);
 	}
 
-	private static void clearDepth() {
-		RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+	private static void vertex(VertexConsumer consumer, Matrix3x2f matrix, float x, float y, int color) {
+		consumer.addVertex(matrix.m00() * x + matrix.m10() * y + matrix.m20(), matrix.m01() * x + matrix.m11() * y + matrix.m21(), 0.0F).setColor(color);
+	}
+
+	public static void clear() {
+		PREVIEW.close();
+		panelOnRight = true;
 	}
 
 	@SubscribeEvent

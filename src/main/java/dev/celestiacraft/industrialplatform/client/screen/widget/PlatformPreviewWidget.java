@@ -4,7 +4,8 @@ import dev.celestiacraft.industrialplatform.client.preview.PlatformPreviewRender
 import dev.celestiacraft.industrialplatform.client.preview.PreviewPanelStyle;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -28,12 +29,12 @@ public class PlatformPreviewWidget extends AbstractWidget implements AutoCloseab
 	}
 
 	@Override
-	protected void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+	protected void extractWidgetRenderState(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
 		renderer.render(graphics, getX(), getY());
 	}
 
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
 		return false;
 	}
 

@@ -1,20 +1,35 @@
 package dev.celestiacraft.industrialplatform.data;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.api.PlatformSettings;
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.storage.DimensionDataStorage;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.world.level.saveddata.SavedDataType;
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.storage.SavedDataStorage;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * 把每个平台方块上次选好的搭建设置存进存档, 退出界面/重进游戏后仍然保留
@@ -23,29 +38,86 @@ public class PlatformSettingsStorage extends SavedData {
 	private static final String DATA_NAME = "industrial_platform_settings";
 	private static final String ENTRY_KEY = "Settings";
 	private static final String POS_KEY = "Pos";
-	private static final String MODE_KEY = "Mode";
-	private static final String UP_KEY = "UpFill";
-	private static final String DOWN_KEY = "DownFill";
-	private static final String BLUEPRINT_KEY = "Blueprint";
+	public static final Codec<PlatformSettingsStorage> CODEC = CompoundTag.CODEC.comapFlatMap(PlatformSettingsStorage::decode, PlatformSettingsStorage::toNBT);
+	public static final SavedDataType<PlatformSettingsStorage> TYPE = new SavedDataType<>(
+			Identifier.fromNamespaceAndPath(IndustrialPlatform.MODID, DATA_NAME), PlatformSettingsStorage::new, CODEC
+	);
 
 	private final Map<BlockPos, PlatformSettings> settings = new HashMap<>();
 
 	public static PlatformSettingsStorage get(ServerLevel level) {
-		DimensionDataStorage storage = level.getDataStorage();
+		SavedDataStorage storage = level.getDataStorage();
+		PlatformSettingsStorage loaded = storage.get(TYPE);
+		if (loaded != null) {
+			return loaded;
+		}
 
-		return storage.computeIfAbsent(
-				new SavedData.Factory<>(PlatformSettingsStorage::new, PlatformSettingsStorage::load),
-				DATA_NAME
-		);
+		Path root = level.getServer().getWorldPath(LevelResource.ROOT);
+		Path dataFolder = DimensionType.getStorageFolder(level.dimension(), root).resolve("data");
+		Path currentFile = TYPE.id().withSuffix(".dat").resolveAgainst(dataFolder);
+		if (!Files.notExists(currentFile)) {
+			throw new IllegalStateException("Cannot load existing platform settings: " + currentFile);
+		}
+
+		for (Path legacyFile : legacyFiles(level, root, dataFolder)) {
+			if (Files.notExists(legacyFile)) {
+				continue;
+			}
+
+			try {
+				CompoundTag rootTag = storage.readTagFromDisk(legacyFile, null, SharedConstants.getCurrentVersion().dataVersion().version());
+				CompoundTag dataTag = rootTag.getCompound("data").orElseThrow(() -> new IllegalArgumentException("Missing compound data tag"));
+				PlatformSettingsStorage migrated = CODEC.parse(NbtOps.INSTANCE, dataTag).getOrThrow();
+				if (!Files.notExists(currentFile)) {
+					throw new IllegalStateException("Platform settings appeared during migration: " + currentFile);
+				}
+				storage.set(TYPE, migrated);
+				return migrated;
+			} catch (IOException | RuntimeException exception) {
+				throw new IllegalStateException("Cannot migrate platform settings: " + legacyFile, exception);
+			}
+		}
+
+		return storage.computeIfAbsent(TYPE);
+	}
+
+	private static Set<Path> legacyFiles(ServerLevel level, Path root, Path dataFolder) {
+		Set<Path> files = new LinkedHashSet<>();
+		files.add(dataFolder.resolve(DATA_NAME + ".dat"));
+		Path oldDimensionFolder;
+		if (level.dimension().equals(Level.OVERWORLD)) {
+			oldDimensionFolder = root;
+		} else if (level.dimension().equals(Level.NETHER)) {
+			oldDimensionFolder = root.resolve("DIM-1");
+		} else if (level.dimension().equals(Level.END)) {
+			oldDimensionFolder = root.resolve("DIM1");
+		} else {
+			oldDimensionFolder = DimensionType.getStorageFolder(level.dimension(), root);
+		}
+		files.add(oldDimensionFolder.resolve("data").resolve(DATA_NAME + ".dat"));
+		return files;
 	}
 
 	public Optional<PlatformSettings> get(BlockPos pos) {
 		return Optional.ofNullable(settings.get(pos));
 	}
 
-	public void put(BlockPos pos, PlatformSettings value) {
-		settings.put(pos.immutable(), value);
+	public PlatformSettings resolve(BlockPos pos, PlatformMode mode) {
+		PlatformSettings stored = settings.get(pos);
+		PlatformSettings resolved = PlatformSettings.resolve(stored, mode);
+		if (stored != null && resolved != stored) {
+			put(pos, resolved);
+		}
+		return resolved;
+	}
+
+	public boolean put(BlockPos pos, PlatformSettings value) {
+		BlockPos immutable = pos.immutable();
+		if (value.equals(settings.put(immutable, value))) {
+			return false;
+		}
 		setDirty();
+		return true;
 	}
 
 	public void remove(BlockPos pos) {
@@ -54,46 +126,43 @@ public class PlatformSettingsStorage extends SavedData {
 		}
 	}
 
-	@Override
-	public @NotNull CompoundTag save(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider provider) {
+	public CompoundTag toNBT() {
+		CompoundTag tag = new CompoundTag();
 		ListTag list = new ListTag();
-
 		settings.forEach((pos, value) -> {
-			CompoundTag entry = new CompoundTag();
+			CompoundTag entry = value.toNBT();
 			entry.putIntArray(POS_KEY, new int[] {pos.getX(), pos.getY(), pos.getZ()});
-			entry.putInt(MODE_KEY, value.mode().ordinal());
-			entry.putInt(UP_KEY, value.upFill());
-			entry.putInt(DOWN_KEY, value.downFill());
-			entry.putString(BLUEPRINT_KEY, value.blueprintId() == null ? "" : value.blueprintId());
 			list.add(entry);
 		});
-
 		tag.put(ENTRY_KEY, list);
 		return tag;
 	}
 
-	private static PlatformSettingsStorage load(CompoundTag tag, HolderLookup.Provider provider) {
-		PlatformSettingsStorage data = new PlatformSettingsStorage();
-		ListTag list = tag.getList(ENTRY_KEY, Tag.TAG_COMPOUND);
-
-		for (int index = 0; index < list.size(); index++) {
-			CompoundTag entry = list.getCompound(index);
-			int[] pos = entry.getIntArray(POS_KEY);
-			if (pos.length != 3) {
-				continue;
+	public static DataResult<PlatformSettingsStorage> decode(CompoundTag tag) {
+		try {
+			ListTag list = tag.getList(ENTRY_KEY).orElseThrow(() -> new IllegalArgumentException("Missing Settings list"));
+			PlatformSettingsStorage data = new PlatformSettingsStorage();
+			for (Tag element : list) {
+				if (!(element instanceof CompoundTag entry)) {
+					throw new IllegalArgumentException("Settings entry must be a compound");
+				}
+				int[] pos = entry.getIntArray(POS_KEY).orElseThrow(() -> new IllegalArgumentException("Settings Pos must be an int array"));
+				if (pos.length != 3) {
+					throw new IllegalArgumentException("Settings Pos must contain three integers");
+				}
+				Tag mode = entry.get("Mode");
+				Tag upFill = entry.get("UpFill");
+				Tag downFill = entry.get("DownFill");
+				Tag blueprint = entry.get("Blueprint");
+				if (mode != null && !(mode instanceof IntTag) || upFill != null && !(upFill instanceof IntTag)
+						|| downFill != null && !(downFill instanceof IntTag) || blueprint != null && !(blueprint instanceof StringTag)) {
+					throw new IllegalArgumentException("Invalid platform settings fields");
+				}
+				data.settings.put(new BlockPos(pos[0], pos[1], pos[2]), PlatformSettings.fromNBT(entry));
 			}
-
-			data.settings.put(
-					new BlockPos(pos[0], pos[1], pos[2]),
-					new PlatformSettings(
-							PlatformMode.byIndex(entry.getInt(MODE_KEY)),
-							entry.getInt(UP_KEY),
-							entry.getInt(DOWN_KEY),
-							entry.getString(BLUEPRINT_KEY)
-					)
-			);
+			return DataResult.success(data);
+		} catch (RuntimeException exception) {
+			return DataResult.error(() -> "Invalid platform settings: " + exception.getMessage());
 		}
-
-		return data;
 	}
 }

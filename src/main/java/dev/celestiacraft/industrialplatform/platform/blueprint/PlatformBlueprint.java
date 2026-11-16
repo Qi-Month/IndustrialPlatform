@@ -3,11 +3,15 @@ package dev.celestiacraft.industrialplatform.platform.blueprint;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Vec3i;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -49,33 +53,37 @@ public class PlatformBlueprint {
 	 * 解析结构 NBT. 不认识的方块会被记进 missingBlocks 并跳过, 不会让整份蓝图读不出来
 	 */
 	public static PlatformBlueprint parse(String id, CompoundTag tag, HolderGetter<Block> blockLookup) {
-		ListTag sizeTag = tag.getList("size", Tag.TAG_INT);
-		Vec3i size = new Vec3i(sizeTag.getInt(0), sizeTag.getInt(1), sizeTag.getInt(2));
+		Vec3i size = readVector(requireList(tag, "size"), "size");
+		if (size.getX() <= 0 || size.getY() <= 0 || size.getZ() <= 0) {
+			throw new IllegalArgumentException("Blueprint size must be positive");
+		}
 
 		List<BlockState> palette = new ArrayList<>();
 		List<String> missing = new ArrayList<>();
 		ListTag paletteTag = readPalette(tag);
-
-		for (int index = 0; index < paletteTag.size(); index++) {
-			CompoundTag entry = paletteTag.getCompound(index);
-			String name = entry.getString("Name");
-			BlockState state = NbtUtils.readBlockState(blockLookup, entry);
-
-			if (state.isAir() && !name.isEmpty() && !name.equals("minecraft:air")) {
+		for (Tag element : paletteTag) {
+			CompoundTag entry = requireCompound(element, "palette");
+			String name = entry.getStringOr("Name", "");
+			Identifier blockId = Identifier.tryParse(name);
+			if (blockId == null) {
+				throw new IllegalArgumentException("Invalid palette block identifier: " + name);
+			}
+			if (blockLookup.get(ResourceKey.create(Registries.BLOCK, blockId)).isEmpty()) {
 				missing.add(name);
 			}
-
-			palette.add(state);
+			palette.add(NbtUtils.readBlockState(blockLookup, entry));
 		}
 
 		List<PlacedBlock> blocks = new ArrayList<>();
 		Map<Item, Integer> materials = new LinkedHashMap<>();
-		ListTag blockTags = tag.getList("blocks", Tag.TAG_COMPOUND);
-
-		for (int index = 0; index < blockTags.size(); index++) {
-			CompoundTag entry = blockTags.getCompound(index);
-			int stateIndex = entry.getInt("state");
-
+		ListTag blockTags = requireList(tag, "blocks");
+		for (Tag element : blockTags) {
+			CompoundTag entry = requireCompound(element, "blocks");
+			Vec3i coordinates = readVector(requireList(entry, "pos"), "pos");
+			if (!(entry.get("state") instanceof IntTag stateTag)) {
+				throw new IllegalArgumentException("Block state must be an integer");
+			}
+			int stateIndex = stateTag.intValue();
 			if (stateIndex < 0 || stateIndex >= palette.size()) {
 				continue;
 			}
@@ -84,10 +92,7 @@ public class PlatformBlueprint {
 			if (state.isAir() || state.is(Blocks.STRUCTURE_VOID)) {
 				continue;
 			}
-
-			ListTag posTag = entry.getList("pos", Tag.TAG_INT);
-			BlockPos pos = new BlockPos(posTag.getInt(0), posTag.getInt(1), posTag.getInt(2));
-
+			BlockPos pos = new BlockPos(coordinates.getX(), coordinates.getY(), coordinates.getZ());
 			blocks.add(new PlacedBlock(pos, state));
 			addMaterial(materials, state);
 		}
@@ -96,15 +101,31 @@ public class PlatformBlueprint {
 	}
 
 	private static ListTag readPalette(CompoundTag tag) {
-		if (tag.contains("palettes", Tag.TAG_LIST)) {
-			ListTag palettes = tag.getList("palettes", Tag.TAG_LIST);
+		if (tag.contains("palettes")) {
+			ListTag palettes = requireList(tag, "palettes");
 			if (!palettes.isEmpty()) {
-				// 多调色板是原版的随机变体, 这里取第一套
-				return palettes.getList(0);
+				return palettes.getList(0).orElseThrow(() -> new IllegalArgumentException("Palette variant must be a list"));
 			}
 		}
+		return requireList(tag, "palette");
+	}
 
-		return tag.getList("palette", Tag.TAG_COMPOUND);
+	private static ListTag requireList(CompoundTag tag, String key) {
+		return tag.getList(key).orElseThrow(() -> new IllegalArgumentException("Missing or invalid list: " + key));
+	}
+
+	private static CompoundTag requireCompound(Tag tag, String key) {
+		if (tag instanceof CompoundTag compound) {
+			return compound;
+		}
+		throw new IllegalArgumentException(key + " entry must be a compound");
+	}
+
+	private static Vec3i readVector(ListTag tag, String key) {
+		if (tag.size() != 3 || !(tag.get(0) instanceof IntTag x) || !(tag.get(1) instanceof IntTag y) || !(tag.get(2) instanceof IntTag z)) {
+			throw new IllegalArgumentException(key + " must contain three integers");
+		}
+		return new Vec3i(x.intValue(), y.intValue(), z.intValue());
 	}
 
 	private static void addMaterial(Map<Item, Integer> materials, BlockState state) {

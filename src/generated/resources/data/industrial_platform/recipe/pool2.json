@@ -1,0 +1,23 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "create"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": "#c:dyes",
+    "B": "#c:deepslate",
+    "C": "#c:stones"
+  },
+  "pattern": [
+    "A A",
+    "B B",
+    "BCB"
+  ],
+  "result": {
+    "id": "industrial_platform:fluid_pool"
+  }
+}

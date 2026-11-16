@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": "#c:stone",
+    "B": "#c:rods/wooden"
+  },
+  "pattern": [
+    " A",
+    "B "
+  ],
+  "result": {
+    "id": "industrial_platform:fill_adjuster"
+  }
+}

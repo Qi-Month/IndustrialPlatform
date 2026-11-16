@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "create"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "industrial_platform:pool2"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "stone": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#c:stones"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "stone"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "industrial_platform:pool2"
+    ]
+  }
+}

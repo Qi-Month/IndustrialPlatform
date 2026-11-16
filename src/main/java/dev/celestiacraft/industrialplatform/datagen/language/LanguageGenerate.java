@@ -12,6 +12,7 @@ public class LanguageGenerate {
 	public static final List<List<String>> TRANSLATION_LIST = new ArrayList<>();
 
 	public static void register() {
+		TRANSLATION_LIST.clear();
 		ItemLanguage.addLang();
 		BlockLanguage.addLang();
 		OtherLanguage.addLang();

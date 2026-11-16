@@ -1,121 +1,121 @@
 package dev.celestiacraft.industrialplatform.client.preview;
 
-import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexBuffer;
+import com.mojang.blaze3d.vertex.QuadInstance;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.util.RandomSource;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import org.joml.Matrix4f;
+import net.minecraft.client.model.geom.builders.UVPair;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
+import net.minecraft.client.renderer.block.ModelBlockRenderer;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.util.ARGB;
+import net.neoforged.neoforge.client.model.quad.BakedNormals;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
 public class PlatformPreviewModel implements AutoCloseable {
-	private static final Map<RenderType, ByteBufferBuilder> BUFFERS = new HashMap<>();
+	private static int resourceGeneration;
 
-	private record Layer(RenderType renderType, VertexBuffer buffer) {
+	public record Layer(RenderType renderType, List<Quad> quads) {
 	}
 
-	private final List<Layer> layers = new ArrayList<>();
+	private record Quad(float[] vertices, int[] colors, int[] lights, int overlay) {
+	}
+
+	private List<Layer> layers = List.of();
+
+	public static int resourceGeneration() {
+		return resourceGeneration;
+	}
+
+	public static void invalidateResources() {
+		resourceGeneration++;
+		PreviewStructures.clear();
+	}
 
 	public void rebuild(PreviewBlockView view) {
-		close();
-
-		BlockRenderDispatcher dispatcher = Minecraft.getInstance().getBlockRenderer();
-		RandomSource random = RandomSource.create();
-		PoseStack poseStack = new PoseStack();
-		Map<RenderType, BufferBuilder> used = new HashMap<>();
-
-		try {
-			bake(view, dispatcher, random, poseStack, used);
-		} catch (RuntimeException exception) {
-			BUFFERS.values().forEach(ByteBufferBuilder::close);
-			BUFFERS.clear();
-			throw exception;
-		}
-
-		BufferUploader.reset();
-
-		for (RenderType renderType : RenderType.chunkBufferLayers()) {
-			BufferBuilder builder = used.get(renderType);
-			if (builder == null) {
-				continue;
+		Minecraft minecraft = Minecraft.getInstance();
+		BlockStateModelSet models = minecraft.getModelManager().getBlockStateModelSet();
+		ModelBlockRenderer renderer = new ModelBlockRenderer(true, true, minecraft.getBlockColors());
+		Map<ChunkSectionLayer, List<Quad>> used = new EnumMap<>(ChunkSectionLayer.class);
+		view.forEachVisibleBlock((pos, state) -> renderer.tesselateBlock(
+				(x, y, z, quad, instance) -> used.computeIfAbsent(quad.materialInfo().layer(), ignored -> new ArrayList<>()).add(copyQuad(x, y, z, quad, instance)),
+				pos.getX(), pos.getY(), pos.getZ(), view, pos, state, models.get(state), state.getSeed(pos)));
+		List<Layer> result = new ArrayList<>(used.size());
+		for (ChunkSectionLayer layer : ChunkSectionLayer.values()) {
+			List<Quad> quads = used.get(layer);
+			if (quads != null) {
+				RenderType renderType = switch (layer) {
+					case SOLID -> RenderTypes.solidMovingBlock();
+					case CUTOUT -> RenderTypes.cutoutMovingBlock();
+					case TRANSLUCENT -> RenderTypes.translucentMovingBlock();
+				};
+				result.add(new Layer(renderType, List.copyOf(quads)));
 			}
-
-			MeshData mesh = builder.build();
-			if (mesh == null) {
-				continue;
-			}
-
-			VertexBuffer buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
-			buffer.bind();
-			buffer.upload(mesh);
-			layers.add(new Layer(renderType, buffer));
 		}
-
-		VertexBuffer.unbind();
+		layers = List.copyOf(result);
 	}
 
-	private static void bake(PreviewBlockView view, BlockRenderDispatcher dispatcher, RandomSource random, PoseStack poseStack, Map<RenderType, BufferBuilder> used) {
-		view.forEachVisibleBlock((pos, state) -> {
-			BakedModel model = dispatcher.getBlockModel(state);
-			ModelData modelData = model.getModelData(view, pos, state, ModelData.EMPTY);
-
-			poseStack.pushPose();
-			poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
-
-			for (RenderType renderType : model.getRenderTypes(state, random, modelData)) {
-				dispatcher.renderBatched(state, pos, view, poseStack, beginLayer(renderType, used), true, random, modelData, renderType);
-			}
-
-			poseStack.popPose();
-		});
+	private static Quad copyQuad(float x, float y, float z, BakedQuad quad, QuadInstance instance) {
+		float[] vertices = new float[32];
+		int[] colors = new int[4];
+		int[] lights = new int[4];
+		Vector3fc faceNormal = quad.direction().getUnitVec3f();
+		for (int vertex = 0; vertex < 4; vertex++) {
+			int offset = vertex * 8;
+			Vector3fc position = quad.position(vertex);
+			vertices[offset] = position.x() + x;
+			vertices[offset + 1] = position.y() + y;
+			vertices[offset + 2] = position.z() + z;
+			vertices[offset + 3] = UVPair.unpackU(quad.packedUV(vertex));
+			vertices[offset + 4] = UVPair.unpackV(quad.packedUV(vertex));
+			int normal = quad.bakedNormals().normal(vertex);
+			boolean specified = !BakedNormals.isUnspecified(normal);
+			vertices[offset + 5] = specified ? BakedNormals.unpackX(normal) : faceNormal.x();
+			vertices[offset + 6] = specified ? BakedNormals.unpackY(normal) : faceNormal.y();
+			vertices[offset + 7] = specified ? BakedNormals.unpackZ(normal) : faceNormal.z();
+			colors[vertex] = ARGB.multiply(instance.getColor(vertex), quad.bakedColors().color(vertex));
+			lights[vertex] = instance.getLightCoordsWithEmission(vertex, quad.materialInfo().lightEmission());
+		}
+		return new Quad(vertices, colors, lights, instance.overlayCoords());
 	}
 
-	private static BufferBuilder beginLayer(RenderType renderType, Map<RenderType, BufferBuilder> used) {
-		return used.computeIfAbsent(renderType, type -> {
-			ByteBufferBuilder bytes = BUFFERS.computeIfAbsent(type, ignored -> new ByteBufferBuilder(type.bufferSize()));
-			return new BufferBuilder(bytes, type.mode(), type.format());
-		});
+	public List<Layer> snapshot() {
+		return layers;
 	}
 
 	public boolean isEmpty() {
 		return layers.isEmpty();
 	}
 
-	public void draw(Matrix4f modelView, Matrix4f projection) {
-		if (layers.isEmpty()) {
-			return;
-		}
-
-		RenderTarget mainTarget = Minecraft.getInstance().getMainRenderTarget();
-		BufferUploader.reset();
-
+	public static void draw(List<Layer> layers, PoseStack.Pose pose, MultiBufferSource.BufferSource buffers, Vector3f position, Vector3f normal) {
 		for (Layer layer : layers) {
-			layer.renderType().setupRenderState();
-			mainTarget.bindWrite(false);
-			layer.buffer().bind();
-			layer.buffer().drawWithShader(modelView, projection, RenderSystem.getShader());
-			layer.renderType().clearRenderState();
+			VertexConsumer consumer = buffers.getBuffer(layer.renderType());
+			for (Quad quad : layer.quads()) {
+				float[] vertices = quad.vertices();
+				for (int vertex = 0; vertex < 4; vertex++) {
+					int offset = vertex * 8;
+					pose.pose().transformPosition(vertices[offset], vertices[offset + 1], vertices[offset + 2], position);
+					pose.transformNormal(vertices[offset + 5], vertices[offset + 6], vertices[offset + 7], normal);
+					consumer.addVertex(position.x, position.y, position.z, quad.colors()[vertex], vertices[offset + 3], vertices[offset + 4],
+							quad.overlay(), quad.lights()[vertex], normal.x, normal.y, normal.z);
+				}
+			}
+			buffers.endBatch(layer.renderType());
 		}
-
-		VertexBuffer.unbind();
 	}
 
 	@Override
 	public void close() {
-		layers.forEach(layer -> layer.buffer().close());
-		layers.clear();
+		layers = List.of();
 	}
 }

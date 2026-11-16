@@ -13,7 +13,7 @@ public class IPItems {
 	public static final DeferredItem<Item> FILL_ADJUSTER;
 
 	static {
-		FILL_ADJUSTER = ITEMS.register("fill_adjuster", FillAdjusterItem::new);
+		FILL_ADJUSTER = ITEMS.registerItem("fill_adjuster", FillAdjusterItem::new);
 	}
 
 	public static void register(IEventBus bus) {

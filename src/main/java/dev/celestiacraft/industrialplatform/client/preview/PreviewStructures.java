@@ -16,8 +16,6 @@ import net.minecraft.nbt.NbtIo;
 import net.neoforged.fml.ModList;
 
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -35,14 +33,20 @@ public class PreviewStructures {
 		return CACHE.computeIfAbsent(mode, PreviewStructures::load);
 	}
 
+	public static void clear() {
+		CACHE.clear();
+	}
+
 	private static PlatformBlueprint load(PlatformMode mode) {
 		String id = mode.structureId();
-		Path path = ModList.get().getModFileById(IndustrialPlatform.MODID).getFile()
-				.findResource(DATA_FOLDER, IndustrialPlatform.MODID, STRUCTURE_FOLDER, id + EXTENSION);
+		String path = DATA_FOLDER + "/" + IndustrialPlatform.MODID + "/" + STRUCTURE_FOLDER + "/" + id + EXTENSION;
 
-		try (InputStream stream = Files.newInputStream(path)) {
+		try (InputStream stream = ModList.get().getModFileById(IndustrialPlatform.MODID).getFile().getContents().openFile(path)) {
+			if (stream == null) {
+				return generate(mode);
+			}
 			CompoundTag tag = NbtIo.readCompressed(stream, NbtAccounter.unlimitedHeap());
-			return PlatformBlueprint.parse(id, tag, BuiltInRegistries.BLOCK.asLookup());
+			return PlatformBlueprint.parse(id, tag, BuiltInRegistries.BLOCK);
 		} catch (Exception exception) {
 			IndustrialPlatform.LOGGER.warn("Failed to read built-in structure {}, previewing the generated layout instead", id, exception);
 			return generate(mode);

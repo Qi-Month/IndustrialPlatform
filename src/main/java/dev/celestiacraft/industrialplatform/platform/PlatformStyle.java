@@ -1,6 +1,7 @@
 package dev.celestiacraft.industrialplatform.platform;
 
 import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
+import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +26,7 @@ public enum PlatformStyle implements StringRepresentable {
 
 	public static PlatformStyle byIndex(int index) {
 		PlatformStyle[] values = values();
-		return values[net.minecraft.util.Mth.clamp(index, 0, values.length - 1)];
+		return values[Mth.clamp(index, 0, values.length - 1)];
 	}
 
 	public static PlatformStyle of(PlatformMode mode) {

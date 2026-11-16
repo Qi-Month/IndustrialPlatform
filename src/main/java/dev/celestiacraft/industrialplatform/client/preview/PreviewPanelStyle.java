@@ -1,12 +1,12 @@
 package dev.celestiacraft.industrialplatform.client.preview;
 
 import dev.celestiacraft.industrialplatform.client.hologram.HologramColors;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public enum PreviewPanelStyle {
 	GUI {
 		@Override
-		public void drawFrame(GuiGraphics graphics, int left, int top, int right, int bottom, int viewLeft, int viewTop, int viewRight, int viewBottom) {
+		public void drawFrame(GuiGraphicsExtractor graphics, int left, int top, int right, int bottom, int viewLeft, int viewTop, int viewRight, int viewBottom) {
 			graphics.fill(left, top, right, bottom, GUI_BORDER);
 			graphics.fill(left + 1, top + 1, right - 1, bottom - 1, GUI_PANEL);
 			graphics.fill(left + 1, top + 1, right - 2, top + 2, GUI_HIGHLIGHT);
@@ -26,13 +26,13 @@ public enum PreviewPanelStyle {
 	},
 	HOLOGRAM {
 		@Override
-		public void drawFrame(GuiGraphics graphics, int left, int top, int right, int bottom, int viewLeft, int viewTop, int viewRight, int viewBottom) {
+		public void drawFrame(GuiGraphicsExtractor graphics, int left, int top, int right, int bottom, int viewLeft, int viewTop, int viewRight, int viewBottom) {
 			graphics.fill(left, top, right, bottom, HOLOGRAM_PANEL);
-			graphics.renderOutline(left, top, right - left, bottom - top, HOLOGRAM_EDGE);
+			graphics.outline(left, top, right - left, bottom - top, HOLOGRAM_EDGE);
 			drawCorners(graphics, left, top, right, bottom);
 
 			graphics.fill(viewLeft, viewTop, viewRight, viewBottom, HOLOGRAM_VIEW);
-			graphics.renderOutline(viewLeft - 1, viewTop - 1, viewRight - viewLeft + 2, viewBottom - viewTop + 2, HOLOGRAM_EDGE);
+			graphics.outline(viewLeft - 1, viewTop - 1, viewRight - viewLeft + 2, viewBottom - viewTop + 2, HOLOGRAM_EDGE);
 		}
 
 		@Override
@@ -57,11 +57,11 @@ public enum PreviewPanelStyle {
 	private static final int CORNER_LENGTH = 8;
 	private static final int CORNER_THICKNESS = 2;
 
-	public abstract void drawFrame(GuiGraphics graphics, int left, int top, int right, int bottom, int viewLeft, int viewTop, int viewRight, int viewBottom);
+	public abstract void drawFrame(GuiGraphicsExtractor graphics, int left, int top, int right, int bottom, int viewLeft, int viewTop, int viewRight, int viewBottom);
 
 	public abstract int textColor();
 
-	private static void drawCorners(GuiGraphics graphics, int left, int top, int right, int bottom) {
+	private static void drawCorners(GuiGraphicsExtractor graphics, int left, int top, int right, int bottom) {
 		graphics.fill(left, top, left + CORNER_LENGTH, top + CORNER_THICKNESS, HOLOGRAM_CORNER);
 		graphics.fill(left, top + CORNER_THICKNESS, left + CORNER_THICKNESS, top + CORNER_LENGTH, HOLOGRAM_CORNER);
 		graphics.fill(right - CORNER_LENGTH, top, right, top + CORNER_THICKNESS, HOLOGRAM_CORNER);

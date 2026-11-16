@@ -1,0 +1,37 @@
+{
+  "values": [
+    "minecraft:stone",
+    "minecraft:granite",
+    "minecraft:diorite",
+    "minecraft:andesite",
+    "minecraft:cobblestone",
+    "minecraft:cobbled_deepslate",
+    "minecraft:tuff",
+    "minecraft:calcite",
+    "minecraft:dirt",
+    "minecraft:grass_block",
+    "minecraft:gravel",
+    "minecraft:end_stone",
+    "minecraft:deepslate_tiles",
+    "#c:sands",
+    "#c:sandstone/blocks",
+    "#c:netherracks",
+    "#industrial_platform:concretes",
+    {
+      "id": "#c:ores",
+      "required": false
+    },
+    {
+      "id": "#c:stones",
+      "required": false
+    },
+    {
+      "id": "#c:cobblestones",
+      "required": false
+    },
+    {
+      "id": "#c:deepslate",
+      "required": false
+    }
+  ]
+}

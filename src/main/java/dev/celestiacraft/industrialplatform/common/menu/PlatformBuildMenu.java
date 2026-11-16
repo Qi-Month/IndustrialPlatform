@@ -11,11 +11,9 @@ import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
 import dev.celestiacraft.industrialplatform.common.register.IPMenus;
 import dev.celestiacraft.industrialplatform.config.CommonConfig;
 import dev.celestiacraft.industrialplatform.data.PlatformSettingsStorage;
-import dev.celestiacraft.industrialplatform.network.IPNetwork;
-import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsSyncPacket;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -69,7 +67,7 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 	private final Container material = new SimpleContainer(1);
 	private final ContainerData data;
 
-	public PlatformBuildMenu(int windowId, Inventory playerInventory, FriendlyByteBuf extraData) {
+	public PlatformBuildMenu(int windowId, Inventory playerInventory, RegistryFriendlyByteBuf extraData) {
 		this(windowId, playerInventory, extraData.readBlockPos());
 	}
 
@@ -81,9 +79,8 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 		level = player.level();
 		data = new SimpleContainerData(DATA_SIZE);
 
-		// 上次在这个方块上选好的设置优先, 没有就用方块状态与配置默认值
-		PlatformSettings stored = readStoredSettings();
-		PlatformSettings initial = stored != null ? stored : PlatformSettings.defaults(readModeFromLevel());
+		// 以当前方块模式为准, 存档那份只补填充格数与蓝图, 不把旧模式写回去
+		PlatformSettings initial = readInitialSettings();
 
 		data.set(DATA_UP_FILL, clampFill(initial.upFill()));
 		data.set(DATA_DOWN_FILL, clampFill(initial.downFill()));
@@ -94,41 +91,24 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 		addDataSlots(data);
 
 		updateBuildState();
-		persist();
 	}
 
-	private PlatformSettings readStoredSettings() {
+	private PlatformSettings readInitialSettings() {
+		PlatformMode mode = readModeFromLevel();
 		if (level instanceof ServerLevel serverLevel) {
-			return PlatformSettingsStorage.get(serverLevel).get(platformPos).orElse(null);
+			return PlatformSettingsStorage.get(serverLevel).resolve(platformPos, mode);
 		}
-		return null;
+		return PlatformSettings.defaults(mode);
 	}
 
 	/**
 	 * 把当前设置写回方块状态与存档, 并把上下填充格数同步给客户端, 界面外的预览要用
 	 */
 	private void persist() {
-		if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) {
-			return;
+		if (level instanceof ServerLevel serverLevel) {
+			String blueprint = PlatformSettingsStorage.get(serverLevel).get(platformPos).map(PlatformSettings::blueprintId).orElse(null);
+			PlatformBlock.applySettings(serverLevel, platformPos, getMode(), getUpFill(), getDownFill(), blueprint);
 		}
-
-		PlatformMode mode = getMode();
-		int upFill = getUpFill();
-		int downFill = getDownFill();
-
-		BlockState state = serverLevel.getBlockState(platformPos);
-		if (state.getBlock() instanceof PlatformBlock) {
-			BlockState updated = state
-					.setValue(PlatformBlock.PLATFORM_MODE, mode)
-					.setValue(PlatformBlock.FLOATING, upFill == 0 && downFill == 0);
-
-			if (updated != state) {
-				serverLevel.setBlock(platformPos, updated, 3);
-			}
-		}
-
-		PlatformSettingsStorage.get(serverLevel).put(platformPos, new PlatformSettings(mode, upFill, downFill, null));
-		IPNetwork.sendToPlayer(serverPlayer, new PlatformSettingsSyncPacket(platformPos, mode, upFill, downFill, null));
 	}
 
 	private void addPlayerInventory(Inventory playerInventory) {
@@ -247,7 +227,7 @@ public class PlatformBuildMenu extends AbstractContainerMenu implements IPlatfor
 	}
 
 	private void sendMessage(ServerPlayer player, Component message) {
-		player.displayClientMessage(message, true);
+		player.sendOverlayMessage(message);
 	}
 
 	/**

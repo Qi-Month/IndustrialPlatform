@@ -4,18 +4,28 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
-import net.neoforged.neoforge.items.wrapper.InvWrapper;
-import net.neoforged.neoforge.items.wrapper.RangedWrapper;
+import net.neoforged.neoforge.transfer.CombinedResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.PlayerInventoryWrapper;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 材料来源: 玩家主背包 + 控制器周围一小圈容器.
@@ -26,30 +36,51 @@ public class MaterialScanner {
 	public static final int CONTAINER_RADIUS = 4;
 	public static final int CONTAINER_UP = 1;
 	public static final int CONTAINER_DOWN = 1;
-	/**
-	 * 只动主背包与快捷栏
-	 */
-	private static final int PLAYER_SLOTS = 36;
 
-	public static List<IItemHandler> sources(ServerLevel level, BlockPos controllerPos, Player player) {
-		List<IItemHandler> sources = new ArrayList<>();
-		sources.add(new RangedWrapper(new InvWrapper(player.getInventory()), 0, PLAYER_SLOTS));
+	public record Receipt(Map<ItemResource, Integer> resources) {
+		public Receipt {
+			resources = Collections.unmodifiableMap(new LinkedHashMap<>(resources));
+			resources.forEach((resource, amount) -> {
+				if (resource.isEmpty() || amount <= 0) {
+					throw new IllegalArgumentException("Receipt must contain non-empty resources with positive amounts");
+				}
+			});
+		}
+	}
+
+	public static List<ResourceHandler<ItemResource>> sources(ServerLevel level, BlockPos controllerPos, Player player) {
+		List<ResourceHandler<ItemResource>> sources = new ArrayList<>();
+		ResourceHandler<ItemResource> inventory = PlayerInventoryWrapper.of(player).getMainSlots();
+		sources.add(inventory);
+		Set<ResourceHandler<ItemResource>> handlers = Collections.newSetFromMap(new IdentityHashMap<>());
+		handlers.add(inventory);
+		Set<BlockEntity> blockEntities = Collections.newSetFromMap(new IdentityHashMap<>());
+		Set<BlockPos> visited = new HashSet<>();
 
 		BlockPos min = controllerPos.offset(-CONTAINER_RADIUS, -CONTAINER_DOWN, -CONTAINER_RADIUS);
 		BlockPos max = controllerPos.offset(CONTAINER_RADIUS, CONTAINER_UP, CONTAINER_RADIUS);
-
 		for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
-			BlockEntity blockEntity = level.getBlockEntity(pos);
-			if (blockEntity == null || pos.equals(controllerPos)) {
+			if (pos.equals(controllerPos) || visited.contains(pos) || !level.hasChunkAt(pos)) {
 				continue;
 			}
-
-			IItemHandler handler = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, null);
-			if (handler != null) {
+			BlockEntity blockEntity = level.getBlockEntity(pos);
+			if (blockEntity == null || !blockEntities.add(blockEntity)) {
+				continue;
+			}
+			BlockState state = blockEntity.getBlockState();
+			BlockPos otherChestPos = state.getBlock() instanceof ChestBlock && state.getValue(ChestBlock.TYPE) != ChestType.SINGLE
+					? pos.relative(ChestBlock.getConnectedDirection(state)) : null;
+			if (otherChestPos != null && !level.hasChunkAt(otherChestPos)) {
+				continue;
+			}
+			ResourceHandler<ItemResource> handler = level.getCapability(Capabilities.Item.BLOCK, pos, null);
+			if (handler != null && handlers.add(handler)) {
 				sources.add(handler);
+				if (otherChestPos != null && handler instanceof CombinedResourceHandler<?>) {
+					visited.add(otherChestPos);
+				}
 			}
 		}
-
 		return sources;
 	}
 
@@ -58,37 +89,18 @@ public class MaterialScanner {
 	 */
 	public static Map<Item, Integer> count(ServerLevel level, BlockPos controllerPos, Player player, Map<Item, Integer> needed) {
 		Map<Item, Integer> available = new LinkedHashMap<>();
-		List<IItemHandler> sources = sources(level, controllerPos, player);
-
-		needed.keySet().forEach((item) -> {
-			int total = 0;
-			for (IItemHandler handler : sources) {
-				total += countItem(handler, item);
-			}
-			available.put(item, total);
-		});
-
+		List<ResourceHandler<ItemResource>> sources = sources(level, controllerPos, player);
+		needed.keySet().forEach(item -> available.put(item, countItem(sources, item, Integer.MAX_VALUE)));
 		return available;
 	}
 
 	public static boolean canAfford(ServerLevel level, BlockPos controllerPos, Player player, Map<Item, Integer> needed) {
-		List<IItemHandler> sources = sources(level, controllerPos, player);
-
+		List<ResourceHandler<ItemResource>> sources = sources(level, controllerPos, player);
 		for (Map.Entry<Item, Integer> entry : needed.entrySet()) {
-			int total = 0;
-
-			for (IItemHandler handler : sources) {
-				total += countItem(handler, entry.getKey());
-				if (total >= entry.getValue()) {
-					break;
-				}
-			}
-
-			if (total < entry.getValue()) {
+			if (entry.getValue() < 0 || countItem(sources, entry.getKey(), entry.getValue()) < entry.getValue()) {
 				return false;
 			}
 		}
-
 		return true;
 	}
 
@@ -98,91 +110,96 @@ public class MaterialScanner {
 	public static Map<Item, Integer> missing(ServerLevel level, BlockPos controllerPos, Player player, Map<Item, Integer> needed) {
 		Map<Item, Integer> available = count(level, controllerPos, player, needed);
 		Map<Item, Integer> missing = new LinkedHashMap<>();
-
 		needed.forEach((item, amount) -> {
 			int have = available.getOrDefault(item, 0);
 			if (have < amount) {
 				missing.put(item, amount - have);
 			}
 		});
-
 		return missing;
 	}
 
-	public static boolean consume(ServerLevel level, BlockPos controllerPos, Player player, Map<Item, Integer> needed) {
-		List<IItemHandler> sources = sources(level, controllerPos, player);
-		Map<Item, Integer> taken = new LinkedHashMap<>();
+	public static @Nullable Receipt consume(ServerLevel level, BlockPos controllerPos, Player player, Map<Item, Integer> needed) {
+		return consume(sources(level, controllerPos, player), needed);
+	}
 
-		for (Map.Entry<Item, Integer> entry : needed.entrySet()) {
-			int remaining = entry.getValue();
-
-			for (IItemHandler handler : sources) {
-				remaining -= extract(handler, entry.getKey(), remaining);
-				if (remaining <= 0) {
-					break;
+	public static @Nullable Receipt consume(List<ResourceHandler<ItemResource>> sources, Map<Item, Integer> needed) {
+		Map<ItemResource, Integer> taken = new LinkedHashMap<>();
+		try (Transaction transaction = Transaction.openRoot()) {
+			for (Map.Entry<Item, Integer> entry : needed.entrySet()) {
+				int remaining = entry.getValue();
+				if (remaining < 0) {
+					return null;
+				}
+				for (ResourceHandler<ItemResource> handler : sources) {
+					remaining -= extract(handler, entry.getKey(), remaining, taken, transaction);
+					if (remaining == 0) {
+						break;
+					}
+				}
+				if (remaining > 0) {
+					return null;
 				}
 			}
-
-			if (remaining > 0) {
-				taken.put(entry.getKey(), entry.getValue() - remaining);
-				refund(sources, taken);
-				return false;
-			}
-
-			taken.put(entry.getKey(), entry.getValue());
+			Receipt receipt = new Receipt(taken);
+			transaction.commit();
+			return receipt;
 		}
-
-		return true;
 	}
 
 	/**
 	 * 把材料还回去(放置失败时用)
 	 */
-	public static void give(ServerLevel level, BlockPos controllerPos, Player player, Map<Item, Integer> items) {
-		refund(sources(level, controllerPos, player), items);
+	public static void give(ServerLevel level, BlockPos controllerPos, Player player, Receipt receipt) {
+		List<ResourceHandler<ItemResource>> sources = sources(level, controllerPos, player);
+		PlayerInventoryWrapper inventory = PlayerInventoryWrapper.of(player);
+		try (Transaction transaction = Transaction.openRoot()) {
+			for (Map.Entry<ItemResource, Integer> entry : receipt.resources().entrySet()) {
+				int remaining = entry.getValue();
+				for (ResourceHandler<ItemResource> handler : sources) {
+					remaining -= ResourceHandlerUtil.insertStacking(handler, entry.getKey(), remaining, transaction);
+					if (remaining == 0) {
+						break;
+					}
+				}
+				if (remaining > 0) {
+					inventory.placeItemBackInInventory(entry.getKey(), remaining, transaction);
+				}
+			}
+			transaction.commit();
+		}
 	}
 
-	private static int countItem(IItemHandler handler, Item item) {
+	private static int countItem(List<ResourceHandler<ItemResource>> sources, Item item, int limit) {
 		int total = 0;
-
-		for (int slot = 0; slot < handler.getSlots(); slot++) {
-			ItemStack stack = handler.getStackInSlot(slot);
-			if (stack.is(item)) {
-				total += stack.getCount();
+		for (ResourceHandler<ItemResource> handler : sources) {
+			int size = handler.size();
+			for (int slot = 0; slot < size && total < limit; slot++) {
+				if (handler.getResource(slot).is(item)) {
+					total += Math.min(handler.getAmountAsInt(slot), limit - total);
+				}
+			}
+			if (total >= limit) {
+				break;
 			}
 		}
-
 		return total;
 	}
 
-	private static int extract(IItemHandler handler, Item item, int amount) {
-		int taken = 0;
-
-		for (int slot = 0; slot < handler.getSlots() && taken < amount; slot++) {
-			ItemStack stack = handler.getStackInSlot(slot);
-			if (!stack.is(item)) {
+	private static int extract(ResourceHandler<ItemResource> handler, Item item, int amount, Map<ItemResource, Integer> taken, TransactionContext transaction) {
+		int extracted = 0;
+		int size = handler.size();
+		for (int slot = 0; slot < size && extracted < amount; slot++) {
+			ItemResource resource = handler.getResource(slot);
+			if (resource.isEmpty() || !resource.is(item)) {
 				continue;
 			}
-
-			ItemStack extracted = handler.extractItem(slot, amount - taken, false);
-			taken += extracted.getCount();
-		}
-
-		return taken;
-	}
-
-	private static void refund(List<IItemHandler> sources, Map<Item, Integer> taken) {
-		taken.forEach((item, amount) -> {
-			int remaining = amount;
-
-			for (IItemHandler handler : sources) {
-				if (remaining <= 0) {
-					return;
-				}
-
-				ItemStack leftover = ItemHandlerHelper.insertItemStacked(handler, new ItemStack(item, remaining), false);
-				remaining = leftover.getCount();
+			int count = handler.extract(slot, resource, amount - extracted, transaction);
+			if (count > 0) {
+				taken.merge(resource, count, Integer::sum);
+				extracted += count;
 			}
-		});
+		}
+		return extracted;
 	}
 }

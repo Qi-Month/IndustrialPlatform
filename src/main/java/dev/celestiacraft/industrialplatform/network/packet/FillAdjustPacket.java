@@ -2,6 +2,7 @@ package dev.celestiacraft.industrialplatform.network.packet;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
+import dev.celestiacraft.industrialplatform.event.PreviewPlayerTickHandler;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -36,6 +37,7 @@ public record FillAdjustPacket(int upFill, int downFill) implements CustomPacket
 			ItemStack stack = player.getMainHandItem();
 			if (stack.getItem() instanceof FillAdjusterItem) {
 				FillAdjusterItem.setFills(stack, packet.upFill(), packet.downFill());
+				PreviewPlayerTickHandler.onFillAdjusted(player);
 			}
 		});
 	}

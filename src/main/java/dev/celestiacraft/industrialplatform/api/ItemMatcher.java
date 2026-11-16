@@ -1,7 +1,7 @@
 package dev.celestiacraft.industrialplatform.api;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -33,7 +33,7 @@ public class ItemMatcher {
 			}
 		}
 		for (int index = 0; index < rules.itemIds().size(); index++) {
-			if (stack.is(BuiltInRegistries.ITEM.get(rules.itemIds().get(index)))) {
+			if (stack.is(BuiltInRegistries.ITEM.getValue(rules.itemIds().get(index)))) {
 				return true;
 			}
 		}
@@ -43,10 +43,10 @@ public class ItemMatcher {
 	private static MatchRules parse(List<? extends String> entries) {
 		List<? extends String> snapshot = List.copyOf(entries);
 		List<TagKey<Item>> tags = new ArrayList<>();
-		List<ResourceLocation> itemIds = new ArrayList<>();
+		List<Identifier> itemIds = new ArrayList<>();
 		for (String entry : snapshot) {
 			boolean isTag = entry.startsWith("#");
-			ResourceLocation location = ResourceLocation.tryParse(isTag ? entry.substring(1) : entry);
+			Identifier location = Identifier.tryParse(isTag ? entry.substring(1) : entry);
 			if (location == null) {
 				continue;
 			}
@@ -59,6 +59,6 @@ public class ItemMatcher {
 		return new MatchRules(snapshot, List.copyOf(tags), List.copyOf(itemIds));
 	}
 
-	private record MatchRules(List<? extends String> entries, List<TagKey<Item>> tags, List<ResourceLocation> itemIds) {
+	private record MatchRules(List<? extends String> entries, List<TagKey<Item>> tags, List<Identifier> itemIds) {
 	}
 }

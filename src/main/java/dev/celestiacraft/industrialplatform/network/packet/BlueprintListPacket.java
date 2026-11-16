@@ -6,9 +6,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -49,7 +48,7 @@ public record BlueprintListPacket(List<ClientBlueprintData.Entry> entries, Strin
 			buf.writeVarInt(entry.materials().size());
 
 			entry.materials().forEach((item, count) -> {
-				buf.writeResourceLocation(BuiltInRegistries.ITEM.getKey(item));
+				buf.writeIdentifier(BuiltInRegistries.ITEM.getKey(item));
 				buf.writeVarInt(count);
 			});
 		}
@@ -76,9 +75,9 @@ public record BlueprintListPacket(List<ClientBlueprintData.Entry> entries, Strin
 			Map<Item, Integer> materials = new LinkedHashMap<>();
 
 			for (int material = 0; material < materialCount; material++) {
-				ResourceLocation itemId = buf.readResourceLocation();
+				Identifier itemId = buf.readIdentifier();
 				int amount = buf.readVarInt();
-				materials.put(BuiltInRegistries.ITEM.get(itemId), amount);
+				materials.put(BuiltInRegistries.ITEM.getValue(itemId), amount);
 			}
 
 			entries.add(new ClientBlueprintData.Entry(id, sizeX, sizeY, sizeZ, blockCount, materials));
@@ -95,10 +94,4 @@ public record BlueprintListPacket(List<ClientBlueprintData.Entry> entries, Strin
 		return new BlueprintListPacket(entries, selectedId, unavailable);
 	}
 
-	public static void handle(BlueprintListPacket packet, IPayloadContext context) {
-		context.enqueueWork(() -> {
-			ClientBlueprintData.set(packet.entries());
-			ClientBlueprintData.setSelected(packet.selectedId());
-		});
-	}
 }

@@ -22,6 +22,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -51,12 +52,29 @@ public class PreviewPlayerTickHandler {
 		PreviewState preview = PLAYERS.computeIfAbsent(player.getUUID(), key -> new PreviewState());
 
 		if (IPlatformController.isHoldingAdjuster(player)) {
-			scanNearby(player.serverLevel(), player, preview);
+			scanNearby(player.level(), player, preview);
 			return;
 		}
 
 		// 没拿调节器时, 只把"正看着的那个平台方块"的设置同步过去, Jade 要显示填充格数
-		syncLookedAt(player.serverLevel(), player, preview);
+		syncLookedAt(player.level(), player, preview);
+	}
+
+	public static void onFillAdjusted(ServerPlayer player) {
+		if (!(player.getMainHandItem().getItem() instanceof FillAdjusterItem)) {
+			return;
+		}
+		ServerLevel level = player.level();
+		PreviewState preview = PLAYERS.computeIfAbsent(player.getUUID(), key -> new PreviewState());
+		if (!preview.hasFreshScan(level, player.position(), level.getGameTime())
+				|| preview.nearest != null && (!level.hasChunkAt(preview.nearest)
+						|| !(level.getBlockState(preview.nearest).getBlock() instanceof PlatformBlock))) {
+			scanNearby(level, player, preview);
+			return;
+		}
+		if (preview.nearest != null) {
+			pushHeldFills(level, player, PlatformSettingsStorage.get(level), preview.nearest, preview.synced);
+		}
 	}
 
 	private static boolean isPreviewBlock(Block block) {
@@ -64,11 +82,15 @@ public class PreviewPlayerTickHandler {
 	}
 
 	private static void scanNearby(ServerLevel level, ServerPlayer player, PreviewState preview) {
+		preview.scanLevel = level;
+		preview.scanPosition = player.position();
+		preview.scanTick = level.getGameTime();
+		preview.nearest = null;
 		BlockPos center = player.blockPosition();
 		int minX = center.getX() - SCAN_RADIUS;
 		int maxX = center.getX() + SCAN_RADIUS;
-		int minY = Math.max(center.getY() - SCAN_RADIUS, level.getMinBuildHeight());
-		int maxY = Math.min(center.getY() + SCAN_RADIUS, level.getMaxBuildHeight() - 1);
+		int minY = Math.max(center.getY() - SCAN_RADIUS, level.getMinY());
+		int maxY = Math.min(center.getY() + SCAN_RADIUS, level.getMaxY());
 		int minZ = center.getZ() - SCAN_RADIUS;
 		int maxZ = center.getZ() + SCAN_RADIUS;
 		if (minY > maxY) {
@@ -81,7 +103,7 @@ public class PreviewPlayerTickHandler {
 		int maxChunkZ = SectionPos.blockToSectionCoord(maxZ);
 		int minSectionY = SectionPos.blockToSectionCoord(minY);
 		int maxSectionY = SectionPos.blockToSectionCoord(maxY);
-		int levelMinSection = level.getMinSection();
+		int levelMinSection = level.getMinSectionY();
 		ServerChunkCache chunks = level.getChunkSource();
 		PlatformSettingsStorage storage = null;
 		BlockPos.MutableBlockPos pos = preview.pos;
@@ -145,8 +167,9 @@ public class PreviewPlayerTickHandler {
 			}
 		}
 
+		preview.nearest = nearest;
 		if (nearest != null && storage != null) {
-			pushHeldFills(level, player, storage, nearest, preview);
+			pushHeldFills(level, player, storage, nearest, preview.synced);
 		}
 	}
 
@@ -155,7 +178,7 @@ public class PreviewPlayerTickHandler {
 	 * <p>
 	 * 只有数值真的变了才写存档, 免得每 5 tick 就把存档标脏一次
 	 */
-	private static void pushHeldFills(ServerLevel level, ServerPlayer player, PlatformSettingsStorage storage, BlockPos pos, PreviewState preview) {
+	private static void pushHeldFills(ServerLevel level, ServerPlayer player, PlatformSettingsStorage storage, BlockPos pos, Map<BlockPos, PlatformSettings> synced) {
 		ItemStack held = FillAdjusterItem.findHeld(player);
 		if (held.isEmpty()) {
 			return;
@@ -167,18 +190,15 @@ public class PreviewPlayerTickHandler {
 			return;
 		}
 
-		PlatformSettings current = storage.get(pos).orElse(null);
-		PlatformSettings updated = (current == null ? PlatformSettings.defaults(state.getValue(PlatformBlock.PLATFORM_MODE)) : current)
-				.withFill(FillAdjusterItem.getUpFill(held), FillAdjusterItem.getDownFill(held));
+		PlatformSettings current = storage.resolve(pos, state.getValue(PlatformBlock.PLATFORM_MODE));
+		PlatformSettings updated = current.withFill(FillAdjusterItem.getUpFill(held), FillAdjusterItem.getDownFill(held));
 
 		if (updated.equals(current)) {
 			return;
 		}
 
-		storage.put(pos, updated);
-
-		// 顺手把这个新值同步给客户端, 区块边界预览立刻就能跟上
-		syncSettings(storage, player, pos, state, preview.synced);
+		PlatformBlock.applySettings(level, pos, updated.mode(), updated.upFill(), updated.downFill(), updated.blueprintId());
+		synced.put(pos.immutable(), updated);
 	}
 
 	/**
@@ -202,9 +222,11 @@ public class PreviewPlayerTickHandler {
 	}
 
 	private static void syncSettings(PlatformSettingsStorage storage, ServerPlayer player, BlockPos pos, BlockState state, Map<BlockPos, PlatformSettings> synced) {
-		PlatformSettings settings = storage.get(pos).orElse(null);
-		if (settings == null && state.getBlock() instanceof PlatformBlock) {
-			settings = PlatformSettings.defaults(state.getValue(PlatformBlock.PLATFORM_MODE));
+		PlatformSettings settings;
+		if (state.getBlock() instanceof PlatformBlock) {
+			settings = storage.resolve(pos, state.getValue(PlatformBlock.PLATFORM_MODE));
+		} else {
+			settings = storage.get(pos).orElse(null);
 		}
 		if (settings == null || settings.equals(synced.get(pos))) {
 			return;
@@ -243,5 +265,14 @@ public class PreviewPlayerTickHandler {
 	private static class PreviewState {
 		private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 		private final Map<BlockPos, PlatformSettings> synced = new HashMap<>();
+		private ServerLevel scanLevel;
+		private Vec3 scanPosition;
+		private long scanTick;
+		private BlockPos nearest;
+
+		private boolean hasFreshScan(ServerLevel level, Vec3 position, long tick) {
+			long elapsed = tick - scanTick;
+			return scanLevel == level && position.equals(scanPosition) && elapsed >= 0 && elapsed < SCAN_INTERVAL_TICKS;
+		}
 	}
 }

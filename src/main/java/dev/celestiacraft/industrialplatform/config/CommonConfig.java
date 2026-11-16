@@ -38,9 +38,11 @@ public class CommonConfig {
 
 	static {
 		BUILDER.comment("All settings below will only take effect after restarting the server or client.")
+				.translation("industrial_platform.configuration.general")
 				.push("general");
 
 		PLATFORM_MATERIAL = BUILDER
+				.translation("industrial_platform.configuration.platform_material")
 				.comment("Items that can be put into the material slot of the platform builder screen.")
 				.comment("Use #namespace:path for tags, namespace:path for item IDs.")
 				.comment("The item tag industrial_platform:platform_material is accepted as well.")
@@ -53,6 +55,7 @@ public class CommonConfig {
 				);
 
 		ADJUSTER = BUILDER
+				.translation("industrial_platform.configuration.adjuster")
 				.comment("Extra items treated as a platform adjuster: right-click a platform block to cycle its type,")
 				.comment("hold one to display the block boundary preview.")
 				.comment("The fill adjuster (industrial_platform:fill_adjuster) is built in and needs no entry here.")
@@ -66,6 +69,7 @@ public class CommonConfig {
 				);
 
 		TOP_FILLING_DISTANCE = BUILDER
+				.translation("industrial_platform.configuration.top_filling_distance")
 				.comment("Default value of the fill-up field shown in the platform builder screen.")
 				.comment("The player can still change it in the screen, range: " + PlatformProperties.MIN_FILL_DISTANCE + " ~ " + PlatformProperties.MAX_FILL_DISTANCE)
 				.comment("type: int")
@@ -73,6 +77,7 @@ public class CommonConfig {
 				.defineInRange("top_filling_distance", 5, PlatformProperties.MIN_FILL_DISTANCE, PlatformProperties.MAX_FILL_DISTANCE);
 
 		BOTTOM_FILLING_DISTANCE = BUILDER
+				.translation("industrial_platform.configuration.bottom_filling_distance")
 				.comment("Default value of the fill-down field shown in the platform builder screen.")
 				.comment("The player can still change it in the screen, range: " + PlatformProperties.MIN_FILL_DISTANCE + " ~ " + PlatformProperties.MAX_FILL_DISTANCE)
 				.comment("type: int")
@@ -81,33 +86,42 @@ public class CommonConfig {
 
 		BUILDER.pop();
 
-		BUILDER.comment("Platform footprint limits, measured in chunks per side.").push("platform");
+		BUILDER.comment("Platform footprint limits, measured in chunks per side.")
+				.translation("industrial_platform.configuration.platform")
+				.push("platform");
 
 		MIN_PLATFORM_CHUNKS = BUILDER
+				.translation("industrial_platform.configuration.min_platform_chunks")
 				.comment("Smallest platform footprint, in chunks per side.")
 				.comment("default: 1")
 				.defineInRange("min_platform_chunks", 1, 1, 8);
 
 		MAX_PLATFORM_CHUNKS = BUILDER
+				.translation("industrial_platform.configuration.max_platform_chunks")
 				.comment("Largest platform footprint, in chunks per side.")
 				.comment("default: 4 (64x64 blocks)")
 				.defineInRange("max_platform_chunks", 4, 1, 8);
 
 		BUILDER.pop();
 
-		BUILDER.comment("How many items a single platform build consumes.").push("cost");
+		BUILDER.comment("How many items a single platform build consumes.")
+				.translation("industrial_platform.configuration.cost")
+				.push("cost");
 
 		LIGHT_PLATFORM_COST = BUILDER
+				.translation("industrial_platform.configuration.light_platform_cost")
 				.comment("Cost of a standard platform (1x1 chunk).")
 				.comment("default: 1")
 				.defineInRange("light_platform_cost", 1, 0, 4096);
 
 		HEAVY_PLATFORM_COST = BUILDER
+				.translation("industrial_platform.configuration.heavy_platform_cost")
 				.comment("Cost of a heavy platform (3x3 chunks).")
 				.comment("default: 1, raise it if a heavy platform should cost more")
 				.defineInRange("heavy_platform_cost", 1, 0, 4096);
 
 		FILLING_LAYER_COST = BUILDER
+				.translation("industrial_platform.configuration.filling_layer_cost")
 				.comment("Extra cost for every layer filled up / down.")
 				.comment("default: 0")
 				.defineInRange("filling_layer_cost", 0, 0, 4096);

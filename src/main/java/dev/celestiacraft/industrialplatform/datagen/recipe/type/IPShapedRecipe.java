@@ -4,28 +4,24 @@ import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.api.IPTags;
 import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
 import dev.celestiacraft.industrialplatform.common.register.IPItems;
-import dev.celestiacraft.industrialplatform.datagen.recipe.IPRecipeProvider;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.data.PackOutput;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.crafting.Recipe;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.conditions.ModLoadedCondition;
 
-import java.util.concurrent.CompletableFuture;
-
-public class IPShapedRecipe extends IPRecipeProvider {
-	public IPShapedRecipe(PackOutput output, CompletableFuture<HolderLookup.Provider> future) {
-		super(output, future);
+public class IPShapedRecipe extends RecipeProvider {
+	public IPShapedRecipe(HolderLookup.Provider registries, RecipeOutput output) {
+		super(registries, output);
 	}
 
-	public static void register(RecipeOutput output) {
-		shaped(output);
-	}
-
-	private static void shaped(RecipeOutput output) {
-		ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, IPBlocks.INDUSTRIAL_PLATFORM.get())
+	@Override
+	protected void buildRecipes() {
+		shaped(RecipeCategory.TOOLS, IPBlocks.INDUSTRIAL_PLATFORM.get())
 				.pattern("ABA")
 				.pattern("CCC")
 				.pattern("CCC")
@@ -33,9 +29,9 @@ public class IPShapedRecipe extends IPRecipeProvider {
 				.define('B', Tags.Items.STONES)
 				.define('C', IPTags.Items.DEEPSLATE)
 				.unlockedBy("stone", has(Tags.Items.STONES))
-				.save(output, IndustrialPlatform.loadResource("platform"));
+				.save(output, recipeKey("platform"));
 
-		ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, IPBlocks.FLUID_POOL.get())
+		shaped(RecipeCategory.TOOLS, IPBlocks.FLUID_POOL.get())
 				.pattern("A A")
 				.pattern("B B")
 				.pattern("BCB")
@@ -43,12 +39,9 @@ public class IPShapedRecipe extends IPRecipeProvider {
 				.define('B', IPTags.Items.DEEPSLATE)
 				.define('C', Tags.Items.STONES)
 				.unlockedBy("stone", has(Tags.Items.STONES))
-				.save(
-						output.withConditions(new ModLoadedCondition("create")),
-						IndustrialPlatform.loadResource("pool2")
-				);
+				.save(output.withConditions(new ModLoadedCondition("create")), recipeKey("pool2"));
 
-		ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, IPBlocks.PLATFORM_BUILDER.get())
+		shaped(RecipeCategory.DECORATIONS, IPBlocks.PLATFORM_BUILDER.get())
 				.pattern("ABA")
 				.pattern("BCB")
 				.pattern("DDD")
@@ -57,14 +50,18 @@ public class IPShapedRecipe extends IPRecipeProvider {
 				.define('C', IPBlocks.INDUSTRIAL_PLATFORM.get())
 				.define('D', Tags.Items.STONES)
 				.unlockedBy("platform", has(IPBlocks.INDUSTRIAL_PLATFORM.get()))
-				.save(output, IndustrialPlatform.loadResource("platform_builder"));
+				.save(output, recipeKey("platform_builder"));
 
-		ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, IPItems.FILL_ADJUSTER.get())
+		shaped(RecipeCategory.TOOLS, IPItems.FILL_ADJUSTER.get())
 				.pattern(" A")
 				.pattern("B ")
 				.define('A', IPTags.Items.STONE)
 				.define('B', Tags.Items.RODS_WOODEN)
 				.unlockedBy("stick", has(Tags.Items.RODS_WOODEN))
-				.save(output, IndustrialPlatform.loadResource("fill_adjuster"));
+				.save(output, recipeKey("fill_adjuster"));
+	}
+
+	private static ResourceKey<Recipe<?>> recipeKey(String name) {
+		return ResourceKey.create(Registries.RECIPE, IndustrialPlatform.loadResource(name));
 	}
 }

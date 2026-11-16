@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": "#c:dyes",
+    "B": "#c:deepslate",
+    "C": "industrial_platform:industrial_platform",
+    "D": "#c:stones"
+  },
+  "pattern": [
+    "ABA",
+    "BCB",
+    "DDD"
+  ],
+  "result": {
+    "id": "industrial_platform:platform_builder"
+  }
+}

@@ -10,11 +10,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * 平台控制器: 右键能打开搭建界面的方块都实现这个接口
  */
 public interface IPlatformController {
+	VoxelShape SHAPE = Block.box(0, 0, 0, 16, 12, 16);
+
 	/**
 	 * 打开搭建界面
 	 */

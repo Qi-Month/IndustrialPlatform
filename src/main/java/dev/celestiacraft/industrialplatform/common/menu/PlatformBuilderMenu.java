@@ -18,7 +18,7 @@ import dev.celestiacraft.industrialplatform.platform.blueprint.ClientBlueprintDa
 import dev.celestiacraft.industrialplatform.platform.blueprint.PlatformBlueprint;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -68,7 +68,7 @@ public class PlatformBuilderMenu extends AbstractContainerMenu implements IPlatf
 	private String blueprintId = "";
 	private int buildStateTimer;
 
-	public PlatformBuilderMenu(int windowId, Inventory playerInventory, FriendlyByteBuf extraData) {
+	public PlatformBuilderMenu(int windowId, Inventory playerInventory, RegistryFriendlyByteBuf extraData) {
 		this(windowId, playerInventory, extraData.readBlockPos());
 	}
 
@@ -195,6 +195,7 @@ public class PlatformBuilderMenu extends AbstractContainerMenu implements IPlatf
 		// 创造模式不需要材料, 但界面里该显示的清单照旧显示
 		Map<Item, Integer> needed = blueprint.getMaterials();
 
+		MaterialScanner.Receipt receipt = null;
 		if (!serverPlayer.isCreative()) {
 			Map<Item, Integer> missing = MaterialScanner.missing(serverLevel, controllerPos, serverPlayer, needed);
 
@@ -203,15 +204,16 @@ public class PlatformBuilderMenu extends AbstractContainerMenu implements IPlatf
 				return;
 			}
 
-			if (!MaterialScanner.consume(serverLevel, controllerPos, serverPlayer, needed)) {
+			receipt = MaterialScanner.consume(serverLevel, controllerPos, serverPlayer, needed);
+			if (receipt == null) {
 				sendMessage(serverPlayer, Component.translatable("message.industrial_platform.build_failed").withStyle(ChatFormatting.RED));
 				return;
 			}
 		}
 
 		if (!PlatformBlock.buildBlueprint(serverLevel, controllerPos, blueprint, getUpFill(), getDownFill())) {
-			if (!serverPlayer.isCreative()) {
-				MaterialScanner.give(serverLevel, controllerPos, serverPlayer, needed);
+			if (receipt != null) {
+				MaterialScanner.give(serverLevel, controllerPos, serverPlayer, receipt);
 			}
 			sendMessage(serverPlayer, Component.translatable("message.industrial_platform.build_failed").withStyle(ChatFormatting.RED));
 			return;
@@ -235,7 +237,7 @@ public class PlatformBuilderMenu extends AbstractContainerMenu implements IPlatf
 	}
 
 	private void sendMessage(ServerPlayer player, Component message) {
-		player.displayClientMessage(message, true);
+		player.sendOverlayMessage(message);
 	}
 
 	private void persist() {

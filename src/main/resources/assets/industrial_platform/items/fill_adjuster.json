@@ -1,0 +1,6 @@
+{
+	"model": {
+		"type": "minecraft:model",
+		"model": "industrial_platform:item/fill_adjuster"
+	}
+}

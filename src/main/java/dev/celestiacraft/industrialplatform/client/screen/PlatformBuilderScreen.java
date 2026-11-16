@@ -1,21 +1,22 @@
 package dev.celestiacraft.industrialplatform.client.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.client.BoundaryRenderData;
+import dev.celestiacraft.industrialplatform.client.network.IPClientNetwork;
 import dev.celestiacraft.industrialplatform.common.menu.PlatformBuilderMenu;
-import dev.celestiacraft.industrialplatform.network.IPNetwork;
 import dev.celestiacraft.industrialplatform.network.packet.BuilderSelectPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformBuildPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsPacket;
 import dev.celestiacraft.industrialplatform.platform.blueprint.ClientBlueprintData;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
@@ -25,12 +26,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * 平台建造站界面: 上面是蓝图列表, 中间是上下填充, 下面是材料清单与搭建按钮
  */
 public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuilderMenu> {
-	private static final ResourceLocation BACKGROUND = IndustrialPlatform.loadResource("textures/gui/platform_builder.png");
+	private static final Identifier BACKGROUND = IndustrialPlatform.loadResource("textures/gui/platform_builder.png");
 	private static final int TEXTURE_WIDTH = 256;
 	private static final int TEXTURE_HEIGHT = 340;
 
@@ -87,6 +89,13 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 	private Button buildButton;
 	private Button pagePrev;
 	private Button pageNext;
+	private ClientBlueprintData.Entry materialEntry;
+	private List<MaterialDisplay> materialDisplays = List.of();
+	private List<ClientBlueprintData.Entry> blueprintEntries = List.of();
+	private List<BlueprintDisplay> blueprintDisplays = List.of();
+	private ClientBlueprintData.Entry buildButtonEntry;
+	private Boolean buildButtonAvailability;
+	private BoundaryRenderData.BoundaryEntry boundaryOverride;
 
 	private String selectedId = "";
 	private int scroll;
@@ -100,20 +109,16 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 	private boolean settingsChanged;
 
 	public PlatformBuilderScreen(PlatformBuilderMenu menu, Inventory inventory, Component title) {
-		super(menu, inventory, title);
-
-		imageWidth = PlatformBuilderMenu.PANEL_WIDTH;
-		imageHeight = PlatformBuilderMenu.PANEL_HEIGHT;
-		titleLabelX = 8;
-		titleLabelY = 6;
+		super(menu, inventory, title, PlatformBuilderMenu.PANEL_WIDTH, PlatformBuilderMenu.PANEL_HEIGHT);
 		inventoryLabelX = PlatformBuilderMenu.INVENTORY_X;
-		inventoryLabelY = imageHeight - 94;
 	}
 
 	@Override
 	protected void init() {
 		super.init();
 
+		blueprintEntries = List.of();
+		buildButtonAvailability = null;
 		selectedId = ClientBlueprintData.getSelected();
 		if (selectedId.isEmpty()) {
 			selectedId = menu.getBlueprintId();
@@ -154,7 +159,7 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 				.build());
 
 		buildButton = addRenderableWidget(Button.builder(Component.translatable("gui.industrial_platform.build_plain"), (button) -> {
-					IPNetwork.sendToServer(new PlatformBuildPacket());
+					IPClientNetwork.sendToServer(new PlatformBuildPacket());
 				}).bounds(leftPos + BUILD_X, topPos + BUILD_Y, BUILD_WIDTH, BUILD_HEIGHT)
 				.build());
 
@@ -167,7 +172,7 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 				.build();
 	}
 
-	private EditBox createFillField(int y, int value, java.util.function.Consumer<String> responder) {
+	private EditBox createFillField(int y, int value, Consumer<String> responder) {
 		EditBox field = new EditBox(font, leftPos + FIELD_X, y + 1, FIELD_WIDTH, FIELD_HEIGHT, Component.empty()) {
 			@Override
 			public void setFocused(boolean focused) {
@@ -181,9 +186,7 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 		};
 
 		field.setMaxLength(2);
-		field.setFilter((text) -> {
-			return text.isEmpty() || text.chars().allMatch(Character::isDigit);
-		});
+		field.setFilter(text -> text.isEmpty() || text.chars().allMatch(Character::isDigit));
 		field.setResponder(responder);
 
 		updatingWidgets = true;
@@ -263,7 +266,7 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 
 	private void sendFill(int upFill, int downFill) {
 		settingsChanged = true;
-		IPNetwork.sendToServer(new PlatformSettingsPacket(upFill, downFill, 0));
+		IPClientNetwork.sendToServer(new PlatformSettingsPacket(upFill, downFill, 0));
 	}
 
 	/**
@@ -294,7 +297,26 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 	}
 
 	private List<ClientBlueprintData.Entry> entries() {
-		return ClientBlueprintData.list();
+		List<ClientBlueprintData.Entry> entries = ClientBlueprintData.list();
+		if (entries != blueprintEntries) {
+			blueprintEntries = entries;
+			List<BlueprintDisplay> displays = new ArrayList<>(entries.size());
+			for (ClientBlueprintData.Entry entry : entries) {
+				String size = entry.describeSize();
+				int sizeWidth = font.width(size);
+				int maxNameWidth = LIST_WIDTH - sizeWidth - 16;
+				String name = entry.id();
+				if (font.width(name) > maxNameWidth) {
+					name = font.plainSubstrByWidth(name, maxNameWidth - 6) + "...";
+				}
+				displays.add(new BlueprintDisplay(name, size, sizeWidth));
+			}
+			blueprintDisplays = List.copyOf(displays);
+		}
+		return blueprintEntries;
+	}
+
+	private record BlueprintDisplay(String name, String size, int sizeWidth) {
 	}
 
 	private int maxScroll() {
@@ -335,7 +357,7 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 
 		selectedId = id;
 		ClientBlueprintData.setSelected(id);
-		IPNetwork.sendToServer(new BuilderSelectPacket(id));
+		IPClientNetwork.sendToServer(new BuilderSelectPacket(id));
 		updateBuildButton();
 	}
 
@@ -382,9 +404,9 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 	}
 
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		if (button == 0 && isOverList(mouseX, mouseY)) {
-			int row = (int) ((mouseY - topPos - LIST_Y) / LIST_ROW_HEIGHT);
+	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		if (event.button() == 0 && isOverList(event.x(), event.y())) {
+			int row = (int) ((event.y() - topPos - LIST_Y) / LIST_ROW_HEIGHT);
 			int index = scroll + row;
 			List<ClientBlueprintData.Entry> entries = entries();
 
@@ -394,7 +416,7 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 			}
 		}
 
-		return super.mouseClicked(mouseX, mouseY, button);
+		return super.mouseClicked(event, doubleClick);
 	}
 
 	@Override
@@ -416,13 +438,11 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 			return;
 		}
 
-		BoundaryRenderData.setOverride(new BoundaryRenderData.BoundaryEntry(
-				menu.getControllerPos(),
-				entry.sizeX(),
-				entry.sizeZ(),
-				upFill,
-				downFill
-		));
+		if (boundaryOverride == null || boundaryOverride.sizeX() != entry.sizeX() || boundaryOverride.sizeZ() != entry.sizeZ()
+				|| boundaryOverride.upFill() != upFill || boundaryOverride.downFill() != downFill) {
+			boundaryOverride = new BoundaryRenderData.BoundaryEntry(menu.getControllerPos(), entry.sizeX(), entry.sizeZ(), upFill, downFill);
+		}
+		BoundaryRenderData.setOverride(boundaryOverride);
 	}
 
 	@Override
@@ -440,6 +460,11 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 		buildButton.active = canBuild;
 
 		ClientBlueprintData.Entry entry = ClientBlueprintData.get(selectedId);
+		if (buildButtonAvailability != null && buildButtonAvailability == canBuild && buildButtonEntry == entry) {
+			return;
+		}
+		buildButtonAvailability = canBuild;
+		buildButtonEntry = entry;
 
 		if (canBuild && entry != null) {
 			buildButton.setTooltip(Tooltip.create(Component.literal(entry.id() + "  " + entry.describeSize())));
@@ -449,51 +474,40 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 	}
 
 	@Override
-	public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-		// 原版那种打开容器时压暗背景
-		renderBackground(graphics, mouseX, mouseY, partialTick);
-		super.render(graphics, mouseX, mouseY, partialTick);
-
-		renderMaterialTooltip(graphics, mouseX, mouseY);
-
-		// 原版容器界面的物品 tooltip 要界面自己调, 不然鼠标放在背包物品上没有提示框
-		renderTooltip(graphics, mouseX, mouseY);
+	protected void extractTooltip(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+		super.extractTooltip(graphics, mouseX, mouseY);
+		extractMaterialTooltip(graphics, mouseX, mouseY);
 	}
 
 	/**
 	 * 材料槽不是菜单槽位, 悬停提示要自己画
 	 */
-	private void renderMaterialTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
-		List<Map.Entry<Item, Integer>> materials = materials();
+	private void extractMaterialTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+		List<MaterialDisplay> materials = materials();
 		int index = materialIndexAt(mouseX, mouseY);
 
 		if (index < 0 || index >= materials.size()) {
 			return;
 		}
 
-		Map.Entry<Item, Integer> material = materials.get(index);
-		graphics.renderTooltip(font, Component.translatable(
-				"gui.industrial_platform.blueprint_material_tip",
-				new ItemStack(material.getKey()).getHoverName(),
-				material.getValue()
-		), mouseX, mouseY);
+		graphics.setTooltipForNextFrame(font, materials.get(index).tooltip(), mouseX, mouseY);
 	}
 
 	@Override
-	protected void renderBg(@NotNull GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		graphics.blit(BACKGROUND, leftPos, topPos, 0.0F, 0.0F, imageWidth, imageHeight, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+	public void extractBackground(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+		super.extractBackground(graphics, mouseX, mouseY, partialTick);
+		graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, leftPos, topPos, 0.0F, 0.0F, imageWidth, imageHeight, TEXTURE_WIDTH, TEXTURE_HEIGHT);
 
 		drawBlueprintList(graphics, mouseX, mouseY);
 		drawMaterials(graphics);
 	}
 
-	private void drawBlueprintList(GuiGraphics graphics, int mouseX, int mouseY) {
+	private void drawBlueprintList(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
 		List<ClientBlueprintData.Entry> entries = entries();
 
 		if (entries.isEmpty()) {
 			Component hint = Component.translatable("gui.industrial_platform.blueprint_empty");
-			graphics.drawString(font, hint, leftPos + (imageWidth - font.width(hint)) / 2, topPos + LIST_Y + 26, COLOR_HINT, false);
+			graphics.text(font, hint, leftPos + (imageWidth - font.width(hint)) / 2, topPos + LIST_Y + 26, COLOR_HINT, false);
 			return;
 		}
 
@@ -515,21 +529,14 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 				graphics.fill(rowX, rowY, rowX + LIST_WIDTH, rowY + LIST_ROW_HEIGHT - 2, COLOR_HOVER);
 			}
 
-			String name = entry.id();
-			int maxNameWidth = LIST_WIDTH - font.width(entry.describeSize()) - 16;
-			if (font.width(name) > maxNameWidth) {
-				name = font.plainSubstrByWidth(name, maxNameWidth - 6) + "...";
-			}
-
-			graphics.drawString(font, name, rowX + 4, rowY + 6, COLOR_LABEL, false);
-
-			String size = entry.describeSize();
-			graphics.drawString(font, size, rowX + LIST_WIDTH - font.width(size) - 4, rowY + 6, COLOR_SIZE, false);
+			BlueprintDisplay display = blueprintDisplays.get(index);
+			graphics.text(font, display.name(), rowX + 4, rowY + 6, COLOR_LABEL, false);
+			graphics.text(font, display.size(), rowX + LIST_WIDTH - display.sizeWidth() - 4, rowY + 6, COLOR_SIZE, false);
 		}
 	}
 
-	private void drawMaterials(GuiGraphics graphics) {
-		List<Map.Entry<Item, Integer>> materials = materials();
+	private void drawMaterials(GuiGraphicsExtractor graphics) {
+		List<MaterialDisplay> materials = materials();
 
 		for (int slot = 0; slot < MATERIAL_SLOTS; slot++) {
 			int index = materialScroll + slot;
@@ -537,26 +544,38 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 				break;
 			}
 
-			Map.Entry<Item, Integer> material = materials.get(index);
+			MaterialDisplay material = materials.get(index);
 			int x = leftPos + MATERIAL_X + slot * MATERIAL_STEP;
 			int y = topPos + MATERIAL_Y;
 
-			ItemStack stack = new ItemStack(material.getKey(), 1);
-			graphics.renderItem(stack, x, y);
-			graphics.renderItemDecorations(font, stack, x, y, String.valueOf(material.getValue()));
+			graphics.item(material.stack(), x, y);
+			graphics.itemDecorations(font, material.stack(), x, y, material.count());
 		}
 	}
 
 	/**
 	 * 选中蓝图的材料清单(顺序固定)
 	 */
-	private List<Map.Entry<Item, Integer>> materials() {
+	private List<MaterialDisplay> materials() {
 		ClientBlueprintData.Entry entry = ClientBlueprintData.get(selectedId);
-		if (entry == null) {
-			return List.of();
+		if (entry != materialEntry) {
+			materialEntry = entry;
+			if (entry == null) {
+				materialDisplays = List.of();
+			} else {
+				List<MaterialDisplay> displays = new ArrayList<>(entry.materials().size());
+				for (Map.Entry<Item, Integer> material : entry.materials().entrySet()) {
+					ItemStack stack = new ItemStack(material.getKey());
+					Component tooltip = Component.translatable("gui.industrial_platform.blueprint_material_tip", stack.getHoverName(), material.getValue());
+					displays.add(new MaterialDisplay(stack, String.valueOf(material.getValue()), tooltip));
+				}
+				materialDisplays = List.copyOf(displays);
+			}
 		}
+		return materialDisplays;
+	}
 
-		return new ArrayList<>(entry.materials().entrySet());
+	private record MaterialDisplay(ItemStack stack, String count, Component tooltip) {
 	}
 
 	private int maxMaterialScroll() {
@@ -590,13 +609,13 @@ public class PlatformBuilderScreen extends AbstractContainerScreen<PlatformBuild
 	}
 
 	@Override
-	protected void renderLabels(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
-		graphics.drawString(font, title, titleLabelX, titleLabelY, COLOR_TITLE, false);
-		graphics.drawString(font, Component.translatable("gui.industrial_platform.fill_up"), LABEL_X, FILL_ROW_UP_Y + 5, COLOR_LABEL, false);
-		graphics.drawString(font, Component.translatable("gui.industrial_platform.fill_down"), LABEL_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT + 5, COLOR_LABEL, false);
-		graphics.drawString(font, Component.translatable("gui.industrial_platform.blueprint_materials"), LABEL_X, 146, COLOR_LABEL, false);
+	protected void extractLabels(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+		graphics.text(font, title, titleLabelX, titleLabelY, COLOR_TITLE, false);
+		graphics.text(font, Component.translatable("gui.industrial_platform.fill_up"), LABEL_X, FILL_ROW_UP_Y + 5, COLOR_LABEL, false);
+		graphics.text(font, Component.translatable("gui.industrial_platform.fill_down"), LABEL_X, FILL_ROW_UP_Y + FILL_ROW_HEIGHT + 5, COLOR_LABEL, false);
+		graphics.text(font, Component.translatable("gui.industrial_platform.blueprint_materials"), LABEL_X, 146, COLOR_LABEL, false);
 
 
-		graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, COLOR_LABEL, false);
+		graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, COLOR_LABEL, false);
 	}
 }

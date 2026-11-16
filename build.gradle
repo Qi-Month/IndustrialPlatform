@@ -1,49 +1,50 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.148'
     id 'idea'
-    id 'net.neoforged.moddev' version '2.0.140'
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
 }
 
 version = mod_version
 group = mod_group_id
 
+sourceSets.main.resources {
+    srcDir('src/generated/resources')
+
+    exclude("**/*.bbmodel")
+    exclude("**/.cache/**")
+}
+
 repositories {
-    mavenLocal()
-    // CurseMaven
-    maven {
-        name = "Curseforge"
-        url = "https://cursemaven.com"
-        content {
-            includeGroup "curse.maven"
+    exclusiveContent {
+        forRepository {
+            maven {
+                url 'https://cursemaven.com'
+            }
         }
-    }
-    maven {
-        url 'https://maven.blamejared.com'
-    }
-    flatDir {
-        dirs "libs"
+        filter {
+            includeGroup 'curse.maven'
+        }
     }
 }
 
 base {
-    archivesName = "${mod_name}-${minecraft_version}"
+    archivesName = mod_id
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
+def dataArguments = ['--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()]
 neoForge {
     version = project.neo_version
-
-    parchment {
-        mappingsVersion = project.parchment_mappings_version
-        minecraftVersion = project.parchment_minecraft_version
-    }
 
     runs {
         client {
             client()
-
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
@@ -59,9 +60,13 @@ neoForge {
         }
 
         data {
-            data()
+            clientData()
+            programArguments.addAll dataArguments
+        }
 
-            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        serverData {
+            serverData()
+            programArguments.addAll dataArguments
         }
 
         configureEach {
@@ -78,17 +83,18 @@ neoForge {
     }
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
 
 dependencies {
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    // Kiwi
-    runtimeOnly("curse.maven:kiwi-303657:${kiwi_id}")
-    // Jade
-    implementation("curse.maven:jade-324717:${jade_id}")
-    // Jei
-    compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
-    runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+    def jade = "curse.maven:jade-324717:${jade_file_id}"
+    def jei = "curse.maven:jei-238222:${jei_file_id}"
+
+    compileOnly jade
+    localRuntime jade
+    compileOnly jei
+    localRuntime jei
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
@@ -96,21 +102,21 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             minecraft_version      : minecraft_version,
             minecraft_version_range: minecraft_version_range,
             neo_version            : neo_version,
-            neo_version_range      : neo_version_range,
-            loader_version_range   : loader_version_range,
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,
             mod_version            : mod_version,
             mod_authors            : mod_authors,
-            mod_description        : mod_description
+            mod_description        : mod_description,
+            loader_version_range   : loader_version_range,
+            jade_version           : jade_version,
+            jei_version            : jei_version,
     ]
     inputs.properties replaceProperties
     expand replaceProperties
     from "src/main/templates"
     into "build/generated/sources/modMetadata"
 }
-
 sourceSets.main.resources.srcDir generateModMetadata
 neoForge.ideSyncTask generateModMetadata
 
@@ -125,6 +131,10 @@ publishing {
             url "file://${project.projectDir}/repo"
         }
     }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }
 
 idea {

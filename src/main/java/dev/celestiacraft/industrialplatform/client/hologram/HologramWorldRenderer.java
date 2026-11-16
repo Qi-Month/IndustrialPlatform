@@ -3,136 +3,147 @@ package dev.celestiacraft.industrialplatform.client.hologram;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
-import dev.celestiacraft.industrialplatform.client.BoundaryRenderer;
+import dev.celestiacraft.industrialplatform.api.PlatformSettings;
+import dev.celestiacraft.industrialplatform.mixin.client.GameRendererAccessor;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.state.OptionsRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.util.context.ContextKey;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.client.event.RenderHighlightEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
+import net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 @EventBusSubscriber(modid = IndustrialPlatform.MODID, value = Dist.CLIENT)
 public class HologramWorldRenderer {
-	private static final int CORNER_COUNT = 8;
-	private static final int EAST_BIT = 1;
-	private static final int TOP_BIT = 2;
-	private static final int SOUTH_BIT = 4;
-
-	private static final float ARM_RATIO = 0.25F;
-	private static final float BRACKET_GAP = 0.02F;
-	private static final float LOCK_ON_SPREAD = 0.35F;
-	private static final float BRACKET_ALPHA = 0.85F;
-	private static final float BRACKET_PULSE = 0.15F;
-	private static final float PULSE_SPEED = 0.25F;
-
+	private static final ContextKey<Frame> FRAME = new ContextKey<>(IndustrialPlatform.loadResource("hologram_frame"));
+	private static final Matrix4f projection = new Matrix4f();
+	private static final PoseStack bobStack = new PoseStack();
+	private static final Vector3f spinningAxis = new Vector3f(0.0F, Mth.SQRT_OF_TWO / 2.0F, Mth.SQRT_OF_TWO / 2.0F);
 	private static final Vector4f anchor = new Vector4f();
-	private static boolean anchorVisible;
-	private static float anchorNdcX;
-	private static float anchorNdcY;
+	private static Frame frame;
+
+	public record Frame(BlockPos pos, PlatformSettings settings, float progress, float ndcX, float ndcY) {
+		public float screenX(int width) {
+			return (ndcX + 1.0F) * 0.5F * width;
+		}
+
+		public float screenY(int height) {
+			return (1.0F - ndcY) * 0.5F * height;
+		}
+	}
+
+	private record Brackets(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, int color, float width) {
+	}
 
 	@SubscribeEvent
-	public static void onRenderHighlight(RenderHighlightEvent.Block event) {
-		BlockPos pos = event.getTarget().getBlockPos();
+	public static void onExtractOutline(ExtractBlockOutlineRenderStateEvent event) {
+		BlockPos pos = event.getBlockPos();
 		if (!HologramTarget.isLockedOn(pos)) {
 			return;
 		}
-
-		event.setCanceled(true);
-
-		float partialTick = event.getDeltaTracker().getGameTimeDeltaPartialTick(false);
-		float spread = BRACKET_GAP + LOCK_ON_SPREAD * (1.0F - HologramTarget.getProgress(partialTick));
-		float time = event.getCamera().getEntity().tickCount + partialTick;
-		float alpha = BRACKET_ALPHA + BRACKET_PULSE * Mth.sin(time * PULSE_SPEED);
-
+		float partialTick = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
+		float spread = 0.02F + 0.35F * (1.0F - HologramTarget.getProgress(partialTick));
+		float alpha = 0.85F + 0.15F * Mth.sin((event.getLevelRenderState().gameTime + partialTick) * 0.25F);
 		AABB bounds = HologramTarget.getBounds();
-		Vec3 camera = event.getCamera().getPosition();
-		float minX = (float) (pos.getX() + bounds.minX - camera.x) - spread;
-		float minY = (float) (pos.getY() + bounds.minY - camera.y) - spread;
-		float minZ = (float) (pos.getZ() + bounds.minZ - camera.z) - spread;
-		float maxX = (float) (pos.getX() + bounds.maxX - camera.x) + spread;
-		float maxY = (float) (pos.getY() + bounds.maxY - camera.y) + spread;
-		float maxZ = (float) (pos.getZ() + bounds.maxZ - camera.z) + spread;
-
-		VertexConsumer consumer = event.getMultiBufferSource().getBuffer(HologramRenderTypes.BRACKET_LINES);
-		drawBrackets(event.getPoseStack().last(), consumer, minX, minY, minZ, maxX, maxY, maxZ, alpha);
+		Vec3 camera = event.getLevelRenderState().cameraRenderState.pos;
+		Brackets brackets = new Brackets((float) (pos.getX() + bounds.minX - camera.x) - spread,
+				(float) (pos.getY() + bounds.minY - camera.y) - spread, (float) (pos.getZ() + bounds.minZ - camera.z) - spread,
+				(float) (pos.getX() + bounds.maxX - camera.x) + spread, (float) (pos.getY() + bounds.maxY - camera.y) + spread,
+				(float) (pos.getZ() + bounds.maxZ - camera.z) + spread, HologramColors.withAlpha(HologramColors.ACCENT, alpha), HologramRenderTypes.lineWidth() * 2.0F);
+		event.addCustomRenderer((state, buffers, pose, translucentPass, levelState) -> {
+			if (state.isTranslucent() == translucentPass) {
+				drawBrackets(pose.last(), buffers.getBuffer(HologramRenderTypes.BRACKET_LINES), brackets);
+			}
+			return true;
+		});
 	}
 
-	private static void drawBrackets(PoseStack.Pose pose, VertexConsumer consumer, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float alpha) {
-		float armX = (maxX - minX) * ARM_RATIO;
-		float armY = (maxY - minY) * ARM_RATIO;
-		float armZ = (maxZ - minZ) * ARM_RATIO;
-
-		for (int corner = 0; corner < CORNER_COUNT; corner++) {
-			boolean east = (corner & EAST_BIT) != 0;
-			boolean top = (corner & TOP_BIT) != 0;
-			boolean south = (corner & SOUTH_BIT) != 0;
-			float x = east ? maxX : minX;
-			float y = top ? maxY : minY;
-			float z = south ? maxZ : minZ;
-
-			drawArm(pose, consumer, x, y, z, east ? -armX : armX, 0.0F, 0.0F, alpha);
-			drawArm(pose, consumer, x, y, z, 0.0F, top ? -armY : armY, 0.0F, alpha);
-			drawArm(pose, consumer, x, y, z, 0.0F, 0.0F, south ? -armZ : armZ, alpha);
+	private static void drawBrackets(PoseStack.Pose pose, VertexConsumer consumer, Brackets brackets) {
+		float armX = (brackets.maxX() - brackets.minX()) * 0.25F;
+		float armY = (brackets.maxY() - brackets.minY()) * 0.25F;
+		float armZ = (brackets.maxZ() - brackets.minZ()) * 0.25F;
+		for (int corner = 0; corner < 8; corner++) {
+			boolean east = (corner & 1) != 0;
+			boolean top = (corner & 2) != 0;
+			boolean south = (corner & 4) != 0;
+			float x = east ? brackets.maxX() : brackets.minX();
+			float y = top ? brackets.maxY() : brackets.minY();
+			float z = south ? brackets.maxZ() : brackets.minZ();
+			HologramRenderTypes.line(pose, consumer, x, y, z, x + (east ? -armX : armX), y, z, brackets.color(), brackets.width());
+			HologramRenderTypes.line(pose, consumer, x, y, z, x, y + (top ? -armY : armY), z, brackets.color(), brackets.width());
+			HologramRenderTypes.line(pose, consumer, x, y, z, x, y, z + (south ? -armZ : armZ), brackets.color(), brackets.width());
 		}
-	}
-
-	private static void drawArm(PoseStack.Pose pose, VertexConsumer consumer, float x, float y, float z, float dx, float dy, float dz, float alpha) {
-		float normalX = Math.signum(dx);
-		float normalY = Math.signum(dy);
-		float normalZ = Math.signum(dz);
-
-		consumer.addVertex(pose.pose(), x, y, z)
-				.setColor(BoundaryRenderer.PREVIEW_R, BoundaryRenderer.PREVIEW_G, BoundaryRenderer.PREVIEW_B, alpha)
-				.setNormal(pose, normalX, normalY, normalZ);
-		consumer.addVertex(pose.pose(), x + dx, y + dy, z + dz)
-				.setColor(BoundaryRenderer.PREVIEW_R, BoundaryRenderer.PREVIEW_G, BoundaryRenderer.PREVIEW_B, alpha)
-				.setNormal(pose, normalX, normalY, normalZ);
 	}
 
 	@SubscribeEvent
-	public static void onRenderLevelStage(RenderLevelStageEvent event) {
-		if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL) {
-			return;
-		}
-
-		anchorVisible = false;
+	public static void onExtractLevel(ExtractLevelRenderStateEvent event) {
+		frame = null;
 		BlockPos pos = HologramTarget.getPos();
-		if (pos == null) {
+		Minecraft minecraft = Minecraft.getInstance();
+		LocalPlayer player = minecraft.player;
+		if (pos == null || player == null) {
 			return;
 		}
-
+		CameraRenderState camera = event.getRenderState().cameraRenderState;
+		OptionsRenderState options = minecraft.gameRenderer.getGameRenderState().optionsRenderState;
+		GameRendererAccessor renderer = (GameRendererAccessor) minecraft.gameRenderer;
+		float partialTick = event.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+		projection.set(camera.projectionMatrix);
+		bobStack.pushPose();
+		renderer.industrialPlatform$bobHurt(camera, bobStack);
+		if (options.bobView) {
+			renderer.industrialPlatform$bobView(camera, bobStack);
+		}
+		projection.mul(bobStack.last().pose());
+		bobStack.popPose();
+		float portalIntensity = Mth.lerp(partialTick, player.oPortalEffectIntensity, player.portalEffectIntensity);
+		float nauseaIntensity = player.getEffectBlendFactor(MobEffects.NAUSEA, partialTick);
+		float intensity = Math.max(portalIntensity, nauseaIntensity) * (options.screenEffectScale * options.screenEffectScale);
+		if (intensity > 0.0F) {
+			float skew = 5.0F / (intensity * intensity + 5.0F) - intensity * 0.04F;
+			skew *= skew;
+			float angle = (renderer.industrialPlatform$spinningEffectTime() + partialTick * renderer.industrialPlatform$spinningEffectSpeed()) * Mth.DEG_TO_RAD;
+			projection.rotate(angle, spinningAxis).scale(1.0F / skew, 1.0F, 1.0F).rotate(-angle, spinningAxis);
+		}
 		AABB bounds = HologramTarget.getBounds();
-		Vec3 camera = event.getCamera().getPosition();
-		anchor.set(
-				(float) (pos.getX() + (bounds.minX + bounds.maxX) * 0.5 - camera.x),
-				(float) (pos.getY() + bounds.maxY - camera.y),
-				(float) (pos.getZ() + (bounds.minZ + bounds.maxZ) * 0.5 - camera.z),
-				1.0F
-		);
-		anchor.mul(event.getModelViewMatrix()).mul(event.getProjectionMatrix());
-
-		if (anchor.w <= 0.0F) {
+		anchor.set((float) (pos.getX() + (bounds.minX + bounds.maxX) * 0.5 - camera.pos.x),
+				(float) (pos.getY() + bounds.maxY - camera.pos.y), (float) (pos.getZ() + (bounds.minZ + bounds.maxZ) * 0.5 - camera.pos.z), 1.0F)
+				.mul(camera.viewRotationMatrix).mul(projection);
+		if (anchor.w <= 0.0F || !Float.isFinite(anchor.w)) {
 			return;
 		}
+		frame = new Frame(pos, HologramTarget.getSettings(), HologramTarget.getProgress(partialTick), anchor.x / anchor.w, anchor.y / anchor.w);
+		event.getRenderState().setRenderData(FRAME, frame);
+	}
 
-		anchorNdcX = anchor.x / anchor.w;
-		anchorNdcY = anchor.y / anchor.w;
-		anchorVisible = true;
+	public static Frame getFrame() {
+		return frame;
+	}
+
+	public static void clear() {
+		frame = null;
 	}
 
 	public static boolean isAnchorVisible() {
-		return anchorVisible;
+		return frame != null;
 	}
 
 	public static float getAnchorX(int screenWidth) {
-		return (anchorNdcX + 1.0F) * 0.5F * screenWidth;
+		return frame == null ? 0.0F : frame.screenX(screenWidth);
 	}
 
 	public static float getAnchorY(int screenHeight) {
-		return (1.0F - anchorNdcY) * 0.5F * screenHeight;
+		return frame == null ? 0.0F : frame.screenY(screenHeight);
 	}
 }

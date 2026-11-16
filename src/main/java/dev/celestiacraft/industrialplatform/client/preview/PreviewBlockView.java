@@ -4,9 +4,9 @@ import dev.celestiacraft.industrialplatform.api.IPLogic;
 import dev.celestiacraft.industrialplatform.platform.blueprint.PlatformBlueprint;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Blocks;
@@ -24,11 +24,6 @@ public class PreviewBlockView implements BlockAndTintGetter {
 	private static final BlockState AIR = Blocks.AIR.defaultBlockState();
 	private static final int FULL_LIGHT = 15;
 	private static final int NO_TINT = -1;
-
-	private static final float SHADE_UP = 1.0F;
-	private static final float SHADE_DOWN = 0.5F;
-	private static final float SHADE_NORTH_SOUTH = 0.8F;
-	private static final float SHADE_EAST_WEST = 0.6F;
 
 	private final int sizeX;
 	private final int sizeY;
@@ -116,22 +111,13 @@ public class PreviewBlockView implements BlockAndTintGetter {
 	}
 
 	@Override
-	public float getShade(@NotNull Direction direction, boolean shade) {
-		if (!shade) {
-			return SHADE_UP;
-		}
-
-		return switch (direction) {
-			case DOWN -> SHADE_DOWN;
-			case UP -> SHADE_UP;
-			case NORTH, SOUTH -> SHADE_NORTH_SOUTH;
-			case WEST, EAST -> SHADE_EAST_WEST;
-		};
+	public @NotNull CardinalLighting cardinalLighting() {
+		return CardinalLighting.DEFAULT;
 	}
 
 	@Override
-	public @Nullable LevelLightEngine getLightEngine() {
-		return null;
+	public @NotNull LevelLightEngine getLightEngine() {
+		return LevelLightEngine.EMPTY;
 	}
 
 	@Override
@@ -161,7 +147,7 @@ public class PreviewBlockView implements BlockAndTintGetter {
 	}
 
 	@Override
-	public int getMinBuildHeight() {
+	public int getMinY() {
 		return -downFill;
 	}
 }

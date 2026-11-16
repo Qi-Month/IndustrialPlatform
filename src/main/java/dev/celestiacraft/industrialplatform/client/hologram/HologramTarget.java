@@ -73,7 +73,13 @@ public class HologramTarget {
 
 	@SubscribeEvent
 	public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+		clear();
+	}
+
+	public static void clear() {
 		pos = null;
+		bounds = null;
+		settings = null;
 		lockedOn = false;
 		progress = 0.0F;
 		previousProgress = 0.0F;

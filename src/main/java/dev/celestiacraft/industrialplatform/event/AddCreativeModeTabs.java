@@ -1,7 +1,6 @@
 package dev.celestiacraft.industrialplatform.event;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
-import dev.celestiacraft.industrialplatform.api.ICheckModLoaded;
 import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
 import dev.celestiacraft.industrialplatform.common.register.IPItems;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -18,9 +17,7 @@ public class AddCreativeModeTabs {
 			event.accept(IPBlocks.PLATFORM_BUILDER.get().asItem());
 			event.accept(IPItems.FILL_ADJUSTER.get());
 
-			if (ICheckModLoaded.hasCreate()) {
-				event.accept(IPBlocks.FLUID_POOL.get().asItem());
-			}
+			event.accept(IPBlocks.FLUID_POOL.get().asItem());
 		}
 	}
 }

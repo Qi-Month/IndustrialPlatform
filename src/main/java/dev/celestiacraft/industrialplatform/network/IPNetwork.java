@@ -1,6 +1,5 @@
 package dev.celestiacraft.industrialplatform.network;
 
-import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.network.packet.BlueprintListPacket;
 import dev.celestiacraft.industrialplatform.network.packet.BuilderSelectPacket;
 import dev.celestiacraft.industrialplatform.network.packet.FillAdjustPacket;
@@ -31,13 +30,9 @@ public class IPNetwork {
 		registrar.playToServer(BuilderSelectPacket.TYPE, BuilderSelectPacket.STREAM_CODEC, BuilderSelectPacket::handle);
 		registrar.playToServer(FillAdjustPacket.TYPE, FillAdjustPacket.STREAM_CODEC, FillAdjustPacket::handle);
 
-		registrar.playToClient(PlatformSettingsSyncPacket.TYPE, PlatformSettingsSyncPacket.STREAM_CODEC, PlatformSettingsSyncPacket::handle);
-		registrar.playToClient(BlueprintListPacket.TYPE, BlueprintListPacket.STREAM_CODEC, BlueprintListPacket::handle);
-		registrar.playToClient(PlatformSettingsClearPacket.TYPE, PlatformSettingsClearPacket.STREAM_CODEC, PlatformSettingsClearPacket::handle);
-	}
-
-	public static void sendToServer(CustomPacketPayload payload) {
-		PacketDistributor.sendToServer(payload);
+		registrar.playToClient(PlatformSettingsSyncPacket.TYPE, PlatformSettingsSyncPacket.STREAM_CODEC);
+		registrar.playToClient(BlueprintListPacket.TYPE, BlueprintListPacket.STREAM_CODEC);
+		registrar.playToClient(PlatformSettingsClearPacket.TYPE, PlatformSettingsClearPacket.STREAM_CODEC);
 	}
 
 	public static void sendToPlayer(ServerPlayer player, CustomPacketPayload payload) {
@@ -45,6 +40,6 @@ public class IPNetwork {
 	}
 
 	public static void sendToTracking(ServerLevel level, BlockPos pos, CustomPacketPayload payload) {
-		PacketDistributor.sendToPlayersTrackingChunk(level, new ChunkPos(pos), payload);
+		PacketDistributor.sendToPlayersTrackingChunk(level, ChunkPos.containing(pos), payload);
 	}
 }

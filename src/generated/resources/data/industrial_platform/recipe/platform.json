@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": "#c:dyes",
+    "B": "#c:stones",
+    "C": "#c:deepslate"
+  },
+  "pattern": [
+    "ABA",
+    "CCC",
+    "CCC"
+  ],
+  "result": {
+    "id": "industrial_platform:industrial_platform"
+  }
+}

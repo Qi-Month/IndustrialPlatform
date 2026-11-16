@@ -2,11 +2,10 @@ package dev.celestiacraft.industrialplatform.client;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.common.item.FillAdjusterItem;
-import dev.celestiacraft.industrialplatform.network.IPNetwork;
+import dev.celestiacraft.industrialplatform.client.network.IPClientNetwork;
 import dev.celestiacraft.industrialplatform.network.packet.FillAdjustPacket;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -32,7 +31,7 @@ public class FillAdjusterHandler {
 		}
 
 		// 按住 Alt 时不拦截滚轮, 正常切快捷栏
-		if (Screen.hasAltDown()) {
+		if (minecraft.hasAltDown()) {
 			return;
 		}
 
@@ -51,14 +50,14 @@ public class FillAdjusterHandler {
 			return;
 		}
 
-		int step = (Screen.hasControlDown() ? 10 : 1) * (delta > 0.0D ? 1 : -1);
+		int step = (minecraft.hasControlDown() ? 10 : 1) * (delta > 0.0D ? 1 : -1);
 		FillAdjusterItem.Target target = FillAdjusterItem.getTarget(stack);
 		int value = FillAdjusterItem.adjust(stack, target, step);
 
 		// 客户端先改一份, 提示立刻能看到; 服务端那份由数据包写
-		IPNetwork.sendToServer(new FillAdjustPacket(FillAdjusterItem.getUpFill(stack), FillAdjusterItem.getDownFill(stack)));
+		IPClientNetwork.sendToServer(new FillAdjustPacket(FillAdjusterItem.getUpFill(stack), FillAdjusterItem.getDownFill(stack)));
 
-		player.displayClientMessage(Component.translatable("message.industrial_platform.fill_values", target.displayName(), value).withStyle(ChatFormatting.AQUA), true);
+		player.sendOverlayMessage(Component.translatable("message.industrial_platform.fill_values", target.displayName(), value).withStyle(ChatFormatting.AQUA));
 
 		event.setCanceled(true);
 	}

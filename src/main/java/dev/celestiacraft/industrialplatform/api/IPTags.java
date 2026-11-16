@@ -1,7 +1,7 @@
 package dev.celestiacraft.industrialplatform.api;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.Block;
 public class IPTags {
 	public static class Items {
 		public static TagKey<Item> createTag(String namespace, String name) {
-			return ItemTags.create(ResourceLocation.fromNamespaceAndPath(namespace, name));
+			return ItemTags.create(Identifier.fromNamespaceAndPath(namespace, name));
 		}
 
 		public static TagKey<Item>
@@ -30,7 +30,7 @@ public class IPTags {
 
 	public static class Blocks {
 		private static TagKey<Block> createTag(String namespace, String name) {
-			return BlockTags.create(ResourceLocation.fromNamespaceAndPath(namespace, name));
+			return BlockTags.create(Identifier.fromNamespaceAndPath(namespace, name));
 		}
 
 		public static TagKey<Block>

@@ -1,11 +1,9 @@
 package dev.celestiacraft.industrialplatform.client.screen.widget;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,6 +16,7 @@ public class ToggleButton extends Button {
 		super(x, y, width, height, message, onPress, DEFAULT_NARRATION);
 
 		this.selected = selected;
+		setOverrideRenderHighlightedSprite(() -> isSelected() || isHoveredOrFocused());
 
 		if (tooltip != null) {
 			setTooltip(tooltip);
@@ -25,14 +24,9 @@ public class ToggleButton extends Button {
 	}
 
 	@Override
-	protected void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-		Minecraft minecraft = Minecraft.getInstance();
-
-		graphics.setColor(1.0F, 1.0F, 1.0F, alpha);
-		graphics.blitSprite(SPRITES.get(active, isSelected() || isHoveredOrFocused()), getX(), getY(), getWidth(), getHeight());
-		graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-
-		renderString(graphics, minecraft.font, getFGColor() | Mth.ceil(alpha * 255.0F) << 24);
+	protected void extractContents(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+		extractDefaultSprite(graphics);
+		extractDefaultLabel(graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.NONE));
 	}
 
 	/**

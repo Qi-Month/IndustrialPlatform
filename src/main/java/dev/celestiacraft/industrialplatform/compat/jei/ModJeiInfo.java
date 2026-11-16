@@ -36,7 +36,7 @@ public class ModJeiInfo {
 			return;
 		}
 
-		List<ItemStack> stacks = BuiltInRegistries.ITEM.getTag(tag)
+		List<ItemStack> stacks = BuiltInRegistries.ITEM.get(tag)
 				.stream()
 				.flatMap(HolderSet.ListBacked::stream)
 				.map(ItemStack::new)

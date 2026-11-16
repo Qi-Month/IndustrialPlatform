@@ -118,7 +118,7 @@ public class BlueprintLibrary {
 				}
 
 				CompoundTag tag = NbtIo.readCompressed(path, NbtAccounter.unlimitedHeap());
-				PlatformBlueprint blueprint = PlatformBlueprint.parse(id, tag, BuiltInRegistries.BLOCK.asLookup());
+				PlatformBlueprint blueprint = PlatformBlueprint.parse(id, tag, BuiltInRegistries.BLOCK);
 
 				CACHE.put(id, new Cached(blueprint, modified, size));
 				FAILED.remove(id);

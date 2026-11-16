@@ -1,29 +1,31 @@
 package dev.celestiacraft.industrialplatform.client.screen;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
-import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
-import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
 import dev.celestiacraft.industrialplatform.client.BoundaryRenderData;
+import dev.celestiacraft.industrialplatform.client.network.IPClientNetwork;
 import dev.celestiacraft.industrialplatform.client.screen.widget.PlatformPreviewWidget;
 import dev.celestiacraft.industrialplatform.client.screen.widget.ToggleButton;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformMode;
+import dev.celestiacraft.industrialplatform.common.block.state.properties.platform.PlatformProperties;
 import dev.celestiacraft.industrialplatform.common.menu.PlatformBuildMenu;
-import dev.celestiacraft.industrialplatform.network.IPNetwork;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformBuildPacket;
 import dev.celestiacraft.industrialplatform.network.packet.PlatformSettingsPacket;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
 /**
  * 平台搭建界面
@@ -53,7 +55,7 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	/**
 	 * 界面背景贴图, 256x256 的画布, 面板画在左上角 200x250
 	 */
-	private static final ResourceLocation BACKGROUND = IndustrialPlatform.loadResource("textures/gui/platform_build.png");
+	private static final Identifier BACKGROUND = IndustrialPlatform.loadResource("textures/gui/platform_build.png");
 	private static final int TEXTURE_SIZE = 256;
 
 	private static final int COLOR_TITLE = 0xFF404040;
@@ -70,7 +72,9 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	private Button downMinus;
 	private Button downPlus;
 	private Button buildButton;
+	private BuildButtonState buildButtonState;
 	private PlatformPreviewWidget preview;
+	private BoundaryRenderData.BoundaryEntry boundaryOverride;
 	private List<Rect2i> extraAreas = List.of();
 
 	private int upFill;
@@ -83,14 +87,9 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	private boolean settingsChanged;
 
 	public PlatformBuildScreen(PlatformBuildMenu menu, Inventory inventory, Component title) {
-		super(menu, inventory, title);
-
-		imageWidth = PlatformBuildMenu.PANEL_WIDTH;
-		imageHeight = PlatformBuildMenu.PANEL_HEIGHT;
-		titleLabelX = 8;
-		titleLabelY = 6;
+		super(menu, inventory, title, PlatformBuildMenu.PANEL_WIDTH, PlatformBuildMenu.PANEL_HEIGHT);
+		titleLabelY -= 3;
 		inventoryLabelX = PlatformBuildMenu.INVENTORY_X;
-		inventoryLabelY = imageHeight - 94;
 	}
 
 	@Override
@@ -101,6 +100,7 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 		downFill = menu.getDownFill();
 		mode = menu.getMode();
 		modeButtons.clear();
+		buildButtonState = null;
 
 		upFillField = createFillField(topPos + FILL_ROW_UP_Y, upFill, this::onUpFillTyped);
 		downFillField = createFillField(topPos + FILL_ROW_UP_Y + FILL_ROW_HEIGHT, downFill, this::onDownFillTyped);
@@ -122,7 +122,7 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 		initPreview();
 
 		buildButton = addRenderableWidget(Button.builder(Component.translatable("gui.industrial_platform.build"), (button) -> {
-					IPNetwork.sendToServer(new PlatformBuildPacket());
+					IPClientNetwork.sendToServer(new PlatformBuildPacket());
 				}).bounds(leftPos + RIGHT_BUTTON_X, topPos + BUILD_BUTTON_Y, BUTTON_WIDTH, BUILD_BUTTON_HEIGHT)
 				.build());
 
@@ -171,7 +171,7 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 		);
 	}
 
-	private EditBox createFillField(int y, int value, java.util.function.Consumer<String> responder) {
+	private EditBox createFillField(int y, int value, Consumer<String> responder) {
 		EditBox field = new EditBox(font, leftPos + FIELD_X, y + 1, FIELD_WIDTH, FIELD_HEIGHT, Component.empty()) {
 			@Override
 			public void setFocused(boolean focused) {
@@ -185,9 +185,7 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 		};
 
 		field.setMaxLength(2);
-		field.setFilter((text) -> {
-			return text.isEmpty() || text.chars().allMatch(Character::isDigit);
-		});
+		field.setFilter(text -> text.isEmpty() || text.chars().allMatch(Character::isDigit));
 		field.setResponder(responder);
 		field.setTooltip(Tooltip.create(Component.translatable(
 				"gui.industrial_platform.fill_range",
@@ -289,7 +287,7 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 
 	private void sendSettings() {
 		settingsChanged = true;
-		IPNetwork.sendToServer(new PlatformSettingsPacket(upFill, downFill, mode.ordinal()));
+		IPClientNetwork.sendToServer(new PlatformSettingsPacket(upFill, downFill, mode.ordinal()));
 		updateBuildButton();
 	}
 
@@ -321,8 +319,14 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 		}
 
 		boolean canBuild = menu.canBuild();
+		int cost = menu.getCost();
 		buildButton.active = canBuild;
-		buildButton.setMessage(Component.translatable("gui.industrial_platform.build", menu.getCost()));
+		if (buildButtonState != null && buildButtonState.canBuild() == canBuild && buildButtonState.cost() == cost
+				&& buildButtonState.mode() == mode && buildButtonState.upFill() == upFill && buildButtonState.downFill() == downFill) {
+			return;
+		}
+		buildButtonState = new BuildButtonState(canBuild, cost, mode, upFill, downFill);
+		buildButton.setMessage(Component.translatable("gui.industrial_platform.build", cost));
 
 		if (canBuild) {
 			buildButton.setTooltip(Tooltip.create(Component.translatable(
@@ -335,6 +339,9 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 		} else {
 			buildButton.setTooltip(Tooltip.create(Component.translatable("gui.industrial_platform.build.missing_material")));
 		}
+	}
+
+	private record BuildButtonState(boolean canBuild, int cost, PlatformMode mode, int upFill, int downFill) {
 	}
 
 	private Component getStyleName() {
@@ -352,7 +359,7 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
 		if (scrollY != 0.0D) {
-			int step = hasShiftDown() ? 10 : 1;
+			int step = minecraft.hasShiftDown() ? 10 : 1;
 
 			if (isOverFillControls(upFillField, upMinus, upPlus, mouseX, mouseY)) {
 				setUpFill(upFill + (scrollY > 0.0D ? step : -step));
@@ -389,13 +396,10 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 
 		int size = mode.isHeavy() ? 48 : 16;
 
-		BoundaryRenderData.setOverride(new BoundaryRenderData.BoundaryEntry(
-				menu.getPlatformPos(),
-				size,
-				size,
-				upFill,
-				downFill
-		));
+		if (boundaryOverride == null || boundaryOverride.sizeX() != size || boundaryOverride.upFill() != upFill || boundaryOverride.downFill() != downFill) {
+			boundaryOverride = new BoundaryRenderData.BoundaryEntry(menu.getPlatformPos(), size, size, upFill, downFill);
+		}
+		BoundaryRenderData.setOverride(boundaryOverride);
 	}
 
 	@Override
@@ -410,20 +414,15 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	}
 
 	@Override
-	protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop, int button) {
-		return super.hasClickedOutside(mouseX, mouseY, guiLeft, guiTop, button) && !preview.isMouseOver(mouseX, mouseY);
+	protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop) {
+		return super.hasClickedOutside(mouseX, mouseY, guiLeft, guiTop) && !preview.isMouseOver(mouseX, mouseY);
 	}
 
 	@Override
-	public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-		renderBackground(graphics, mouseX, mouseY, partialTick);
-		super.render(graphics, mouseX, mouseY, partialTick);
-		renderTooltip(graphics, mouseX, mouseY);
-	}
-
-	@Override
-	protected void renderBg(@NotNull GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+	public void extractBackground(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+		super.extractBackground(graphics, mouseX, mouseY, partialTick);
 		graphics.blit(
+				RenderPipelines.GUI_TEXTURED,
 				BACKGROUND,
 				leftPos, topPos,
 				0.0F, 0.0F,
@@ -433,16 +432,16 @@ public class PlatformBuildScreen extends AbstractContainerScreen<PlatformBuildMe
 	}
 
 	@Override
-	protected void renderLabels(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
-		graphics.drawString(font, title, titleLabelX, titleLabelY, COLOR_TITLE, false);
-		graphics.drawString(font, Component.translatable("gui.industrial_platform.fill_up"), LEFT, 23, COLOR_LABEL, false);
-		graphics.drawString(font, Component.translatable("gui.industrial_platform.fill_down"), LEFT, 47, COLOR_LABEL, false);
-		graphics.drawString(font, Component.translatable("gui.industrial_platform.style"), LEFT, 66, COLOR_LABEL, false);
-		graphics.drawString(font, Component.translatable("gui.industrial_platform.size"), LEFT, 100, COLOR_LABEL, false);
+	protected void extractLabels(@NotNull GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+		graphics.text(font, title, titleLabelX, titleLabelY, COLOR_TITLE, false);
+		graphics.text(font, Component.translatable("gui.industrial_platform.fill_up"), LEFT, 23, COLOR_LABEL, false);
+		graphics.text(font, Component.translatable("gui.industrial_platform.fill_down"), LEFT, 47, COLOR_LABEL, false);
+		graphics.text(font, Component.translatable("gui.industrial_platform.style"), LEFT, 66, COLOR_LABEL, false);
+		graphics.text(font, Component.translatable("gui.industrial_platform.size"), LEFT, 100, COLOR_LABEL, false);
 
 		boolean hasMaterial = !menu.getMaterial().isEmpty();
-		graphics.drawString(font, Component.translatable("gui.industrial_platform.material"), 34, 138, hasMaterial ? COLOR_LABEL : COLOR_DISABLED, false);
+		graphics.text(font, Component.translatable("gui.industrial_platform.material"), 34, 138, hasMaterial ? COLOR_LABEL : COLOR_DISABLED, false);
 
-		graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, COLOR_INVENTORY_LABEL, false);
+		graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, COLOR_INVENTORY_LABEL, false);
 	}
 }

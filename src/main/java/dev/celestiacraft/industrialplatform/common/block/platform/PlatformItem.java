@@ -1,31 +1,24 @@
 package dev.celestiacraft.industrialplatform.common.block.platform;
 
-import net.minecraft.client.gui.screens.Screen;
+import dev.celestiacraft.industrialplatform.api.IPLogic;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public class PlatformItem extends BlockItem {
-	public PlatformItem(Block block) {
-		super(block, new Item.Properties());
+	public PlatformItem(Block block, Item.Properties properties) {
+		super(block, properties);
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, Item.@NotNull TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-		if (Screen.hasShiftDown()) {
-			String translated = Component.translatable("tooltip.industrial_platform.industrial_platform").getString();
-
-			for (String line : translated.split("\n")) {
-				tooltip.add(Component.literal(line));
-			}
-		} else {
-			tooltip.add(Component.translatable("tooltip.industrial_platform.industrial_platform.off"));
-		}
+	public void appendHoverText(@NotNull ItemStack stack, Item.@NotNull TooltipContext context, @NotNull TooltipDisplay display, @NotNull Consumer<Component> tooltip, @NotNull TooltipFlag flag) {
+		IPLogic.appendShiftTooltip(flag, tooltip, "tooltip.industrial_platform.industrial_platform", "tooltip.industrial_platform.industrial_platform.off");
 	}
 }

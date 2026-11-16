@@ -3,24 +3,22 @@ package dev.celestiacraft.industrialplatform.datagen.tags;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.api.IPTags;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.tags.ItemTagsProvider;
+import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 
-public class IPItemTagsProvider extends ItemTagsProvider {
-	public IPItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> provider, BlockTagsProvider blockTags, @Nullable ExistingFileHelper helper) {
-		super(output, provider, blockTags.contentsGetter(), IndustrialPlatform.MODID, helper);
+public class IPItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
+	public IPItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> provider) {
+		super(output, Registries.ITEM, provider, item -> item.builtInRegistryHolder().key(), IndustrialPlatform.MODID);
 	}
 
 	@Override
-	protected void addTags(HolderLookup.@NotNull Provider provider) {
+	protected void addTags(HolderLookup.Provider provider) {
 		tag(IPTags.Items.STONE)
 				.add(Items.DEEPSLATE)
 				.add(Items.COBBLED_DEEPSLATE)
@@ -30,7 +28,6 @@ public class IPItemTagsProvider extends ItemTagsProvider {
 				.add(Items.DEEPSLATE)
 				.add(Items.COBBLED_DEEPSLATE);
 
-		// 可以放进平台搭建界面材料槽的物品
 		tag(IPTags.Items.PLATFORM_MATERIAL)
 				.addTag(Tags.Items.STONES)
 				.addTag(Tags.Items.COBBLESTONES)

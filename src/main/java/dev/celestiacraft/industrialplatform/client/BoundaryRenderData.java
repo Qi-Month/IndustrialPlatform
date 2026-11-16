@@ -3,12 +3,10 @@ package dev.celestiacraft.industrialplatform.client;
 import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class BoundaryRenderData {
-	private static final List<BoundaryEntry> entries = new ArrayList<>();
+	private static List<BoundaryEntry> entries = List.of();
 	/**
 	 * 界面里正在编辑的那个平台, 优先于扫描结果绘制
 	 */
@@ -22,6 +20,10 @@ public class BoundaryRenderData {
 	 * @param downFill 向下填充格数, -1 表示未知
 	 */
 	public record BoundaryEntry(BlockPos pos, int sizeX, int sizeZ, int upFill, int downFill) {
+		public BoundaryEntry {
+			pos = pos.immutable();
+		}
+
 		public boolean hasFillInfo() {
 			return upFill >= 0 && downFill >= 0;
 		}
@@ -36,13 +38,14 @@ public class BoundaryRenderData {
 	}
 
 	public static void update(List<BoundaryEntry> newEntries, long tick) {
-		entries.clear();
-		entries.addAll(newEntries);
+		if (!entries.equals(newEntries)) {
+			entries = List.copyOf(newEntries);
+		}
 		lastUpdateTick = tick;
 	}
 
 	public static List<BoundaryEntry> getEntries() {
-		return Collections.unmodifiableList(entries);
+		return entries;
 	}
 
 	public static boolean isExpired(long currentTick) {
@@ -50,7 +53,8 @@ public class BoundaryRenderData {
 	}
 
 	public static void clear() {
-		entries.clear();
+		entries = List.of();
+		lastUpdateTick = 0;
 	}
 
 	public static void setOverride(@Nullable BoundaryEntry entry) {

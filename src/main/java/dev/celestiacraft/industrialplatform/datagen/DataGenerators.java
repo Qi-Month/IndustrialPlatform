@@ -9,11 +9,9 @@ import dev.celestiacraft.industrialplatform.datagen.recipe.IPRecipeProvider;
 import dev.celestiacraft.industrialplatform.datagen.tags.IPBlockTagsProvider;
 import dev.celestiacraft.industrialplatform.datagen.tags.IPItemTagsProvider;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import java.util.concurrent.CompletableFuture;
@@ -21,24 +19,24 @@ import java.util.concurrent.CompletableFuture;
 @EventBusSubscriber(modid = IndustrialPlatform.MODID)
 public class DataGenerators {
 	@SubscribeEvent
-	public static void onDatagen(GatherDataEvent event) {
-		DataGenerator generator = event.getGenerator();
-		PackOutput output = generator.getPackOutput();
-		ExistingFileHelper helper = event.getExistingFileHelper();
+	public static void onClientDatagen(GatherDataEvent.Client event) {
+		addProviders(event);
+	}
+
+	@SubscribeEvent
+	public static void onServerDatagen(GatherDataEvent.Server event) {
+		addProviders(event);
+	}
+
+	private static void addProviders(GatherDataEvent event) {
+		PackOutput output = event.getGenerator().getPackOutput();
 		CompletableFuture<HolderLookup.Provider> provider = event.getLookupProvider();
-
-		// Client
 		LanguageGenerate.register();
-		generator.addProvider(event.includeClient(), new English(output));
-		generator.addProvider(event.includeClient(), new Chinese(output));
-
-		// Server
-		IPBlockTagsProvider blockTags = new IPBlockTagsProvider(output, provider, helper);
-		IPItemTagsProvider itemTags = new IPItemTagsProvider(output, provider, blockTags, helper);
-
-		generator.addProvider(event.includeServer(), blockTags);
-		generator.addProvider(event.includeServer(), itemTags);
-		generator.addProvider(event.includeServer(), new IPRecipeProvider(output, provider));
-		generator.addProvider(event.includeServer(), new IPLootTableProvider(output, provider));
+		event.addProvider(new English(output));
+		event.addProvider(new Chinese(output));
+		event.addProvider(new IPBlockTagsProvider(output, provider));
+		event.addProvider(new IPItemTagsProvider(output, provider));
+		event.addProvider(new IPRecipeProvider(output, provider));
+		event.addProvider(new IPLootTableProvider(output, provider));
 	}
 }

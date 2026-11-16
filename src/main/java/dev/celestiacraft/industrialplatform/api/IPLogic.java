@@ -1,10 +1,15 @@
 package dev.celestiacraft.industrialplatform.api;
 
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
-import dev.celestiacraft.industrialplatform.config.CommonConfig;
+import dev.celestiacraft.industrialplatform.common.register.IPBlocks;
+import dev.celestiacraft.industrialplatform.platform.PoolDrops;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -23,9 +28,21 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class IPLogic {
 	public static final BlockState FILL_BLOCK = Blocks.STONE.defaultBlockState();
+
+	public static void appendShiftTooltip(TooltipFlag flag, Consumer<Component> tooltip, String expandedKey, String collapsedKey) {
+		if (!flag.hasShiftDown()) {
+			tooltip.accept(Component.translatable(collapsedKey));
+			return;
+		}
+		String translated = Component.translatable(expandedKey).getString();
+		for (String line : translated.split("\n")) {
+			tooltip.accept(Component.literal(line));
+		}
+	}
 
 	/**
 	 * 结构文件是否存在, 用于在破坏地形之前做检查
@@ -35,25 +52,19 @@ public class IPLogic {
 	}
 
 	public static boolean placeStructure(ServerLevel level, int x, int y, int z, String structureId) {
-		Optional<StructureTemplate> template = getStructure(level, structureId);
-		if (template.isEmpty()) {
-			return false;
-		}
-
-		placeStructure(level, x, y, z, template.get());
-		return true;
+		return getStructure(level, structureId).map(template -> placeStructure(level, x, y, z, template)).orElse(false);
 	}
 
 	/**
 	 * 放一份已经读好的结构, 免得同一个结构被反复从数据包资源里读
 	 */
-	public static void placeStructure(ServerLevel level, int x, int y, int z, StructureTemplate template) {
-		template.placeInWorld(
+	public static boolean placeStructure(ServerLevel level, int x, int y, int z, StructureTemplate template) {
+		return template.placeInWorld(
 				level,
 				new BlockPos(x, y, z),
 				new BlockPos(x, y, z),
 				createSafePlaceSettings(level),
-				level.random,
+				level.getRandom(),
 				3
 		);
 	}
@@ -65,7 +76,7 @@ public class IPLogic {
 	 */
 	public static Optional<StructureTemplate> getStructure(ServerLevel level, String structureId) {
 		StructureTemplateManager manager = level.getStructureManager();
-		ResourceLocation structureName = IndustrialPlatform.loadResource(structureId);
+		Identifier structureName = IndustrialPlatform.loadResource(structureId);
 		return manager.get(structureName);
 	}
 
@@ -172,10 +183,58 @@ public class IPLogic {
 	 * 被顶掉的方块掉不掉落, 默认不掉(配置里可开)
 	 */
 	private static boolean shouldDrop(BlockState state) {
-		ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
-		return !IndustrialPlatform.loadResource("industrial_platform").equals(blockId)
-				&& !IndustrialPlatform.loadResource("fluid_pool").equals(blockId)
+		return !state.is(IPBlocks.INDUSTRIAL_PLATFORM.get())
+				&& !state.is(IPBlocks.FLUID_POOL.get())
 				&& !state.is(IPTags.Blocks.NO_DROP_BLOCKS);
+	}
+
+	public static boolean fitsBuildHeight(LevelHeightAccessor level, int originY, int height) {
+		return height > 0 && originY >= level.getMinY() && (long) originY + height - 1 <= level.getMaxY();
+	}
+
+	public static boolean canReplaceForPool(BlockGetter level, BlockPos pos, BlockState existing, BlockState replacement) {
+		return !level.isOutsideBuildHeight(pos) && !existing.hasBlockEntity()
+				&& existing != replacement && !(existing.isAir() && replacement.isAir())
+				&& existing.getDestroySpeed(level, pos) >= 0.0F;
+	}
+
+	public static boolean placePoolStructure(ServerLevel level, BlockPos origin, StructureTemplate template, PoolDrops drops) {
+		StructurePlaceSettings settings = new StructurePlaceSettings()
+				.setIgnoreEntities(true)
+				.addProcessor(new PoolPlaceProcessor(level, drops));
+		try {
+			return template.placeInWorld(level, origin, origin, settings, level.getRandom(), Block.UPDATE_ALL);
+		} finally {
+			drops.completePlacement();
+		}
+	}
+
+	private static class PoolPlaceProcessor extends StructureProcessor {
+		private final ServerLevel level;
+		private final PoolDrops drops;
+
+		private PoolPlaceProcessor(ServerLevel level, PoolDrops drops) {
+			this.level = level;
+			this.drops = drops;
+		}
+
+		@Override
+		public StructureTemplate.StructureBlockInfo process(LevelReader reader, BlockPos offset, BlockPos pos,
+				StructureTemplate.StructureBlockInfo original, StructureTemplate.StructureBlockInfo current,
+				StructurePlaceSettings settings, @Nullable StructureTemplate template) {
+			BlockPos target = current.pos();
+			BlockState existing = level.getBlockState(target);
+			if (!canReplaceForPool(level, target, existing, current.state())) {
+				return null;
+			}
+			drops.dropResources(target, existing);
+			return current;
+		}
+
+		@Override
+		protected StructureProcessorType<?> getType() {
+			return StructureProcessorType.NOP;
+		}
 	}
 
 	private static class DropBeforePlaceProcessor extends StructureProcessor {

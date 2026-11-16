@@ -351,5 +351,167 @@ public class OtherLanguage extends LanguageGenerate {
 				"Right click with any stone to deploy the infinite pool\nStand besides the block with a wrench or the fill adjuster in hand to display preview\nFluid Pools will not remove blocks above\nThe pool is over 10,000 blocks, which supports infinite fluid in Create",
 				"以任意石头右键展开流体池\n手持填充调节器靠近流体池方块以显示展开预览\n流体池不会清除上方方块\n展开的流体池容量超过1万格, 足够支持机械动力的无限流体"
 		);
+
+		addCustomLang(
+				"industrial_platform.configuration.title",
+				"Industrial Platform Configuration",
+				"工业平台配置"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.section.nebula.industrial.platform.common.toml",
+				"Common Settings",
+				"通用设置"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.section.nebula.industrial.platform.common.toml.title",
+				"Industrial Platform — Common Settings",
+				"工业平台 — 通用设置"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.general",
+				"General",
+				"常规"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.general.tooltip",
+				"Materials, additional adjusters and default fill distances. Restart the server or client after changing these settings.",
+				"材料、额外调节器与默认填充距离。修改这些设置后请重启服务端或客户端。"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.platform",
+				"Platform Size",
+				"平台尺寸"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.platform.tooltip",
+				"Minimum and maximum platform size, in chunks per side.",
+				"平台每边的最小与最大区块数。"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.cost",
+				"Material Costs",
+				"材料消耗"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.cost.tooltip",
+				"Base material costs for standard and heavy platforms, plus the extra cost per filled layer.",
+				"普通与重型平台的基础材料消耗，以及每层填充的额外消耗。"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.platform_material",
+				"Platform Materials",
+				"平台材料"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.platform_material.tooltip",
+				"Items accepted by the builder material slot. Use #namespace:path for tags or namespace:path for item IDs. The industrial_platform:platform_material item tag is also accepted. Defaults: #c:stones, minecraft:cobblestone.",
+				"搭建界面材料槽接受的物品。标签使用 #命名空间:路径，物品 ID 使用 命名空间:路径。industrial_platform:platform_material 物品标签也会被接受。默认：#c:stones、minecraft:cobblestone。"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.adjuster",
+				"Additional Platform Adjusters",
+				"额外平台调节器"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.adjuster.tooltip",
+				"Extra items that cycle the platform type on right-click and show the block boundary preview while held. Use #namespace:path for tags or namespace:path for item IDs. The Fill Adjuster is built in. Default: #c:tools/wrench.",
+				"额外的调节器物品：右键切换平台类型，手持时显示区块边界预览。标签使用 #命名空间:路径，物品 ID 使用 命名空间:路径。填充调节器已内置，无需添加。默认：#c:tools/wrench。"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.top_filling_distance",
+				"Default Upward Fill Distance",
+				"默认向上填充距离"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.top_filling_distance.tooltip",
+				"Initial upward fill distance in the builder screen. Players can change it in the screen. Default: 5 blocks.",
+				"搭建界面中向上填充距离的初始值，玩家仍可在界面中调整。默认：5 格。"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.bottom_filling_distance",
+				"Default Downward Fill Distance",
+				"默认向下填充距离"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.bottom_filling_distance.tooltip",
+				"Initial downward fill distance in the builder screen. Players can change it in the screen. Default: 5 blocks.",
+				"搭建界面中向下填充距离的初始值，玩家仍可在界面中调整。默认：5 格。"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.min_platform_chunks",
+				"Minimum Platform Size",
+				"最小平台尺寸"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.min_platform_chunks.tooltip",
+				"Smallest allowed platform footprint, in chunks per side. Default: 1.",
+				"允许的最小平台尺寸，以每边区块数计。默认：1。"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.max_platform_chunks",
+				"Maximum Platform Size",
+				"最大平台尺寸"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.max_platform_chunks.tooltip",
+				"Largest allowed platform footprint, in chunks per side. Default: 4 (64 × 64 blocks).",
+				"允许的最大平台尺寸，以每边区块数计。默认：4（64 × 64 格）。"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.light_platform_cost",
+				"Standard Platform Cost",
+				"普通平台消耗"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.light_platform_cost.tooltip",
+				"Base number of material items consumed by a standard platform build. Default: 1.",
+				"每次搭建普通平台消耗的基础材料数量。默认：1。"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.heavy_platform_cost",
+				"Heavy Platform Cost",
+				"重型平台消耗"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.heavy_platform_cost.tooltip",
+				"Base number of material items consumed by a heavy platform build. Increase it to make heavy platforms more expensive. Default: 1.",
+				"每次搭建重型平台消耗的基础材料数量。调高此值可提高重型平台的消耗。默认：1。"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.filling_layer_cost",
+				"Cost per Filled Layer",
+				"每层填充消耗"
+		);
+
+		addCustomLang(
+				"industrial_platform.configuration.filling_layer_cost.tooltip",
+				"Extra material items consumed for each layer filled upward or downward. Added to the base platform cost. Default: 0.",
+				"每向上或向下填充一层额外消耗的材料数量，计入平台基础消耗之外。默认：0。"
+		);
 	}
 }

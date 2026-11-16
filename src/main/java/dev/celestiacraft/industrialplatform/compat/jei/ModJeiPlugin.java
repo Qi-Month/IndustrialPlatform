@@ -6,7 +6,7 @@ import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import dev.celestiacraft.industrialplatform.IndustrialPlatform;
 import dev.celestiacraft.industrialplatform.client.screen.PlatformBuildScreen;
@@ -17,7 +17,7 @@ import java.util.List;
 @JeiPlugin
 public class ModJeiPlugin implements IModPlugin {
 	@Override
-	public @NotNull ResourceLocation getPluginUid() {
+	public @NotNull Identifier getPluginUid() {
 		return IndustrialPlatform.loadResource("jei_plugin");
 	}
 
